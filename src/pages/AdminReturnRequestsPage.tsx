@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '../services/api';
+import { orderAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
@@ -35,7 +35,7 @@ interface ReturnRequestData {
   notes?: string;
 }
 
-const AdminReturnRequestsPage: React.FC = () => {
+export const AdminReturnRequestsPage: React.FC = () => {
   const [returnRequests, setReturnRequests] = useState<ReturnRequestData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,25 +47,21 @@ const AdminReturnRequestsPage: React.FC = () => {
   const fetchReturnRequests = async () => {
     try {
       setIsLoading(true);
-      // Fetch from the new admin endpoint
-      const { data } = await api.get<ReturnRequestData[]>('/orders/admin/returns');
+      const data = await orderAPI.fetchReturnRequests();
       
-      // The backend currently returns Order objects that have a returnRequest field.
-      // We need to transform this into the ReturnRequestData structure expected by the component.
-      // Each item in `data` is an Order object.
       const transformedData: ReturnRequestData[] = data.map(order => ({
-        _id: order._id, // Use Order ID as the key/ID for the request display
+        _id: order._id,
         order: {
-          _id: order._id, // Store actual Order ID here too
-          user: order.user, // Assuming user is populated
-          items: order.items, // Assuming items are populated with productName/Image
+          _id: order._id,
+          user: order.user,
+          items: order.items,
           totalAmount: order.totalAmount,
           shippingAddress: order.shippingAddress,
           createdAt: order.createdAt,
         },
-        reason: order.returnRequest?.reason || '', // Extract reason from returnRequest
-        status: order.returnRequest?.status || 'pending', // Extract status
-        requestedAt: order.returnRequest?.requestedAt || order.createdAt, // Use request date if available, otherwise order date
+        reason: order.returnRequest?.reason || '',
+        status: order.returnRequest?.status || 'pending',
+        requestedAt: order.returnRequest?.requestedAt || order.createdAt,
         processedAt: order.returnRequest?.processedAt,
         notes: order.returnRequest?.notes,
       }));
@@ -80,18 +76,16 @@ const AdminReturnRequestsPage: React.FC = () => {
 
   const handleUpdateStatus = async (requestId: string, status: 'approved' | 'rejected' | 'completed', notes?: string) => {
     try {
-      // Find the order ID associated with this request ID
       const orderId = returnRequests.find(req => req._id === requestId)?.order._id;
       
       if (!orderId) {
-          toast.error('Could not find associated order for this request.');
-          return;
+        toast.error('Could not find associated order for this request.');
+        return;
       }
 
-      // Call the backend endpoint to update return status using the Order ID
-      await api.put(`/orders/${orderId}/return-status`, { status, notes });
+      await orderAPI.updateReturnStatus(orderId, status, notes);
       toast.success(`Return request marked as ${status} successfully`);
-      fetchReturnRequests(); // Refresh the list
+      fetchReturnRequests();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to update return request status');
     }
@@ -175,6 +169,4 @@ const AdminReturnRequestsPage: React.FC = () => {
       )}
     </div>
   );
-};
-
-export default AdminReturnRequestsPage; 
+}; 

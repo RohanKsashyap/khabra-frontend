@@ -111,6 +111,14 @@ export const orderAPI = {
     const response = await api.put(`/orders/${orderId}/cancel`);
     return response.data;
   },
+  fetchReturnRequests: async () => {
+    const response = await api.get('/orders/admin/returns');
+    return response.data;
+  },
+  updateReturnStatus: async (orderId: string, status: string, notes?: string) => {
+    const response = await api.put(`/orders/${orderId}/return-status`, { status, notes });
+    return response.data;
+  }
 };
 
 export default api; 

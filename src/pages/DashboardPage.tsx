@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { 
   LayoutDashboard, 
@@ -18,51 +18,37 @@ import { DashboardOverview } from '../components/dashboard/DashboardOverview';
 import { NetworkTree } from '../components/dashboard/NetworkTree';
 import { Button } from '../components/ui/Button';
 import { MyOrdersPage } from './MyOrdersPage';
-import AdminReturnRequestsPage from './AdminReturnRequestsPage';
+import { AdminReturnRequestsPage } from './AdminReturnRequestsPage';
 
 export function DashboardPage() {
   const { user, isAuthenticated, logout } = useAuthStore();
-  const [activeTab, setActiveTab] = useState('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
   
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
   
   const navItems = [
-    { id: 'overview', label: 'Overview', icon: <LayoutDashboard className="h-5 w-5" /> },
-    { id: 'network', label: 'My Network', icon: <Users className="h-5 w-5" /> },
-    { id: 'orders', label: 'My Orders', icon: <ShoppingBag className="h-5 w-5" /> },
-    { id: 'earnings', label: 'Earnings', icon: <CreditCard className="h-5 w-5" /> },
-    { id: 'ranks', label: 'Rank & Rewards', icon: <Award className="h-5 w-5" /> },
-    { id: 'settings', label: 'Settings', icon: <Settings className="h-5 w-5" /> },
+    { id: 'overview', label: 'Overview', icon: <LayoutDashboard className="h-5 w-5" />, path: '/dashboard' },
+    { id: 'network', label: 'My Network', icon: <Users className="h-5 w-5" />, path: '/dashboard/network' },
+    { id: 'orders', label: 'My Orders', icon: <ShoppingBag className="h-5 w-5" />, path: '/dashboard/orders' },
+    { id: 'earnings', label: 'Earnings', icon: <CreditCard className="h-5 w-5" />, path: '/dashboard/earnings' },
+    { id: 'ranks', label: 'Rank & Rewards', icon: <Award className="h-5 w-5" />, path: '/dashboard/rank-rewards' },
+    { id: 'settings', label: 'Settings', icon: <Settings className="h-5 w-5" />, path: '/dashboard/settings' },
   ];
   
   if (user?.role === 'admin') {
     navItems.push(
-      { id: 'returns', label: 'Manage Returns', icon: <Repeat className="h-5 w-5" /> }
+      { id: 'returns', label: 'Manage Returns', icon: <Repeat className="h-5 w-5" />, path: '/dashboard/returns' }
     );
   }
-  
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'overview':
-        return <DashboardOverview />;
-      case 'network':
-        return <NetworkTree />;
-      case 'orders':
-        return <MyOrdersPage />;
-      case 'earnings':
-        return <ComingSoon />;
-      case 'ranks':
-        return <ComingSoon />;
-      case 'settings':
-        return <ComingSoon />;
-      case 'returns':
-        return user?.role === 'admin' ? <AdminReturnRequestsPage /> : <Navigate to="/dashboard" />;
-      default:
-        return <DashboardOverview />;
+
+  const isActive = (path: string) => {
+    if (path === '/dashboard') {
+      return location.pathname === '/dashboard';
     }
+    return location.pathname.startsWith(path);
   };
   
   return (
@@ -100,17 +86,17 @@ export function DashboardPage() {
           <ul className="space-y-1">
             {navItems.map(item => (
               <li key={item.id}>
-                <button
-                  onClick={() => setActiveTab(item.id)}
+                <Link
+                  to={item.path}
                   className={`flex items-center w-full p-3 rounded-md transition-colors ${
-                    activeTab === item.id
+                    isActive(item.path)
                       ? 'bg-primary/10 text-primary'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
                   {item.icon}
                   <span className="ml-3">{item.label}</span>
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
@@ -171,20 +157,18 @@ export function DashboardPage() {
               <ul className="space-y-1">
                 {navItems.map(item => (
                   <li key={item.id}>
-                    <button
-                      onClick={() => {
-                        setActiveTab(item.id);
-                        setIsMobileMenuOpen(false);
-                      }}
+                    <Link
+                      to={item.path}
                       className={`flex items-center w-full p-3 rounded-md transition-colors ${
-                        activeTab === item.id
+                        isActive(item.path)
                           ? 'bg-primary/10 text-primary'
                           : 'text-gray-700 hover:bg-gray-100'
                       }`}
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {item.icon}
                       <span className="ml-3">{item.label}</span>
-                    </button>
+                    </Link>
                   </li>
                 ))}
                 <li>
@@ -204,7 +188,7 @@ export function DashboardPage() {
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-8">
           <div className="max-w-7xl mx-auto">
-            {renderTabContent()}
+            <Outlet />
           </div>
         </main>
       </div>
