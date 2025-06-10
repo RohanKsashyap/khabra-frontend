@@ -46,20 +46,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserData = async (token: string) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/api/auth/me`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('token');
+          setUser(null);
+          throw new Error('Session expired. Please login again.');
+        }
         throw new Error('Failed to fetch user data');
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server returned non-JSON response');
       }
 
       const userData = await response.json();
       setUser(userData);
     } catch (err) {
       console.error('Error fetching user data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch user data');
       localStorage.removeItem('token');
     } finally {
       setLoading(false);
@@ -69,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     try {
       setError(null);
-      const response = await fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/api/auth/login`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (userData: RegisterData) => {
     try {
       setError(null);
-      const response = await fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/api/auth/register`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +137,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const resetPassword = async (email: string) => {
     try {
       setError(null);
-      const response = await fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/api/auth/forgot-password`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,7 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updatePassword = async (token: string, password: string) => {
     try {
       setError(null);
-      const response = await fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/api/auth/reset-password`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

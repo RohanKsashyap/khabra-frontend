@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import api from '../services/api';
+import axiosInstance from '../utils/axios';
 import { Product } from '../types';
 
 interface CartItem {
@@ -33,7 +33,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   fetchCart: async () => {
     try {
       set({ isLoading: true, error: null });
-      const response = await api.get('/cart');
+      const response = await axiosInstance.get('/cart');
       const items = response.data.items || [];
       set({ 
         items,
@@ -48,7 +48,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   addToCart: async (product: Product, quantity = 1) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await api.post('/cart/add', {
+      const response = await axiosInstance.post('/cart/add', {
         productId: product._id,
         quantity
       });
@@ -66,7 +66,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   removeFromCart: async (productId: string) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await api.delete(`/cart/remove/${productId}`);
+      const response = await axiosInstance.delete(`/cart/remove/${productId}`);
       const items = response.data.items || [];
       set({ 
         items,
@@ -81,7 +81,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   updateQuantity: async (productId: string, quantity: number) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await api.put('/cart/update', {
+      const response = await axiosInstance.put('/cart/update', {
         productId,
         quantity
       });
@@ -99,7 +99,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
   clearCart: async () => {
     try {
       set({ isLoading: true, error: null });
-      await api.delete('/cart/clear');
+      await axiosInstance.delete('/cart/clear');
       set({ items: [], totalItems: 0, isLoading: false });
     } catch (error) {
       set({ error: 'Failed to clear cart', isLoading: false });

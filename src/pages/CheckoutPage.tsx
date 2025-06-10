@@ -171,7 +171,7 @@ export const CheckoutPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Checkout Form */}
         <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form id="checkout-form" onSubmit={handleSubmit} className="space-y-8">
             {/* Shipping Address */}
             <div className="bg-white p-6 rounded-lg shadow">
               <h2 className="text-xl font-semibold mb-4">Shipping Address</h2>
@@ -480,7 +480,8 @@ export const CheckoutPage = () => {
                 </div>
               </div>
               <button
-                onClick={handleSubmit}
+                type="submit"
+                form="checkout-form"
                 disabled={isProcessing}
                 className={`w-full py-3 rounded-lg text-white font-semibold ${
                   isProcessing

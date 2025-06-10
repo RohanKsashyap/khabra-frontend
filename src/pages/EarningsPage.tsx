@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { format } from 'date-fns';
+import { API_ENDPOINTS } from '../config';
 
 interface Earning {
   id: string;
@@ -26,9 +27,11 @@ const EarningsPage: React.FC = () => {
   useEffect(() => {
     const fetchEarnings = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/api/users/earnings`, {
+        const response = await fetch(API_ENDPOINTS.USERS.EARNINGS, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
           },
         });
 
@@ -61,10 +64,14 @@ const EarningsPage: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-red-500">{error}</div>
+        
       </div>
     );
-  }
 
+  }
+  console.log(error)
+
+  
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">My Earnings</h1>

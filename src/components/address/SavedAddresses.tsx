@@ -31,7 +31,7 @@ export const SavedAddresses = ({ onSelectAddress, selectedAddressId }: SavedAddr
 
   const fetchAddresses = async () => {
     try {
-      const { data } = await api.get('/users/addresses');
+      const { data } = await api.get('/addresses');
       setAddresses(data);
       setIsLoading(false);
     } catch (error) {
@@ -40,11 +40,14 @@ export const SavedAddresses = ({ onSelectAddress, selectedAddressId }: SavedAddr
     }
   };
 
-  const handleAddAddress = async (e: React.FormEvent) => {
+  const handleAddAddress = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    e.stopPropagation();
+    
     try {
-      const { data } = await api.post('/users/addresses', newAddress);
-      setAddresses([...addresses, data]);
+      setIsLoading(true);
+      const { data } = await api.post('/addresses', newAddress);
+      setAddresses(prevAddresses => [...prevAddresses, data]);
       setShowAddForm(false);
       setNewAddress({
         label: '',
@@ -59,8 +62,14 @@ export const SavedAddresses = ({ onSelectAddress, selectedAddressId }: SavedAddr
         isDefault: false
       });
       toast.success('Address saved successfully');
-    } catch (error) {
-      toast.error('Failed to save address');
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        toast.error('Please login to save address');
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to save address');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,8 +77,8 @@ export const SavedAddresses = ({ onSelectAddress, selectedAddressId }: SavedAddr
     if (!window.confirm('Are you sure you want to delete this address?')) return;
     
     try {
-      await api.delete(`/users/addresses/${addressId}`);
-      setAddresses(addresses.filter(addr => addr._id !== addressId));
+      await api.delete(`/addresses/${addressId}`);
+      setAddresses(prevAddresses => prevAddresses.filter(addr => addr._id !== addressId));
       toast.success('Address deleted successfully');
     } catch (error) {
       toast.error('Failed to delete address');
@@ -78,8 +87,8 @@ export const SavedAddresses = ({ onSelectAddress, selectedAddressId }: SavedAddr
 
   const handleSetDefault = async (addressId: string) => {
     try {
-      await api.put(`/users/addresses/${addressId}/default`);
-      setAddresses(addresses.map(addr => ({
+      await api.put(`/addresses/${addressId}/default`);
+      setAddresses(prevAddresses => prevAddresses.map(addr => ({
         ...addr,
         isDefault: addr._id === addressId
       })));
@@ -100,13 +109,14 @@ export const SavedAddresses = ({ onSelectAddress, selectedAddressId }: SavedAddr
         <button
           onClick={() => setShowAddForm(!showAddForm)}
           className="text-blue-500 hover:text-blue-600"
+          type="button"
         >
           {showAddForm ? 'Cancel' : '+ Add New Address'}
         </button>
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleAddAddress} className="bg-white p-4 rounded-lg shadow space-y-4">
+        <div className="bg-white p-4 rounded-lg shadow space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Label (e.g., Home, Work)</label>
             <input
@@ -197,12 +207,13 @@ export const SavedAddresses = ({ onSelectAddress, selectedAddressId }: SavedAddr
             <label className="ml-2 block text-sm text-gray-900">Set as default address</label>
           </div>
           <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            onClick={handleAddAddress}
+            disabled={isLoading}
+            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Save Address
+            {isLoading ? 'Saving...' : 'Save Address'}
           </button>
-        </form>
+        </div>
       )}
 
       <div className="space-y-4">
@@ -241,6 +252,7 @@ export const SavedAddresses = ({ onSelectAddress, selectedAddressId }: SavedAddr
                       handleSetDefault(address._id);
                     }}
                     className="text-blue-500 hover:text-blue-600"
+                    type="button"
                   >
                     Set as Default
                   </button>
@@ -251,6 +263,7 @@ export const SavedAddresses = ({ onSelectAddress, selectedAddressId }: SavedAddr
                     handleDeleteAddress(address._id);
                   }}
                   className="text-red-500 hover:text-red-600"
+                  type="button"
                 >
                   Delete
                 </button>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { demoNetworkData } from '../data/demoData';
 
 interface NetworkMember {
   id: string;
@@ -23,20 +24,12 @@ const MyNetworkPage: React.FC = () => {
   const [expandedLevels, setExpandedLevels] = useState<number[]>([1]);
 
   useEffect(() => {
+    // Simulate API call with demo data
     const fetchNetwork = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/api/network`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch network data');
-        }
-
-        const data = await response.json();
-        setNetwork(data);
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setNetwork(demoNetworkData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch network data');
       } finally {
@@ -108,21 +101,17 @@ const MyNetworkPage: React.FC = () => {
     );
   }
 
-  if (!network) {
-    return null;
-  }
-
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">My Network</h1>
-
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Network Tree */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-bold mb-4">Network Tree</h2>
             <div className="overflow-x-auto">
-              {renderNetworkTree(network)}
+              {network && renderNetworkTree(network)}
             </div>
           </div>
         </div>

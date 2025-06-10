@@ -24,7 +24,7 @@ export const ProductDetailPage = () => {
   const fetchProduct = async () => {
     try {
       const { data } = await api.get(`/products/${id}`);
-      setProduct(data);
+      setProduct(data.data);
       setIsLoading(false);
     } catch (error) {
       toast.error('Failed to load product');
@@ -52,12 +52,8 @@ export const ProductDetailPage = () => {
       return;
     }
 
-    try {
-      await addToCart(product._id, 1);
-      navigate('/checkout');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to add to cart');
-    }
+    // Directly navigate to checkout without adding to cart
+    navigate('/checkout');
   };
 
   const handleReviewClick = async () => {
@@ -104,7 +100,11 @@ export const ProductDetailPage = () => {
           <img
             src={product.image}
             alt={product.name}
-            className="w-full h-96 object-cover rounded-lg"
+            className="w-full h-96 object-cover rounded-lg border border-gray-300"
+            onError={(e) => {
+              e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Available';
+              e.currentTarget.onerror = null; // prevents infinite loop
+            }}
           />
         </div>
 
@@ -180,7 +180,7 @@ export const ProductDetailPage = () => {
           </div>
         )}
 
-        <ReviewList productId={product._id} />
+        {product?._id && <ReviewList productId={product._id} />}
       </div>
     </div>
   );
