@@ -1,27 +1,34 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../store/authStore';
+import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../ui/Card';
 import { Mail, Lock, LogIn } from 'lucide-react';
 
 export function LoginForm() {
   const navigate = useNavigate();
-  const { login, isLoading } = useAuthStore();
+  const { login, loading: isLoading } = useAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    e.stopPropagation();
     setError('');
+    
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
+    }
     
     try {
       await login(email, password);
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
+      console.error('Login error:', err);
+      setError(err instanceof Error ? err.message : 'Invalid email or password. Please try again.');
     }
   };
   
@@ -38,7 +45,7 @@ export function LoginForm() {
             </div>
           )}
           
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <div className="mb-4">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email Address
@@ -55,6 +62,7 @@ export function LoginForm() {
                   placeholder="you@example.com"
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -75,6 +83,7 @@ export function LoginForm() {
                   placeholder="••••••••"
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                   required
+                  disabled={isLoading}
                 />
               </div>
               <div className="mt-1 text-right">
@@ -87,10 +96,11 @@ export function LoginForm() {
             <Button 
               type="submit" 
               className="w-full" 
-              isLoading={isLoading} 
+              isLoading={isLoading}
+              disabled={isLoading}
               leftIcon={<LogIn className="h-4 w-4" />}
             >
-              Login
+              {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
         </CardContent>

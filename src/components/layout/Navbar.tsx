@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, Menu, X, Store, Network, Package, LogOut, Search, Mail } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
+import { useAuth } from '../../contexts/AuthContext';
 import { useCartStore } from '../../store/cartStore';
 import { Button } from '../ui/Button';
 
 export function Navbar() {
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, loading, logout } = useAuth();
   const { totalItems } = useCartStore();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -46,7 +46,7 @@ export function Navbar() {
           <Link to="/contact" className="text-gray-700 hover:text-primary">
             Contact
           </Link>
-          {isAuthenticated && (
+          {!loading && user && (
             <Link to="/dashboard" className="text-gray-700 hover:text-primary">
               Dashboard
             </Link>
@@ -81,13 +81,13 @@ export function Navbar() {
             )}
           </Link>
           
-          {isAuthenticated ? (
+          {!loading && user ? (
             <div className="hidden md:flex items-center space-x-4">
               <Link to="/dashboard" className="text-gray-700 hover:text-primary">
                 <User className="h-6 w-6" />
               </Link>
               <button 
-                onClick={() => logout()}
+                onClick={logout}
                 className="text-gray-700 hover:text-primary"
               >
                 <LogOut className="h-6 w-6" />
@@ -144,7 +144,7 @@ export function Navbar() {
                 <Mail className="h-5 w-5 mr-2" /> Contact
               </Link>
               
-              {isAuthenticated ? (
+              {!loading && user ? (
                 <>
                   <Link to="/dashboard" className="flex items-center text-gray-700 py-2">
                     <User className="h-5 w-5 mr-2" /> Dashboard

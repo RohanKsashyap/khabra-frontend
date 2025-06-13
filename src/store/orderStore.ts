@@ -17,6 +17,7 @@ interface OrderState {
   fetchOrderById: (orderId: string) => Promise<void>;
   cancelOrder: (orderId: string) => Promise<void>;
   getOrderById: (orderId: string) => Order | null;
+  deleteBulkOrders: () => Promise<void>;
 }
 
 export const useOrderStore = create<OrderState>((set, get) => ({
@@ -87,6 +88,20 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     } catch (error: any) {
       set({
         error: error.response?.data?.message || error.message || 'Failed to cancel order',
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  deleteBulkOrders: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      await orderAPI.deleteBulkOrders();
+      set({ orders: [], isLoading: false });
+    } catch (error: any) {
+      set({
+        error: error.response?.data?.message || error.message || 'Failed to delete all orders',
         isLoading: false,
       });
       throw error;

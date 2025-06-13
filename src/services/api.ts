@@ -64,59 +64,63 @@ export const authAPI = {
 
 export const productAPI = {
   getProducts: async (params?: { category?: string; search?: string; sort?: string }) => {
-    const response = await api.get('/products', { params });
+    const response = await api.get('/api/products', { params });
     return response.data;
   },
 
   getProduct: async (id: string) => {
-    const response = await api.get(`/products/${id}`);
+    const response = await api.get(`/api/products/${id}`);
     return response.data;
   },
 
   createProduct: async (productData: any) => {
-    const response = await api.post('/products', productData);
+    const response = await api.post('/api/products', productData);
     return response.data;
   },
 
   updateProduct: async (id: string, productData: any) => {
-    const response = await api.put(`/products/${id}`, productData);
+    const response = await api.put(`/api/products/${id}`, productData);
     return response.data;
   },
 
   deleteProduct: async (id: string) => {
-    const response = await api.delete(`/products/${id}`);
+    const response = await api.delete(`/api/products/${id}`);
     return response.data;
   },
 
   addReview: async (productId: string, reviewData: { rating: number; review: string }) => {
-    const response = await api.post(`/products/${productId}/reviews`, reviewData);
+    const response = await api.post(`/api/products/${productId}/reviews`, reviewData);
     return response.data;
   },
 };
 
 export const orderAPI = {
   fetchOrders: async () => {
-    const response = await api.get('/orders');
+    const response = await api.get('/api/orders');
     return response.data;
   },
   createOrder: async (orderData: any) => {
-    const response = await api.post('/orders', orderData);
+    const response = await api.post('/api/orders', orderData);
     return response.data;
   },
   fetchOrderById: async (orderId: string) => {
-    const response = await api.get(`/orders/${orderId}`);
+    const response = await api.get(`/api/orders/${orderId}`);
     return response.data;
   },
   cancelOrder: async (orderId: string) => {
-    const response = await api.put(`/orders/${orderId}/cancel`);
+    const response = await api.put(`/api/orders/${orderId}/cancel`);
     return response.data;
   },
   fetchReturnRequests: async () => {
-    const response = await api.get('/orders/admin/returns');
+    const response = await api.get('/api/orders/admin/returns');
     return response.data;
   },
   updateReturnStatus: async (orderId: string, status: string, notes?: string) => {
-    const response = await api.put(`/orders/${orderId}/return-status`, { status, notes });
+    const response = await api.put(`/api/orders/${orderId}/return-status`, { status, notes });
+    return response.data;
+  },
+  deleteBulkOrders: async () => {
+    const response = await api.delete('/api/orders/bulk');
     return response.data;
   }
 };

@@ -3,9 +3,12 @@ import { useOrderStore } from '../store/orderStore';
 import { Order } from '../types';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 export const MyOrdersPage = () => {
-  const { orders, isLoading, error, fetchOrders } = useOrderStore();
+  const { orders, isLoading, error, fetchOrders, deleteBulkOrders } = useOrderStore();
+  const { user } = useAuth();
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
@@ -88,9 +91,36 @@ export const MyOrdersPage = () => {
     navigate(`/my-orders/${orderId}`);
   };
 
+  const handleBulkDeleteOrders = async () => {
+    if (!user || user.role !== 'admin') {
+      toast.error('You are not authorized to perform this action.');
+      return;
+    }
+
+    if (window.confirm('Are you sure you want to delete ALL orders? This action cannot be undone.')) {
+      try {
+        await deleteBulkOrders();
+        toast.success('All orders deleted successfully!');
+      } catch (err: any) {
+        toast.error(err.message || 'Failed to delete orders in bulk.');
+      }
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">My Orders</h1>
+
+      {user?.role === 'admin' && orders.length > 0 && (
+        <div className="mb-6 flex justify-end">
+          <button
+            onClick={handleBulkDeleteOrders}
+            className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+          >
+            Delete All Orders (Admin)
+          </button>
+        </div>
+      )}
 
       <div className="flex flex-col md:flex-row gap-6">
         {/* Filters Sidebar */}

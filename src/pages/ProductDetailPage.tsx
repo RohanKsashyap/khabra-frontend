@@ -23,7 +23,7 @@ export const ProductDetailPage = () => {
 
   const fetchProduct = async () => {
     try {
-      const { data } = await api.get(`/products/${id}`);
+      const { data } = await api.get(`/api/products/${id}`);
       setProduct(data.data);
       setIsLoading(false);
     } catch (error) {

@@ -1,12 +1,14 @@
 import { create } from 'zustand';
 import { Product } from '../types';
 import { productAPI } from '../services/api';
+import { toast } from 'react-hot-toast';
 
 interface ProductState {
   products: Product[];
   currentProduct: Product | null;
   isLoading: boolean;
   error: string | null;
+  lastFetchTime: number | null;
   fetchProducts: (params?: { category?: string; search?: string; sort?: string }) => Promise<void>;
   fetchProduct: (id: string) => Promise<void>;
   createProduct: (productData: Partial<Product>) => Promise<void>;
@@ -15,26 +17,45 @@ interface ProductState {
   addReview: (productId: string, rating: number, review: string) => Promise<void>;
 }
 
+const DEBOUNCE_TIME = 2000; // 2 seconds
+
 export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
   currentProduct: null,
   isLoading: false,
   error: null,
+  lastFetchTime: null,
 
   fetchProducts: async (params) => {
-    console.log('Starting to fetch products...');
+    const now = Date.now();
+    const lastFetch = get().lastFetchTime;
+    
+    // If we've fetched recently, don't fetch again
+    if (lastFetch && now - lastFetch < DEBOUNCE_TIME) {
+      return;
+    }
+
     set({ isLoading: true, error: null });
     try {
-      console.log('Fetching products with params:', params);
       const response = await productAPI.getProducts(params);
-      console.log('Products response:', response);
-      console.log('Setting products in store:', response.data);
-      set({ products: response.data, isLoading: false });
+      set({ 
+        products: response.data, 
+        isLoading: false,
+        lastFetchTime: now
+      });
     } catch (error) {
       console.error('Error fetching products:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch products';
+      
+      // Handle rate limiting specifically
+      if (errorMessage.includes('429')) {
+        toast.error('Too many requests. Please wait a moment and try again.');
+      }
+      
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to fetch products',
-        isLoading: false 
+        error: errorMessage,
+        isLoading: false,
+        lastFetchTime: now
       });
     }
   },

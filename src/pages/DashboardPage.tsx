@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { 
   LayoutDashboard, 
   Users, 
@@ -12,21 +12,30 @@ import {
   Menu,
   X,
   User,
-  Repeat
+  Repeat,
+  Package
 } from 'lucide-react';
-import { DashboardOverview } from '../components/dashboard/DashboardOverview';
-import { NetworkTree } from '../components/dashboard/NetworkTree';
 import { Button } from '../components/ui/Button';
-import { MyOrdersPage } from './MyOrdersPage';
-import { AdminReturnRequestsPage } from './AdminReturnRequestsPage';
+
+function LoadingSpinner() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>
+  );
+}
 
 export function DashboardPage() {
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, loading, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!user) {
+    return null; // ProtectedRoute will handle the redirect
   }
   
   const navItems = [
@@ -38,8 +47,9 @@ export function DashboardPage() {
     { id: 'settings', label: 'Settings', icon: <Settings className="h-5 w-5" />, path: '/dashboard/settings' },
   ];
   
-  if (user?.role === 'admin') {
+  if (user.role === 'admin') {
     navItems.push(
+      { id: 'products', label: 'Manage Products', icon: <Package className="h-5 w-5" />, path: '/dashboard/products' },
       { id: 'returns', label: 'Manage Returns', icon: <Repeat className="h-5 w-5" />, path: '/dashboard/returns' }
     );
   }
@@ -50,6 +60,8 @@ export function DashboardPage() {
     }
     return location.pathname.startsWith(path);
   };
+
+  const userInitial = user.name ? user.name.charAt(0).toUpperCase() : '?';
   
   return (
     <div className="flex h-screen bg-gray-100">
@@ -58,23 +70,23 @@ export function DashboardPage() {
         <div className="p-6 border-b">
           <Link to="/" className="flex items-center">
             <User className="h-6 w-6 text-primary mr-2" />
-            <span className="text-xl font-bold">NexGen MLM</span>
+            <span className="text-xl font-bold">KHABRA GENERATIONS CARE</span>
           </Link>
         </div>
         
         <div className="p-4 border-b">
           <div className="flex items-center">
             <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
-              {user?.name.charAt(0)}
+              {userInitial}
             </div>
             <div className="ml-3">
-              <p className="font-medium">{user?.name}</p>
-              <p className="text-xs text-gray-500">{user?.email}</p>
+              <p className="font-medium">{user.name}</p>
+              <p className="text-xs text-gray-500">{user.email}</p>
             </div>
           </div>
           <div className="mt-2">
             <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-              {user?.role === 'distributor' ? 'Distributor' : user?.role}
+              {user.role === 'distributor' ? 'Distributor' : user.role}
             </span>
             <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800 ml-2">
               Gold Rank
@@ -82,15 +94,15 @@ export function DashboardPage() {
           </div>
         </div>
         
-        <nav className="flex-1 p-4">
-          <ul className="space-y-1">
+        <nav className="flex-1 p-4 overflow-y-auto">
+          <ul className="space-y-2">
             {navItems.map(item => (
               <li key={item.id}>
                 <Link
                   to={item.path}
                   className={`flex items-center w-full p-3 rounded-md transition-colors ${
                     isActive(item.path)
-                      ? 'bg-primary/10 text-primary'
+                      ? 'bg-primary/10 text-primary font-medium'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
@@ -102,15 +114,14 @@ export function DashboardPage() {
           </ul>
         </nav>
         
-        <div className="p-4 border-t">
-          <Button
-            variant="outline"
-            fullWidth
-            leftIcon={<LogOut className="h-5 w-5" />}
-            onClick={() => logout()}
+        <div className="p-4 border-t mt-auto">
+          <button
+            onClick={logout}
+            className="flex items-center justify-center w-full p-3 rounded-md text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
           >
-            Log Out
-          </Button>
+            <LogOut className="h-5 w-5 mr-3" />
+            <span>Log Out</span>
+          </button>
         </div>
       </aside>
 
@@ -133,7 +144,7 @@ export function DashboardPage() {
               <ShoppingBag className="h-6 w-6" />
             </Link>
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
-              {user?.name.charAt(0)}
+              {userInitial}
             </div>
           </div>
         </header>
@@ -144,24 +155,24 @@ export function DashboardPage() {
             <div className="p-4 border-b">
               <div className="flex items-center">
                 <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
-                  {user?.name.charAt(0)}
+                  {userInitial}
                 </div>
                 <div className="ml-3">
-                  <p className="font-medium">{user?.name}</p>
-                  <p className="text-xs text-gray-500">{user?.email}</p>
+                  <p className="font-medium">{user.name}</p>
+                  <p className="text-xs text-gray-500">{user.email}</p>
                 </div>
               </div>
             </div>
             
             <nav className="p-4">
-              <ul className="space-y-1">
+              <ul className="space-y-2">
                 {navItems.map(item => (
                   <li key={item.id}>
                     <Link
                       to={item.path}
                       className={`flex items-center w-full p-3 rounded-md transition-colors ${
                         isActive(item.path)
-                          ? 'bg-primary/10 text-primary'
+                          ? 'bg-primary/10 text-primary font-medium'
                           : 'text-gray-700 hover:bg-gray-100'
                       }`}
                       onClick={() => setIsMobileMenuOpen(false)}
@@ -173,11 +184,11 @@ export function DashboardPage() {
                 ))}
                 <li>
                   <button
-                    onClick={() => logout()}
-                    className="flex items-center w-full p-3 rounded-md text-red-600 hover:bg-red-50"
+                    onClick={logout}
+                    className="flex items-center w-full p-3 rounded-md text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
                   >
-                    <LogOut className="h-5 w-5" />
-                    <span className="ml-3">Log Out</span>
+                    <LogOut className="h-5 w-5 mr-3" />
+                    <span>Log Out</span>
                   </button>
                 </li>
               </ul>
