@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { orderAPI } from '../services/api';
 import TrackingTimeline from '../components/order/TrackingTimeline';
 import ReturnRequestForm from '../components/order/ReturnRequestForm';
@@ -99,10 +99,16 @@ const OrderDetailPage: React.FC = () => {
 
     try {
       await orderAPI.cancelOrder(orderId);
-      toast.success('Order cancelled successfully');
+      toast.success('Order cancelled successfully', {
+        duration: 3000,
+        position: 'top-right',
+      });
       fetchOrder();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Error cancelling order');
+      toast.error(error.response?.data?.message || 'Error cancelling order', {
+        duration: 3000,
+        position: 'top-right',
+      });
     }
   };
 

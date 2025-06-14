@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { Address, SavedAddress } from '../types';
 import { SavedAddresses } from '../components/address/SavedAddresses';
-import api from '../services/api';
+import { orderAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 type PaymentMethod = 'card' | 'upi' | 'netbanking' | 'cod';
@@ -17,6 +17,17 @@ export const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
   const [selectedAddress, setSelectedAddress] = useState<SavedAddress | null>(null);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+  const [directPurchaseOrder, setDirectPurchaseOrder] = useState<any>(null);
+
+  useEffect(() => {
+    // Check for direct purchase order in sessionStorage
+    const storedOrder = sessionStorage.getItem('directPurchaseOrder');
+    if (storedOrder) {
+      setDirectPurchaseOrder(JSON.parse(storedOrder));
+      // Clear the stored order
+      sessionStorage.removeItem('directPurchaseOrder');
+    }
+  }, []);
 
   const [address, setAddress] = useState<Address>({
     fullName: user?.name || '',
@@ -73,6 +84,13 @@ export const CheckoutPage = () => {
     e.preventDefault();
     setIsProcessing(true);
 
+    // Check if an address is selected or a new address form is filled
+    if (!selectedAddress && !showNewAddressForm) {
+      toast.error('Please select or add a shipping address');
+      setIsProcessing(false);
+      return;
+    }
+
     // Manual validation check for required shipping address fields
     const requiredShippingFields: (keyof Address)[] = ['fullName', 'addressLine1', 'city', 'state', 'postalCode', 'country', 'phone'];
     const missingFields: string[] = [];
@@ -89,17 +107,6 @@ export const CheckoutPage = () => {
       return;
     }
 
-    // Double-check right before sending
-    const isShippingAddressComplete = requiredShippingFields.every(field => !!address[field]);
-    if (!isShippingAddressComplete) {
-         toast.error('There was an internal validation error with the shipping address. Please try again.');
-         setIsProcessing(false);
-         console.error('Validation check failed right before API call', address);
-         return;
-    }
-
-    // Note: Assuming billing address is the same as shipping for simplicity if not explicitly added.
-
     try {
       // Prepare payment details based on selected method
       let paymentDetails = {};
@@ -114,24 +121,26 @@ export const CheckoutPage = () => {
         paymentDetails = { upiId };
       }
 
-      // Create order
-      const { data: order } = await api.post('/orders', {
+      // Create order using orderAPI service
+      const order = await orderAPI.createOrder({
         shippingAddress: address,
-        billingAddress: address, // Assuming billing is same as shipping if not separate form
+        billingAddress: address,
         paymentMethod,
         paymentDetails,
-        items: items.map(item => ({
+        items: directPurchaseOrder ? directPurchaseOrder.items : items.map(item => ({
           product: item.product,
           productName: item.productName,
           productPrice: item.productPrice,
           productImage: item.productImage,
           quantity: item.quantity
         })),
-        totalAmount: getTotalAmount()
+        totalAmount: directPurchaseOrder ? directPurchaseOrder.totalAmount : getTotalAmount()
       });
 
-      // Clear the cart after successful order
-      await clearCart();
+      // Clear the cart only if it's not a direct purchase
+      if (!directPurchaseOrder) {
+        await clearCart();
+      }
       
       // Navigate to success page with order details
       navigate('/checkout/success', { 
@@ -147,7 +156,7 @@ export const CheckoutPage = () => {
     }
   };
 
-  if (items.length === 0) {
+  if (items.length === 0 && !directPurchaseOrder) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
@@ -457,8 +466,8 @@ export const CheckoutPage = () => {
           <div className="bg-white p-6 rounded-lg shadow sticky top-8">
             <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
             <div className="space-y-4">
-              {items.map((item) => (
-                <div key={item._id} className="flex justify-between">
+              {(directPurchaseOrder ? directPurchaseOrder.items : items).map((item: any) => (
+                <div key={item._id || item.product} className="flex justify-between">
                   <span>
                     {item.productName} x {item.quantity}
                   </span>
@@ -468,7 +477,7 @@ export const CheckoutPage = () => {
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>₹{getTotalAmount()}</span>
+                  <span>₹{directPurchaseOrder ? directPurchaseOrder.totalAmount : getTotalAmount()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
@@ -476,7 +485,7 @@ export const CheckoutPage = () => {
                 </div>
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Total</span>
-                  <span>₹{getTotalAmount()}</span>
+                  <span>₹{directPurchaseOrder ? directPurchaseOrder.totalAmount : getTotalAmount()}</span>
                 </div>
               </div>
               <button

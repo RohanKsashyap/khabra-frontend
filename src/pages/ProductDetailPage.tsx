@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
-import { useAuthStore } from '../store/authStore';
+import { useAuth } from '../contexts/AuthContext';
 import { ReviewForm } from '../components/review/ReviewForm';
 import { ReviewList } from '../components/review/ReviewList';
 import api from '../services/api';
@@ -11,7 +11,7 @@ export const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCartStore();
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const [product, setProduct] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -39,7 +39,7 @@ export const ProductDetailPage = () => {
     }
 
     try {
-      await addToCart(product._id, 1);
+      await addToCart(product, 1);
       toast.success('Added to cart');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to add to cart');
@@ -52,8 +52,28 @@ export const ProductDetailPage = () => {
       return;
     }
 
-    // Directly navigate to checkout without adding to cart
-    navigate('/checkout');
+    try {
+      // Create a temporary order with the current product
+      const orderData = {
+        items: [{
+          product: product._id,
+          productName: product.name,
+          productPrice: product.price,
+          productImage: product.image,
+          quantity: 1
+        }],
+        totalAmount: product.price,
+        isDirectPurchase: true // Flag to indicate this is a direct purchase
+      };
+
+      // Store the order data in sessionStorage for checkout page
+      sessionStorage.setItem('directPurchaseOrder', JSON.stringify(orderData));
+      
+      // Navigate to checkout
+      navigate('/checkout');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to process purchase');
+    }
   };
 
   const handleReviewClick = async () => {
@@ -118,7 +138,7 @@ export const ProductDetailPage = () => {
                 <svg
                   key={star}
                   className={`w-5 h-5 ${
-                    star <= (product.averageRating || 0) ? 'text-yellow-400' : 'text-gray-300'
+                    star <= (product.averageRating || 4.5) ? 'text-yellow-400' : 'text-gray-300'
                   }`}
                   fill="currentColor"
                   viewBox="0 0 20 20"
@@ -128,7 +148,7 @@ export const ProductDetailPage = () => {
               ))}
             </div>
             <span className="text-gray-600">
-              {(product.averageRating || 0).toFixed(1)} ({product.ratings?.length || 0} reviews)
+              {(product.averageRating || 4.5).toFixed(1)} ({product.ratings?.length || 0} reviews)
             </span>
           </div>
 

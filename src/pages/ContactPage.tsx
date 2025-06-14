@@ -1,114 +1,177 @@
-import React from 'react';
-import { ContactForm } from '../components/contact/ContactForm';
-import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
+import axiosInstance from '../utils/axios';
 
-export function ContactPage() {
+interface ContactFormData {
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+}
+
+export const ContactPage: React.FC = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<ContactFormData>();
+
+  const onSubmit = async (data: ContactFormData) => {
+    try {
+      setIsSubmitting(true);
+      await axiosInstance.post('/contacts', data);
+      toast.success('Your message has been sent successfully! We will get back to you soon.');
+      reset();
+    } catch (error) {
+      toast.error('Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary to-purple-800 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">Contact Us</h1>
-            <p className="text-xl text-white/90">
-              Have questions? We're here to help. Reach out to us and we'll get back to you as soon as possible.
-            </p>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-center mb-8">Contact Us</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Contact Information */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-2xl font-semibold mb-6">Get in Touch</h2>
+          
+          <div className="space-y-4">
+            <div className="flex items-start space-x-4">
+              <FaEnvelope className="text-primary mt-1" />
+              <div>
+                <h3 className="font-medium">Email</h3>
+                <p className="text-gray-600">support@khabramlm.com</p>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-4">
+              <FaPhone className="text-primary mt-1" />
+              <div>
+                <h3 className="font-medium">Phone</h3>
+                <p className="text-gray-600">+1 (555) 123-4567</p>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-4">
+              <FaMapMarkerAlt className="text-primary mt-1" />
+              <div>
+                <h3 className="font-medium">Address</h3>
+                <p className="text-gray-600">
+                  123 Business Street<br />
+                  Suite 100<br />
+                  New York, NY 10001
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <h3 className="font-medium mb-4">Business Hours</h3>
+            <p className="text-gray-600">Monday - Friday: 9:00 AM - 6:00 PM</p>
+            <p className="text-gray-600">Saturday: 10:00 AM - 4:00 PM</p>
+            <p className="text-gray-600">Sunday: Closed</p>
           </div>
         </div>
-      </section>
 
-      {/* Contact Information */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white p-8 rounded-lg shadow-sm text-center">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Our Location</h3>
-              <p className="text-gray-600">
-                123 Business Street<br />
-                New Delhi, India 110001
-              </p>
-            </div>
-
-            <div className="bg-white p-8 rounded-lg shadow-sm text-center">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Phone className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Phone Number</h3>
-              <p className="text-gray-600">
-                +91 123 456 7890<br />
-                +91 987 654 3210
-              </p>
-            </div>
-
-            <div className="bg-white p-8 rounded-lg shadow-sm text-center">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">Working Hours</h3>
-              <p className="text-gray-600">
-                Monday - Friday: 9:00 AM - 6:00 PM<br />
-                Saturday: 10:00 AM - 4:00 PM
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Form */}
+        {/* Contact Form */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-2xl font-semibold mb-6">Send us a Message</h2>
+          
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <div className="bg-white rounded-lg shadow-sm p-8">
-                <h2 className="text-2xl font-bold mb-6">Send Us a Message</h2>
-                <ContactForm />
-              </div>
-            </div>
-
-            {/* Map */}
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.9012415990155!2d77.2065323!3d28.6139391!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cfd5b347eb62d%3A0x37205b715389640!2sNew%20Delhi%2C%20Delhi!5e0!3m2!1sen!2sin!4v1647881234567!5m2!1sen!2sin"
-                width="100%"
-                height="450"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Office Location"
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                {...register('name', { required: 'Name is required' })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
               />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+              )}
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* FAQ Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
-            <div className="space-y-6">
-              <div className="border-b border-gray-200 pb-6">
-                <h3 className="text-lg font-semibold mb-2">How can I join your MLM network?</h3>
-                <p className="text-gray-600">
-                  You can join our network by registering on our website. Click on the "Register" button and follow the simple registration process.
-                </p>
-              </div>
-              <div className="border-b border-gray-200 pb-6">
-                <h3 className="text-lg font-semibold mb-2">What are the payment methods accepted?</h3>
-                <p className="text-gray-600">
-                  We accept various payment methods including credit/debit cards, UPI, net banking, and digital wallets.
-                </p>
-              </div>
-              <div className="border-b border-gray-200 pb-6">
-                <h3 className="text-lg font-semibold mb-2">How do I track my orders?</h3>
-                <p className="text-gray-600">
-                  You can track your orders by logging into your dashboard and navigating to the "My Orders" section.
-                </p>
-              </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                {...register('email', {
+                  required: 'Email is required',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Invalid email address'
+                  }
+                })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              )}
             </div>
-          </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                Phone
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                {...register('phone', { required: 'Phone number is required' })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+              />
+              {errors.phone && (
+                <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="subject" className="block text-sm font-medium text-gray-700">
+                Subject
+              </label>
+              <input
+                type="text"
+                id="subject"
+                {...register('subject', { required: 'Subject is required' })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+              />
+              {errors.subject && (
+                <p className="mt-1 text-sm text-red-600">{errors.subject.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="message" className="block text-sm font-medium text-gray-700">
+                Message
+              </label>
+              <textarea
+                id="message"
+                rows={4}
+                {...register('message', { required: 'Message is required' })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
+              />
+              {errors.message && (
+                <p className="mt-1 text-sm text-red-600">{errors.message.message}</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
+            >
+              {isSubmitting ? 'Sending...' : 'Send Message'}
+            </button>
+          </form>
         </div>
-      </section>
+      </div>
     </div>
   );
-} 
+}; 
