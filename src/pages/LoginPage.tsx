@@ -3,7 +3,7 @@ import { LoginForm } from '../components/auth/LoginForm';
 
 export function LoginPage() {
   return (
-    <div className="min-h-screen bg-gray-50 pt-8 pb-16">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-16">
       <div className="container mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold">Welcome Back</h1>

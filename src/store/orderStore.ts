@@ -13,7 +13,7 @@ interface OrderState {
     billingAddress: Address;
     paymentMethod: string;
   }) => Promise<Order>;
-  fetchOrders: () => Promise<void>;
+  fetchOrders: (isAdmin?: boolean, userFilter?: string) => Promise<void>;
   fetchOrderById: (orderId: string) => Promise<void>;
   cancelOrder: (orderId: string) => Promise<void>;
   getOrderById: (orderId: string) => Order | null;
@@ -47,12 +47,31 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     }
   },
 
-  fetchOrders: async () => {
+  fetchOrders: async (isAdmin: boolean = false, userFilter: string = '') => {
     set({ isLoading: true, error: null });
     try {
-      const orders = await orderAPI.fetchOrders();
+      const responseData = await orderAPI.fetchOrders(isAdmin, userFilter);
+      let ordersArray;
 
-      set({ orders, isLoading: false });
+      if (isAdmin) {
+        // For admin all orders endpoint, responseData is { success: true, count: ..., data: [...] }
+        if (responseData && Array.isArray(responseData.data)) {
+          ordersArray = responseData.data;
+        } else {
+          ordersArray = [];
+          console.warn("Unexpected API response structure for admin orders:", responseData);
+        }
+      } else {
+        // For regular user orders endpoint, responseData is the array directly
+        if (responseData && Array.isArray(responseData)) {
+          ordersArray = responseData;
+        } else {
+          ordersArray = [];
+          console.warn("Unexpected API response structure for user orders:", responseData);
+        }
+      }
+
+      set({ orders: ordersArray, isLoading: false });
     } catch (error: any) {
       set({ 
         error: error.response?.data?.message || error.message || 'Failed to fetch orders',

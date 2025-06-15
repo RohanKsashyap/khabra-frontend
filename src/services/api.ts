@@ -1,5 +1,6 @@
 import axios from 'axios';
 import config from '../config';
+import { useAuthStore } from '../store/authStore';
 
 const api = axios.create({
   baseURL: config.apiUrl,
@@ -95,8 +96,13 @@ export const productAPI = {
 };
 
 export const orderAPI = {
-  fetchOrders: async () => {
-    const response = await api.get('/api/orders');
+  fetchOrders: async (isAdmin: boolean = false, userFilter: string = '') => {
+    const url = isAdmin ? '/api/orders/admin/all' : '/api/orders';
+    const params: { userFilter?: string } = {};
+    if (userFilter) {
+      params.userFilter = userFilter;
+    }
+    const response = await api.get(url, { params });
     return response.data;
   },
   createOrder: async (orderData: any) => {
@@ -121,6 +127,62 @@ export const orderAPI = {
   },
   deleteBulkOrders: async () => {
     const response = await api.delete('/api/orders/bulk');
+    return response.data;
+  },
+  updateOrderStatus: async (orderId: string, status: string, trackingInfo?: { trackingNumber?: string; carrier?: string; estimatedDelivery?: string; deliveryNotes?: string }) => {
+    const response = await api.put(`/api/orders/${orderId}/status`, { status, ...trackingInfo });
+    return response.data;
+  },
+  requestReturn: async (orderId: string, productId: string, reason: string) => {
+    const response = await api.post('/api/returns/request', { orderId, productId, reason });
+    return response.data;
+  },
+};
+
+export const reviewAPI = {
+  getProductReviews: async (productId: string, params?: { page?: number; limit?: number; sort?: string }) => {
+    const response = await api.get(`/api/reviews/product/${productId}`, { params });
+    return response.data;
+  },
+
+  addReview: async (reviewData: {
+    productId: string;
+    orderId: string;
+    rating: number;
+    review: string;
+    images?: string[];
+  }) => {
+    const response = await api.post('/api/reviews', reviewData);
+    return response.data;
+  },
+
+  updateReview: async (reviewId: string, reviewData: {
+    rating: number;
+    review: string;
+    images?: string[];
+  }) => {
+    const response = await api.put(`/api/reviews/${reviewId}`, reviewData);
+    return response.data;
+  },
+
+  deleteReview: async (reviewId: string) => {
+    const response = await api.delete(`/api/reviews/${reviewId}`);
+    return response.data;
+  },
+
+  toggleLike: async (reviewId: string) => {
+    const response = await api.post(`/api/reviews/${reviewId}/like`);
+    return response.data;
+  },
+
+  // Admin endpoints
+  getAllReviews: async (params?: { page?: number; limit?: number; status?: string }) => {
+    const response = await api.get('/api/reviews/admin', { params });
+    return response.data;
+  },
+
+  updateReviewStatus: async (reviewId: string, status: 'pending' | 'approved' | 'rejected') => {
+    const response = await api.put(`/api/reviews/admin/${reviewId}/status`, { status });
     return response.data;
   }
 };

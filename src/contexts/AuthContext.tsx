@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         const data = await response.json();
-        setUser(data);
+        setUser(data.user);
         retryCount.current = 0;
       } else {
         localStorage.removeItem('token');

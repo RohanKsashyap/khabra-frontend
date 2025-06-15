@@ -42,7 +42,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Navbar />
-      <main className="flex-grow">
+      <main className="flex-grow pt-24">
         {children}
       </main>
       <Footer />

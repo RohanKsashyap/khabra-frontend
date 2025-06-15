@@ -46,13 +46,15 @@ export interface CartItem {
 
 export interface OrderItem {
   _id: string;
-  product: string;
+  product: Product;
   productName: string;
   productPrice: number;
   productImage: string;
   quantity: number;
   pv?: number;
   bv?: number;
+  returnStatus?: 'none' | 'pending' | 'approved' | 'rejected' | 'completed';
+  returnRequest?: ReturnRequest;
 }
 
 export interface TrackingInfo {
@@ -78,19 +80,23 @@ export interface ReturnRequest {
 
 export interface Order {
   _id: string;
-  user: string; // Changed from userId to user based on backend populate
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+  };
   items: OrderItem[];
   totalAmount: number;
-  totalPV?: number; // Made optional based on backend
-  totalBV?: number; // Made optional based on backend
+  totalPV?: number;
+  totalBV?: number;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'returned' | 'on the way';
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
   shippingAddress: Address;
-  billingAddress: Address; // Added billingAddress
-  tracking?: TrackingInfo; // Added tracking info
-  returnRequest?: ReturnRequest; // Added return request
+  billingAddress: Address;
+  tracking?: TrackingInfo;
+  returnRequest?: ReturnRequest;
   createdAt: string;
-  updatedAt: string; // Added updatedAt
+  updatedAt: string;
 }
 
 export interface Address {

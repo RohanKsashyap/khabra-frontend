@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { useAuthStore } from '../../store/authStore';
-import api from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import { reviewAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 interface ReviewFormProps {
   productId: string;
-  orderId: string;
+  orderId?: string; // Make orderId optional for admin reviews
   onReviewSubmitted: () => void;
   onCancel: () => void;
 }
 
 export const ReviewForm = ({ productId, orderId, onReviewSubmitted, onCancel }: ReviewFormProps) => {
-  const { user } = useAuthStore();
+  const { user, loading } = useAuth();
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState('');
   const [images, setImages] = useState<string[]>([]);
@@ -19,7 +19,7 @@ export const ReviewForm = ({ productId, orderId, onReviewSubmitted, onCancel }: 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
+    if (!user || loading) {
       toast.error('Please login to submit a review');
       return;
     }
@@ -29,11 +29,17 @@ export const ReviewForm = ({ productId, orderId, onReviewSubmitted, onCancel }: 
       return;
     }
 
+    // For regular users, require orderId
+    if (user.role !== 'admin' && !orderId) {
+      toast.error('Order ID is required for customer reviews');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      await api.post('/reviews', {
+      await reviewAPI.addReview({
         productId,
-        orderId,
+        orderId: orderId || 'admin-review', // Use a placeholder for admin reviews
         rating,
         review,
         images
@@ -61,7 +67,7 @@ export const ReviewForm = ({ productId, orderId, onReviewSubmitted, onCancel }: 
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700">Rating</label>
-        <div className="flex items-center space-x-2 mt-1">
+        <div className="flex items-center mt-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
@@ -84,16 +90,18 @@ export const ReviewForm = ({ productId, orderId, onReviewSubmitted, onCancel }: 
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Review</label>
+        <label htmlFor="review" className="block text-sm font-medium text-gray-700">
+          Review
+        </label>
         <textarea
+          id="review"
+          rows={4}
           value={review}
           onChange={(e) => setReview(e.target.value)}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          placeholder="Write your review here..."
           required
           minLength={10}
-          maxLength={1000}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          rows={4}
-          placeholder="Share your experience with this product..."
         />
       </div>
 
@@ -101,49 +109,37 @@ export const ReviewForm = ({ productId, orderId, onReviewSubmitted, onCancel }: 
         <label className="block text-sm font-medium text-gray-700">Images (optional)</label>
         <input
           type="file"
-          accept="image/*"
           multiple
+          accept="image/*"
           onChange={handleImageUpload}
           className="mt-1 block w-full"
         />
         {images.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-2">
             {images.map((image, index) => (
-              <div key={index} className="relative">
-                <img
-                  src={image}
-                  alt={`Review image ${index + 1}`}
-                  className="w-20 h-20 object-cover rounded"
-                />
-                <button
-                  type="button"
-                  onClick={() => setImages(images.filter((_, i) => i !== index))}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+              <img
+                key={index}
+                src={image}
+                alt={`Review image ${index + 1}`}
+                className="w-20 h-20 object-cover rounded"
+              />
             ))}
           </div>
         )}
       </div>
 
-      <div className="flex justify-end space-x-4">
+      <div className="flex justify-end space-x-3">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-            isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           {isSubmitting ? 'Submitting...' : 'Submit Review'}
         </button>

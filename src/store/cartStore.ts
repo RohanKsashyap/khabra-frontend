@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import axiosInstance from '../utils/axios';
 import { Product } from '../types';
 
-interface CartItem {
+export interface CartItem {
   _id: string;
   product: string;
   productName: string;

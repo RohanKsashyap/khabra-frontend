@@ -197,7 +197,7 @@ export function DashboardPage() {
         )}
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-8 pt-24">
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>
