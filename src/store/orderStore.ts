@@ -62,8 +62,10 @@ export const useOrderStore = create<OrderState>((set, get) => ({
           console.warn("Unexpected API response structure for admin orders:", responseData);
         }
       } else {
-        // For regular user orders endpoint, responseData is the array directly
-        if (responseData && Array.isArray(responseData)) {
+        // For regular user orders endpoint, responseData might be an object with a 'data' array
+        if (responseData && responseData.data && Array.isArray(responseData.data)) {
+          ordersArray = responseData.data;
+        } else if (responseData && Array.isArray(responseData)) { // Fallback for direct array response
           ordersArray = responseData;
         } else {
           ordersArray = [];

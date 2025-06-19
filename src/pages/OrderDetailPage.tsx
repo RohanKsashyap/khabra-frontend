@@ -47,6 +47,8 @@ export const OrderDetailPage: React.FC = () => {
       setIsUpdating(false);
     }
   };
+  console.log(currentOrder)
+
 
   const handleCancelOrder = async () => {
     if (!orderId) return;
@@ -77,7 +79,7 @@ export const OrderDetailPage: React.FC = () => {
     }
 
     try {
-      await orderAPI.requestReturn(orderId, selectedProductForReturn, returnReason);
+      await orderAPI.requestReturn(orderId, selectedProductForReturn as string, returnReason);
       toast.success('Return request submitted successfully!');
       setShowReturnForm(false);
       setReturnReason('');
@@ -100,6 +102,9 @@ export const OrderDetailPage: React.FC = () => {
         </h1>
         <p className="mt-1 text-sm text-gray-500">
           Placed on {new Date(currentOrder.createdAt).toLocaleDateString()}
+        </p>
+        <p className="mt-1 text-sm text-gray-700">
+          Customer: {currentOrder.user?.name} ({currentOrder.user?.email})
         </p>
       </div>
 
@@ -237,38 +242,50 @@ export const OrderDetailPage: React.FC = () => {
         <div className="bg-white shadow-sm rounded-lg p-6">
           <h2 className="text-lg font-medium text-gray-900 mb-4">Order Items</h2>
           <div className="space-y-4">
-            {currentOrder.items.map((item) => (
-              <div key={item._id} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <img
-                    src={item.productImage}
-                    alt={item.productName}
-                    className="w-16 h-16 object-cover rounded"
-                  />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-900">{item.productName}</p>
-                    <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
-                    {item.returnStatus === 'pending' && (
-                      <p className="text-sm text-yellow-600 font-semibold">Return Requested</p>
+            {currentOrder.items.map((item) => {
+              return (
+                <div key={item._id} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <img
+                      src={item.productImage}
+                      alt={item.productName}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-900">{item.productName}</p>
+                      <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                      {item.returnStatus === 'pending' && (
+                        <p className="text-sm text-yellow-600 font-semibold">Return Requested</p>
+                      )}
+                      {item.returnStatus === 'approved' && (
+                        <p className="text-sm text-green-600 font-semibold">Return Approved</p>
+                      )}
+                      {item.returnStatus === 'rejected' && (
+                        <p className="text-sm text-red-600 font-semibold">Return Rejected</p>
+                      )}
+                      {item.returnStatus === 'completed' && (
+                        <p className="text-sm text-blue-600 font-semibold">Return Completed</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <p className="text-sm font-medium text-gray-900">₹{(item.productPrice * item.quantity).toFixed(2)}</p>
+                    {currentOrder.status === 'delivered' &&
+                     (!item.returnStatus || item.returnStatus === 'none') && (
+                      <button
+                        onClick={() => {
+                          setSelectedProductForReturn(item.product._id as string);
+                          setShowReturnForm(true);
+                        }}
+                        className="ml-4 px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        Return
+                      </button>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <p className="text-sm font-medium text-gray-900">₹{(item.productPrice * item.quantity).toFixed(2)}</p>
-                  {currentOrder.status === 'delivered' && item.returnStatus !== 'pending' && (
-                    <button
-                      onClick={() => {
-                        setSelectedProductForReturn(item.product._id as string);
-                        setShowReturnForm(true);
-                      }}
-                      className="ml-4 px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      Return
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="mt-6 pt-6 border-t">
             <p className="text-lg font-medium text-gray-900">
@@ -318,7 +335,7 @@ export const OrderDetailPage: React.FC = () => {
             <div className="bg-white shadow-sm rounded-lg p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-4">Write a Review</h2>
               <ReviewForm
-                productId={currentOrder.items[0].product}
+                productId={currentOrder.items[0].product._id}
                 orderId={currentOrder._id}
                 onReviewSubmitted={() => {
                   setShowReviewForm(false);

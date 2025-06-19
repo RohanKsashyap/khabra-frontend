@@ -12,7 +12,7 @@ export function Footer() {
           <div>
             <div className="flex items-center mb-4">
               <Network className="h-6 w-6 text-primary mr-2" />
-              <h3 className="text-xl font-bold">NexGen MLM</h3>
+              <h3 className="text-xl font-bold">KHABRA-MLM</h3>
             </div>
             <p className="text-gray-400 mb-4">
               Building stronger networks and empowering entrepreneurs with innovative MLM solutions.
@@ -135,7 +135,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-          <p>© {new Date().getFullYear()} NexGen MLM. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} KHABRA-MLM. All rights reserved.</p>
           <p className="mt-2">
             GST: 07AABCS1429B1Z1 | CIN: U74999DL2023PTC123456
           </p>

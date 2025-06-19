@@ -21,14 +21,9 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import { MyOrdersPage } from './pages/MyOrdersPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import EarningsPage from './pages/EarningsPage';
-import RankRewardsPage from './pages/RankRewardsPage';
-import SettingsPage from './pages/SettingsPage';
-import MyNetworkPage from './pages/MyNetworkPage';
+import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { AdminReturnRequestsPage } from './pages/AdminReturnRequestsPage';
-import { DashboardOverview } from './components/dashboard/DashboardOverview';
-import AdminProductsPage from './pages/AdminProductsPage';
 
 function LoadingSpinner() {
   return (
@@ -85,6 +80,8 @@ function AppRoutes() {
           <Route path="/cart" element={<Layout><CartPage /></Layout>} />
           <Route path="/checkout" element={<Layout><CheckoutPage /></Layout>} />
           <Route path="/checkout/success" element={<Layout><CheckoutSuccessPage /></Layout>} />
+          <Route path="/terms" element={<Layout><TermsAndConditionsPage /></Layout>} />
+          <Route path="/privacy" element={<Layout><PrivacyPolicyPage /></Layout>} />
 
           {/* Auth Routes */}
           <Route path="/login" element={<Layout><LoginPage /></Layout>} />
@@ -94,7 +91,7 @@ function AppRoutes() {
 
           {/* Protected Routes */}
           <Route
-            path="/dashboard"
+            path="/dashboard/*"
             element={
               <ProtectedRoute>
                 <Layout>
@@ -102,16 +99,7 @@ function AppRoutes() {
                 </Layout>
               </ProtectedRoute>
             }
-          >
-            <Route index element={<DashboardOverview />} />
-            <Route path="network" element={<MyNetworkPage />} />
-            <Route path="orders" element={<MyOrdersPage />} />
-            <Route path="earnings" element={<EarningsPage />} />
-            <Route path="rank-rewards" element={<RankRewardsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="returns" element={<AdminReturnRequestsPage />} />
-            <Route path="products" element={<AdminProductsPage />} />
-          </Route>
+          />
 
           <Route
             path="/my-orders/:orderId"

@@ -240,7 +240,7 @@ export const MyOrdersPage = () => {
                   <div className="flex justify-between items-center mb-4">
                     <div>
                       <h3 className="text-lg font-semibold">Order #{order._id}</h3>
-                      {user?.role === 'admin' && order.user && (
+                      {order.user && (
                         <p className="text-sm text-gray-600">
                           Customer: {order.user.name} ({order.user.email})
                         </p>

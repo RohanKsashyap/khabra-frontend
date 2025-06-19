@@ -3,40 +3,33 @@ import { orderAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
-interface ReturnRequestData {
-  _id: string; // This will be the Order ID, but represents the return request in this context
-  order: { // Populate order details needed
-    _id: string; // Actual Order ID
-    user: { // Populate user details needed
-      _id: string;
-      name: string;
-      email: string;
-    };
-    items: Array<{ // Populate item details needed
-      _id: string; // OrderItem ID
-      productName: string;
-      quantity: number;
-      productImage?: string;
-    }>;
+interface ProductReturnRequest {
+  _id: string; // ReturnRequest ID
+  order: {
+    _id: string;
     totalAmount: number;
-    shippingAddress: { // Populate address details needed
-      fullName: string;
-      addressLine1: string;
-      city: string;
-      state: string;
-      postalCode: string;
-    };
-    createdAt: string; // Order creation date
+    status: string;
+  };
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  product: {
+    _id: string;
+    name: string;
+    price: number;
+    image?: string;
   };
   reason: string;
   status: 'pending' | 'approved' | 'rejected' | 'completed';
-  requestedAt: string;
-  processedAt?: string;
-  notes?: string;
+  requestDate: string;
+  resolutionDate?: string;
+  adminNotes?: string;
 }
 
 export const AdminReturnRequestsPage: React.FC = () => {
-  const [returnRequests, setReturnRequests] = useState<ReturnRequestData[]>([]);
+  const [returnRequests, setReturnRequests] = useState<ProductReturnRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,26 +40,9 @@ export const AdminReturnRequestsPage: React.FC = () => {
   const fetchReturnRequests = async () => {
     try {
       setIsLoading(true);
+      // Use the correct endpoint for ReturnRequest model
       const data = await orderAPI.fetchReturnRequests();
-      
-      const transformedData: ReturnRequestData[] = data.map(order => ({
-        _id: order._id,
-        order: {
-          _id: order._id,
-          user: order.user,
-          items: order.items,
-          totalAmount: order.totalAmount,
-          shippingAddress: order.shippingAddress,
-          createdAt: order.createdAt,
-        },
-        reason: order.returnRequest?.reason || '',
-        status: order.returnRequest?.status || 'pending',
-        requestedAt: order.returnRequest?.requestedAt || order.createdAt,
-        processedAt: order.returnRequest?.processedAt,
-        notes: order.returnRequest?.notes,
-      }));
-
-      setReturnRequests(transformedData);
+      setReturnRequests(data);
       setIsLoading(false);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to fetch return requests');
@@ -74,16 +50,9 @@ export const AdminReturnRequestsPage: React.FC = () => {
     }
   };
 
-  const handleUpdateStatus = async (requestId: string, status: 'approved' | 'rejected' | 'completed', notes?: string) => {
+  const handleUpdateStatus = async (requestId: string, status: 'approved' | 'rejected' | 'completed', adminNotes?: string) => {
     try {
-      const orderId = returnRequests.find(req => req._id === requestId)?.order._id;
-      
-      if (!orderId) {
-        toast.error('Could not find associated order for this request.');
-        return;
-      }
-
-      await orderAPI.updateReturnStatus(orderId, status, notes);
+      await orderAPI.updateReturnStatus(requestId, status, adminNotes);
       toast.success(`Return request marked as ${status} successfully`);
       fetchReturnRequests();
     } catch (err: any) {
@@ -110,30 +79,23 @@ export const AdminReturnRequestsPage: React.FC = () => {
           {returnRequests.map(request => (
             <div key={request._id} className="bg-white p-6 rounded-lg shadow-md">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Return Request for Order ID: {request.order._id}</h3> {/* Display Order ID */}
+                <h3 className="text-lg font-semibold">Return Request for Order ID: {request.order ? request.order._id : 'N/A'}</h3>
                 <span className={`px-3 py-1 text-sm font-semibold rounded-full capitalize ${request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : request.status === 'approved' ? 'bg-green-100 text-green-800' : request.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
                   {request.status}
                 </span>
               </div>
 
               <div className="mb-4">
-                <p className="text-gray-700"><strong>User:</strong> {request.order.user.name} ({request.order.user.email})</p>
-                <p className="text-gray-700"><strong>Order Placed On:</strong> {format(new Date(request.order.createdAt), 'MMM dd, yyyy')}</p> {/* Display order date */}
-                 <p className="text-gray-700"><strong>Request Made On:</strong> {format(new Date(request.requestedAt), 'MMM dd, yyyy h:mm a')}</p> {/* Display request date */}
-                <p className="text-gray-700 mt-2"><strong>Reason:</strong> {request.reason}</p>
-                {request.notes && <p className="text-gray-700"><strong>Admin Notes:</strong> {request.notes}</p>}
-              </div>
-
-              <div className="mb-4">
-                <h4 className="font-medium mb-2">Items:</h4>
-                {request.order.items.map(item => (
-                  <div key={item._id} className="flex items-center text-sm text-gray-700 mb-1">
-                    {item.productImage && (
-                      <img src={item.productImage} alt={item.productName} className="w-10 h-10 object-cover rounded mr-2" />
-                    )}
-                    {item.productName} x {item.quantity}
-                  </div>
-                ))}
+                <p className="text-gray-700"><strong>User:</strong> {request.user ? `${request.user.name} (${request.user.email})` : 'N/A'}</p>
+                <p className="text-gray-700"><strong>Order Status:</strong> {request.order ? request.order.status : 'N/A'}</p>
+                <p className="text-gray-700"><strong>Product:</strong> {request.product ? `${request.product.name} (₹${request.product.price})` : 'N/A'}</p>
+                {request.product && request.product.image && (
+                  <img src={request.product.image} alt={request.product.name} className="w-16 h-16 object-cover rounded my-2" />
+                )}
+                <p className="text-gray-700"><strong>Reason:</strong> {request.reason}</p>
+                <p className="text-gray-700"><strong>Requested On:</strong> {format(new Date(request.requestDate), 'MMM dd, yyyy h:mm a')}</p>
+                {request.resolutionDate && <p className="text-gray-700"><strong>Processed On:</strong> {format(new Date(request.resolutionDate), 'MMM dd, yyyy h:mm a')}</p>}
+                {request.adminNotes && <p className="text-gray-700"><strong>Admin Notes:</strong> {request.adminNotes}</p>}
               </div>
 
               {request.status === 'pending' && (
@@ -145,17 +107,17 @@ export const AdminReturnRequestsPage: React.FC = () => {
                     Approve
                   </button>
                   <button
-                     onClick={() => {
-                        const rejectNotes = prompt('Enter rejection reason (optional):');
-                        handleUpdateStatus(request._id, 'rejected', rejectNotes || undefined);
-                     }}
+                    onClick={() => {
+                      const rejectNotes = prompt('Enter rejection reason (optional):');
+                      handleUpdateStatus(request._id, 'rejected', rejectNotes || undefined);
+                    }}
                     className="px-4 py-2 text-sm font-medium text-red-700 bg-red-100 rounded-md hover:bg-red-200"
                   >
                     Reject
                   </button>
                 </div>
               )}
-               {request.status === 'approved' && (
+              {request.status === 'approved' && (
                 <button
                   onClick={() => handleUpdateStatus(request._id, 'completed')}
                   className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200"

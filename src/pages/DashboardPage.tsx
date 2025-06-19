@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, Routes, Route } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   LayoutDashboard, 
@@ -16,6 +16,15 @@ import {
   Package
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import AdminUsersPage from './AdminUsersPage';
+import { DashboardOverview } from '../components/dashboard/DashboardOverview';
+import MyNetworkPage from './MyNetworkPage';
+import { MyOrdersPage } from './MyOrdersPage';
+import EarningsPage from './EarningsPage';
+import RankRewardsPage from './RankRewardsPage';
+import SettingsPage from './SettingsPage';
+import AdminProductsPage from './AdminProductsPage';
+import { AdminReturnRequestsPage } from './AdminReturnRequestsPage';
 
 function LoadingSpinner() {
   return (
@@ -49,6 +58,7 @@ export function DashboardPage() {
   
   if (user.role === 'admin') {
     navItems.push(
+      { id: 'users', label: 'All Users', icon: <Users className="h-5 w-5" />, path: '/dashboard/users' },
       { id: 'products', label: 'Manage Products', icon: <Package className="h-5 w-5" />, path: '/dashboard/products' },
       { id: 'returns', label: 'Manage Returns', icon: <Repeat className="h-5 w-5" />, path: '/dashboard/returns' }
     );
@@ -82,6 +92,11 @@ export function DashboardPage() {
             <div className="ml-3">
               <p className="font-medium">{user.name}</p>
               <p className="text-xs text-gray-500">{user.email}</p>
+              {user.referralCode && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Referral ID: <span className="font-mono bg-gray-200 px-2 py-0.5 rounded">{user.referralCode}</span>
+                </p>
+              )}
             </div>
           </div>
           <div className="mt-2">
@@ -160,6 +175,11 @@ export function DashboardPage() {
                 <div className="ml-3">
                   <p className="font-medium">{user.name}</p>
                   <p className="text-xs text-gray-500">{user.email}</p>
+                  {user.referralCode && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Referral ID: <span className="font-mono bg-gray-200 px-2 py-0.5 rounded">{user.referralCode}</span>
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -199,7 +219,18 @@ export function DashboardPage() {
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-8 pt-24">
           <div className="max-w-7xl mx-auto">
-            <Outlet />
+            <Routes>
+              <Route index element={<DashboardOverview />} />
+              <Route path="users" element={<AdminUsersPage />} />
+              <Route path="network" element={<MyNetworkPage />} />
+              <Route path="orders" element={<MyOrdersPage />} />
+              <Route path="earnings" element={<EarningsPage />} />
+              <Route path="rank-rewards" element={<RankRewardsPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="products" element={<AdminProductsPage />} />
+              <Route path="returns" element={<AdminReturnRequestsPage />} />
+              <Route path="*" element={<DashboardOverview />} />
+            </Routes>
           </div>
         </main>
       </div>

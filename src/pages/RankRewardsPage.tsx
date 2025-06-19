@@ -154,11 +154,17 @@ const RankRewardsPage: React.FC = () => {
         if (!response.ok) {
           // Use mock data if API call fails
           setUserRank(mockUserRank);
+          setLoading(false);
           return;
         }
 
         const data = await response.json();
-        setUserRank(data);
+        // If data is invalid or missing required fields, use mock data
+        if (!data || !data.currentRank || !data.currentRank.name) {
+          setUserRank(mockUserRank);
+        } else {
+          setUserRank(data);
+        }
       } catch (err) {
         // Use mock data if there's an error
         setUserRank(mockUserRank);
@@ -168,6 +174,9 @@ const RankRewardsPage: React.FC = () => {
       }
     };
 
+    // Always show mock data first
+    setUserRank(mockUserRank);
+    setLoading(false);
     fetchRankData();
   }, []);
 
@@ -215,7 +224,7 @@ const RankRewardsPage: React.FC = () => {
         </div>
 
         {/* Progress to Next Rank */}
-        {userRank.nextRank && (
+        {userRank.nextRank ? (
           <div className="mt-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Progress to {userRank.nextRank.name}
@@ -279,6 +288,12 @@ const RankRewardsPage: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        ) : (
+          <div className="mt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              You have achieved the highest rank!
+            </h3>
           </div>
         )}
       </div>

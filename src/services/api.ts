@@ -38,27 +38,27 @@ api.interceptors.response.use(
 
 export const authAPI = {
   register: async (userData: any) => {
-    const response = await api.post('/auth/register', userData);
+    const response = await api.post('/api/auth/register', userData);
     return response.data;
   },
 
   login: async (email: string, password: string) => {
-    const response = await api.post('/auth/login', { email, password });
+    const response = await api.post('/api/auth/login', { email, password });
     return response.data;
   },
 
   getMe: async () => {
-    const response = await api.get('/auth/me');
+    const response = await api.get('/api/auth/me');
     return response.data;
   },
 
   forgotPassword: async (email: string) => {
-    const response = await api.post('/auth/forgotpassword', { email });
+    const response = await api.post('/api/auth/forgotpassword', { email });
     return response.data;
   },
 
   resetPassword: async (token: string, password: string) => {
-    const response = await api.put(`/auth/resetpassword/${token}`, { password });
+    const response = await api.put(`/api/auth/resetpassword/${token}`, { password });
     return response.data;
   },
 };
@@ -118,11 +118,11 @@ export const orderAPI = {
     return response.data;
   },
   fetchReturnRequests: async () => {
-    const response = await api.get('/api/orders/admin/returns');
+    const response = await api.get('/api/returns');
     return response.data;
   },
-  updateReturnStatus: async (orderId: string, status: string, notes?: string) => {
-    const response = await api.put(`/api/orders/${orderId}/return-status`, { status, notes });
+  updateReturnStatus: async (returnRequestId: string, status: string, adminNotes?: string) => {
+    const response = await api.put(`/api/returns/${returnRequestId}`, { status, adminNotes });
     return response.data;
   },
   deleteBulkOrders: async () => {
