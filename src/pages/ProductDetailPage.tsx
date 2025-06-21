@@ -104,6 +104,7 @@ export const ProductDetailPage = () => {
   const handleAddToCart = async () => {
     if (!user) {
       toast.error('Please login to add items to cart');
+      navigate('/login', { state: { from: `/products/${id}` } });
       return;
     }
 
@@ -118,6 +119,7 @@ export const ProductDetailPage = () => {
   const handleBuyNow = async () => {
     if (!user) {
       toast.error('Please login to purchase');
+      navigate('/login', { state: { from: `/products/${id}` } });
       return;
     }
 

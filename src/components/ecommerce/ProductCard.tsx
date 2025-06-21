@@ -22,6 +22,13 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!isAuthenticated) {
+      toast.error('Please login to add to cart.');
+      navigate('/login', { state: { from: `/products/${product._id}` } });
+      return;
+    }
+
     setIsProcessing(true);
     addToCart(product, 1);
     toast.success(`${product.name} added to cart!`);
