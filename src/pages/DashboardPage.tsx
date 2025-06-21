@@ -13,7 +13,8 @@ import {
   X,
   User,
   Repeat,
-  Package
+  Package,
+  Bell
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import AdminUsersPage from './AdminUsersPage';
@@ -25,6 +26,7 @@ import RankRewardsPage from './RankRewardsPage';
 import SettingsPage from './SettingsPage';
 import AdminProductsPage from './AdminProductsPage';
 import { AdminReturnRequestsPage } from './AdminReturnRequestsPage';
+import AdminNotificationsPage from './AdminNotificationsPage';
 
 function LoadingSpinner() {
   return (
@@ -60,7 +62,8 @@ export function DashboardPage() {
     navItems.push(
       { id: 'users', label: 'All Users', icon: <Users className="h-5 w-5" />, path: '/dashboard/users' },
       { id: 'products', label: 'Manage Products', icon: <Package className="h-5 w-5" />, path: '/dashboard/products' },
-      { id: 'returns', label: 'Manage Returns', icon: <Repeat className="h-5 w-5" />, path: '/dashboard/returns' }
+      { id: 'returns', label: 'Manage Returns', icon: <Repeat className="h-5 w-5" />, path: '/dashboard/returns' },
+      { id: 'notifications', label: 'Notifications', icon: <Bell className="h-5 w-5" />, path: '/dashboard/notifications' }
     );
   }
 
@@ -80,7 +83,7 @@ export function DashboardPage() {
         <div className="p-6 border-b">
           <Link to="/" className="flex items-center">
             <User className="h-6 w-6 text-primary mr-2" />
-            <span className="text-xl font-bold">KHABRA GENERATIONS CARE</span>
+            <span className="text-xl font-bold">welcome !!</span>
           </Link>
         </div>
         
@@ -229,6 +232,7 @@ export function DashboardPage() {
               <Route path="settings" element={<SettingsPage />} />
               <Route path="products" element={<AdminProductsPage />} />
               <Route path="returns" element={<AdminReturnRequestsPage />} />
+              <Route path="notifications" element={<AdminNotificationsPage />} />
               <Route path="*" element={<DashboardOverview />} />
             </Routes>
           </div>

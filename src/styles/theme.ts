@@ -1,15 +1,14 @@
 export const colors = {
-  primary: '#3B82F6', // Blue-600
-  secondary: '#10B981', // Green-500
-  accent: '#F59E0B', // Amber-500
+  primary: '#111111', // Black
+  accent: '#a259ff', // Creative purple
   neutral: '#6B7280', // Gray-500
   danger: '#EF4444', // Red-500
   success: '#22C55E', // Green-500 for success messages
   warning: '#FBBF24', // Yellow-400 for warnings
-  info: '#3B82F6', // Blue-500 for info messages
-  textPrimary: '#1F2937', // Gray-900
+  info: '#a259ff', // Accent for info
+  textPrimary: '#111111', // Black
   textSecondary: '#6B7280', // Gray-500
-  background: '#F9FAFB', // Gray-50
+  background: '#FFFFFF', // White
   cardBackground: '#FFFFFF', // White
 };
 

@@ -187,4 +187,78 @@ export const reviewAPI = {
   }
 };
 
+export const notificationAPI = {
+  getNotifications: async () => {
+    const response = await api.get('/api/notifications');
+    return response.data;
+  },
+  createNotification: async (notification: { title: string; message: string }) => {
+    const response = await api.post('/api/notifications', notification);
+    return response.data;
+  },
+  deleteNotification: async (id: string) => {
+    const response = await api.delete(`/api/notifications/${id}`);
+    return response.data;
+  },
+  updateNotification: async (id: string, notification: { title: string; message: string }) => {
+    const response = await api.put(`/api/notifications/${id}`, notification);
+    return response.data;
+  },
+};
+
+export const userAPI = {
+  getUsers: async (params?: { email?: string }) => {
+    const response = await api.get('/api/users', { params });
+    return response.data;
+  },
+  updateUser: async (id: string, userData: any) => {
+    const response = await api.put(`/api/users/${id}`, userData);
+    return response.data;
+  },
+  deleteUser: async (id: string) => {
+    const response = await api.delete(`/api/users/${id}`);
+    return response.data;
+  },
+};
+
+export const mlmAPI = {
+  // Earnings
+  getUserEarnings: async () => {
+    const response = await api.get('/api/users/earnings');
+    return response.data;
+  },
+  getAllEarnings: async (params?: { user?: string; status?: string; type?: string; startDate?: string; endDate?: string }) => {
+    const response = await api.get('/api/users/earnings/all', { params });
+    return response.data;
+  },
+
+  // Withdrawals
+  requestWithdrawal: async (amount: number) => {
+    const response = await api.post('/api/withdrawals/request', { amount });
+    return response.data;
+  },
+  getMyWithdrawals: async () => {
+    const response = await api.get('/api/withdrawals/my');
+    return response.data;
+  },
+  getAllWithdrawals: async (params?: { user?: string; status?: string; startDate?: string; endDate?: string }) => {
+    const response = await api.get('/api/withdrawals/all', { params });
+    return response.data;
+  },
+  updateWithdrawalStatus: async (id: string, status: 'approved' | 'rejected', adminNotes?: string) => {
+    const response = await api.put(`/api/withdrawals/${id}`, { status, adminNotes });
+    return response.data;
+  },
+
+  // Network Tree
+  getNetworkTree: async () => {
+    const response = await api.get('/api/users/network/tree');
+    return response.data;
+  },
+  getNetworkTreeByUser: async (userId: string) => {
+    const response = await api.get(`/api/users/network/tree/${userId}`);
+    return response.data;
+  },
+};
+
 export default api; 

@@ -7,6 +7,7 @@ import { SavedAddresses } from '../components/address/SavedAddresses';
 import { orderAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { colors } from '../styles/theme'; // Import colors for styling progress indicator
+import { Button } from '../components/ui/Button';
 
 type PaymentMethod = 'card' | 'upi' | 'netbanking' | 'cod';
 
@@ -416,13 +417,9 @@ export const CheckoutPage = () => {
                 )}
 
                 <div className="flex justify-end mt-6">
-                  <button
-                    type="button"
-                    onClick={handleNextStep}
-                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200"
-                  >
+                  <Button type="button" onClick={handleNextStep}>
                     Next: Payment
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -562,20 +559,12 @@ export const CheckoutPage = () => {
                 </div>
 
                 <div className="flex justify-between mt-6">
-                  <button
-                    type="button"
-                    onClick={handlePreviousStep}
-                    className="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors duration-200"
-                  >
+                  <Button type="button" onClick={handlePreviousStep}>
                     Previous: Shipping
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNextStep}
-                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200"
-                  >
+                  </Button>
+                  <Button type="button" onClick={handleNextStep}>
                     Next: Review
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -645,20 +634,16 @@ export const CheckoutPage = () => {
                 </div>
 
                 <div className="flex justify-between mt-6">
-                  <button
-                    type="button"
-                    onClick={handlePreviousStep}
-                    className="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors duration-200"
-                  >
+                  <Button type="button" onClick={handlePreviousStep}>
                     Previous: Payment
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="submit"
                     disabled={isProcessing}
                     className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isProcessing ? 'Processing...' : 'Place Order'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}

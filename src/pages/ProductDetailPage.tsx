@@ -6,6 +6,7 @@ import { ReviewForm } from '../components/review/ReviewForm';
 import { ReviewList } from '../components/review/ReviewList';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { Button } from '../components/ui/Button';
 
 export const ProductDetailPage = () => {
   console.log('ProductDetailPage: Component mounted.');
@@ -198,7 +199,7 @@ export const ProductDetailPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 rounded-2xl bg-white">
         <div>
           <div className="relative overflow-hidden group">
             <img
@@ -212,18 +213,18 @@ export const ProductDetailPage = () => {
             />
             {images.length > 1 && (
               <>
-                <button
+                <Button
                   onClick={prevImage}
                   className="absolute left-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-75 p-2 rounded-full shadow-md hover:bg-opacity-100 focus:outline-none"
                 >
                   &lt;
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={nextImage}
                   className="absolute right-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-75 p-2 rounded-full shadow-md hover:bg-opacity-100 focus:outline-none"
                 >
                   &gt;
-                </button>
+                </Button>
               </>
             )}
           </div>
@@ -281,18 +282,12 @@ export const ProductDetailPage = () => {
           )}
 
           <div className="flex space-x-4">
-            <button
-              onClick={handleAddToCart}
-              className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
+            <Button onClick={handleAddToCart} className="flex-1">
               Add to Cart
-            </button>
-            <button
-              onClick={handleBuyNow}
-              className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600"
-            >
+            </Button>
+            <Button onClick={handleBuyNow} className="flex-1">
               Buy Now
-            </button>
+            </Button>
           </div>
 
           <button

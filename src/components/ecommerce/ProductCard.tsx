@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Award } from 'lucide-react';
+import { ShoppingCart, Award, Star, Gift } from 'lucide-react';
 import { Product } from '../../types';
 import { formatCurrency } from '../../lib/utils';
 import { useCartStore } from '../../store/cartStore';
-import { useAuthStore } from '../../store/authStore';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addItem } = useCartStore();
-  const { isAuthenticated } = useAuthStore();
+  const { addToCart } = useCartStore();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -22,7 +23,7 @@ export function ProductCard({ product }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
     setIsProcessing(true);
-    addItem(product, 1);
+    addToCart(product, 1);
     toast.success(`${product.name} added to cart!`);
     setIsProcessing(false);
   };
@@ -39,7 +40,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
     setIsProcessing(true);
     try {
-      addItem(product, 1);
+      await addToCart(product, 1);
       toast.success(`${product.name} added to cart. Redirecting to checkout...`);
       navigate('/checkout');
     } catch (error: any) {
@@ -50,66 +51,65 @@ export function ProductCard({ product }: ProductCardProps) {
     }
   };
 
-  const discountPercentage = product.salePrice 
-    ? Math.round(((product.price - product.salePrice) / product.price) * 100)
-    : 0;
+  // Calculate points (now using commission field)
+  const points = product.commission;
 
   return (
     <Link to={`/products/${product._id}`}>
-      <div className="group relative bg-white border rounded-lg overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md">
-        {/* Discount badge */}
-        {product.salePrice && (
-          <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-            {discountPercentage}% OFF
-          </div>
-        )}
-        
+      <div className="group relative bg-white border rounded-2xl overflow-hidden shadow-lg transition-transform duration-300 transform-gpu scale-100 hover:scale-105">
+        {/* Category badge */}
+        <span className="absolute top-3 left-3 z-20 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
+          {product.category}
+        </span>
+        {/* Rating badge */}
+        <span className="absolute top-3 right-3 z-20 flex items-center bg-white text-yellow-500 text-xs font-bold px-2 py-1 rounded-full shadow">
+          <Star className="w-4 h-4 mr-1 fill-yellow-400 stroke-yellow-400" />
+          {product.averageRating?.toFixed(1) || '4.8'}
+        </span>
+        {/* Points badge */}
+        <span className="absolute bottom-3 right-3 z-20 bg-orange-500 text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center">
+          <Gift className="w-4 h-4 mr-1" />
+          {points} pts
+        </span>
         {/* Product Image */}
-        <div className="relative h-48 overflow-hidden bg-gray-100">
+        <div className="relative h-56 overflow-hidden bg-gray-100">
           <img
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
           />
         </div>
-        
         {/* Product Info */}
-        <div className="p-4">
-          <h3 className="text-gray-900 font-medium text-lg mb-1 line-clamp-1">{product.name}</h3>
-          <p className="text-gray-500 text-sm mb-2 line-clamp-2">{product.description}</p>
-          
-          <div className="flex items-center mb-3">
-            <Award className="h-4 w-4 text-primary mr-1" />
-            <span className="text-xs text-primary font-medium">PV: {product.pv} | BV: {product.bv}</span>
+        <div className="p-5 flex flex-col flex-1">
+          <h3 className="text-gray-900 font-semibold text-xl mb-1 line-clamp-1">{product.name}</h3>
+          <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product.description}</p>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-gray-900 font-bold">
+              {formatCurrency(product.price)}
+            </span>
+            <span className="text-green-600 font-semibold text-sm">
+              In Stock ({product.stock})
+            </span>
           </div>
-          
-          <div className="flex flex-col space-y-2">
-            <div>
-              {product.salePrice ? (
-                <div className="flex items-baseline">
-                  <span className="text-gray-400 text-sm line-through mr-2">
-                    {formatCurrency(product.price)}
-                  </span>
-                  <span className="text-gray-900 font-bold">
-                    {formatCurrency(product.salePrice)}
-                  </span>
-                </div>
-              ) : (
-                <span className="text-gray-900 font-bold">
-                  {formatCurrency(product.price)}
-                </span>
-              )}
+          {/* Points info box */}
+          <div className="bg-orange-50 rounded-lg p-3 mb-4">
+            <span className="text-orange-700 font-semibold">Earn Points:</span>
+            <span className="text-orange-500 font-bold ml-2">{points} pts</span>
+            <div className="text-xs text-gray-500 mt-1">
+              Points earned when you purchase this product
             </div>
-            
+          </div>
+          <div className="flex flex-col space-y-2">
             <Button
               size="sm"
+              className="bg-gradient-to-r from-blue-600 to-purple-500 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 hover:from-blue-700 hover:to-purple-600 transition"
               onClick={handleAddToCart}
               leftIcon={<ShoppingCart className="h-4 w-4" />}
               disabled={isProcessing}
             >
               Add to Cart
             </Button>
-             <Button
+            <Button
               size="sm"
               variant="secondary"
               onClick={handleBuyNow}

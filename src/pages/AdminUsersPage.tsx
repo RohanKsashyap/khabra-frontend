@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import axios from '../utils/axios';
 import { Navigate } from 'react-router-dom';
+import toast, { Toaster } from 'react-hot-toast';
 
 interface User {
   _id: string;
@@ -49,6 +50,7 @@ export default function AdminUsersPage() {
   const [roleFilter, setRoleFilter] = useState('');
   const [editUser, setEditUser] = useState<User | null>(null);
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [processingDelete, setProcessingDelete] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
 
@@ -86,6 +88,21 @@ export default function AdminUsersPage() {
     return matchesSearch && matchesRole;
   });
 
+  // Bulk selection handler
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedUsers(filteredUsers.map(u => u._id));
+    } else {
+      setSelectedUsers([]);
+    }
+  };
+
+  const handleSelectOne = (id: string) => {
+    setSelectedUsers(prev =>
+      prev.includes(id) ? prev.filter(uid => uid !== id) : [...prev, id]
+    );
+  };
+
   // Delete user handler
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
@@ -96,8 +113,33 @@ export default function AdminUsersPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(users => users.filter(u => u._id !== id));
+      toast.success('User deleted successfully!');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to delete user');
+      toast.error(err.response?.data?.message || 'Failed to delete user');
+    } finally {
+      setProcessingDelete(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedUsers.length === 0) {
+      toast.error('No users selected for deletion.');
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to delete ${selectedUsers.length} selected users?`)) return;
+
+    setProcessingDelete(true);
+    const token = localStorage.getItem('token');
+    try {
+      await axios.delete('/users', {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { userIds: selectedUsers },
+      });
+      setUsers(users => users.filter(u => !selectedUsers.includes(u._id)));
+      toast.success(`${selectedUsers.length} users deleted successfully!`);
+      setSelectedUsers([]);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to delete selected users.');
     } finally {
       setProcessingDelete(false);
     }
@@ -141,6 +183,7 @@ export default function AdminUsersPage() {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
+      <Toaster position="top-center" reverseOrder={false} />
       <h2 className="text-2xl font-bold mb-4">All Users</h2>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
         <div className="flex gap-2">
@@ -160,17 +203,36 @@ export default function AdminUsersPage() {
             {roles.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
           </select>
         </div>
-        <button
-          onClick={() => exportToCSV(filteredUsers)}
-          className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary/90"
-        >
-          Export CSV
-        </button>
+        <div className="flex gap-2">
+          {selectedUsers.length > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              disabled={processingDelete}
+              className="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-600/90 disabled:bg-red-400"
+            >
+              {processingDelete ? 'Deleting...' : `Delete Selected (${selectedUsers.length})`}
+            </button>
+          )}
+          <button
+            onClick={() => exportToCSV(filteredUsers)}
+            className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary/90"
+          >
+            Export CSV
+          </button>
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead>
             <tr>
+              <th className="px-4 py-2">
+                <input
+                  type="checkbox"
+                  onChange={handleSelectAll}
+                  checked={selectedUsers.length > 0 && selectedUsers.length === filteredUsers.length}
+                  disabled={filteredUsers.length === 0}
+                />
+              </th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
@@ -183,6 +245,13 @@ export default function AdminUsersPage() {
           <tbody className="bg-white divide-y divide-gray-100">
             {filteredUsers.map(u => (
               <tr key={u._id}>
+                <td className="px-4 py-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedUsers.includes(u._id)}
+                    onChange={() => handleSelectOne(u._id)}
+                  />
+                </td>
                 <td className="px-4 py-2 whitespace-nowrap">{u.name}</td>
                 <td className="px-4 py-2 whitespace-nowrap">{u.email}</td>
                 <td className="px-4 py-2 whitespace-nowrap">{u.phone || '-'}</td>

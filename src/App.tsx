@@ -24,6 +24,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 
 function LoadingSpinner() {
   return (
@@ -83,6 +84,9 @@ function AppRoutes() {
           <Route path="/terms" element={<Layout><TermsAndConditionsPage /></Layout>} />
           <Route path="/privacy" element={<Layout><PrivacyPolicyPage /></Layout>} />
 
+          {/* Notification redirect */}
+          <Route path="/notifications" element={<Navigate to="/dashboard/notifications" replace />} />
+
           {/* Auth Routes */}
           <Route path="/login" element={<Layout><LoginPage /></Layout>} />
           <Route path="/register" element={<Layout><RegisterPage /></Layout>} />
@@ -118,6 +122,18 @@ function AppRoutes() {
               <ProtectedRoute>
                 <Layout>
                   <MyOrdersPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  {/* Only render for admin users */}
+                  {user && user.role === 'admin' ? <AdminDashboardPage /> : <Navigate to="/dashboard" replace />}
                 </Layout>
               </ProtectedRoute>
             }

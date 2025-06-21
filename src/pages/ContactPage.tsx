@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 import axiosInstance from '../utils/axios';
+import { Button } from '../components/ui/Button';
 
 interface ContactFormData {
   name: string;
@@ -162,13 +163,13 @@ export const ContactPage: React.FC = () => {
               )}
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
+              className="w-full"
             >
               {isSubmitting ? 'Sending...' : 'Send Message'}
-            </button>
+            </Button>
           </form>
         </div>
       </div>

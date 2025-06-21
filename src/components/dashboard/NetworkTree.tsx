@@ -1,124 +1,60 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useMLMStore } from '../../store/mlmStore';
-import { MLMNode } from '../../types';
-import { User, UserCheck, Users } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
-import { Button } from '../ui/Button';
+import '../../styles/TreeNode.css';
 
-interface TreeNodeProps {
-  node: MLMNode;
-  isRoot?: boolean;
+const UserNode = ({ user, level, upline }: { user: any; level: number; upline?: any }) => (
+  <div className="node">
+    <div className="name">{user.name} (Level {level})</div>
+    <div className="id">ID: {user.referralCode}</div>
+    <div className="id">Email: {user.email}</div>
+    <div className="rank" style={{ color: '#c0392b' }}>Rank: {user.role}</div>
+    {upline && (
+      <div className="text-xs mt-2 text-gray-500">
+        Upline: {upline.name} ({upline.referralCode})
+      </div>
+    )}
+  </div>
+);
+
+function renderTree(nodes: any[], level = 1): React.ReactElement | null {
+  if (!nodes || nodes.length === 0) return null;
+  return (
+    <ul>
+      {nodes.map((child: any) => (
+        <li key={child._id}>
+          <UserNode user={child} level={level} />
+          {child.downline && child.downline.length > 0 ? renderTree(child.downline, level + 1) : null}
+        </li>
+      ))}
+    </ul>
+  );
 }
 
-const TreeNode: React.FC<TreeNodeProps> = ({ node, isRoot = false }) => {
-  const [isExpanded, setIsExpanded] = useState(isRoot);
-  
-  const rankColors = {
-    bronze: 'bg-amber-600',
-    silver: 'bg-gray-400',
-    gold: 'bg-yellow-500',
-    platinum: 'bg-blue-400',
-    diamond: 'bg-purple-400'
-  };
-  
+const NetworkTree: React.FC = () => {
+  const { networkTree, isLoading, error, fetchNetworkTree } = useMLMStore();
+
+  useEffect(() => {
+    fetchNetworkTree();
+  }, [fetchNetworkTree]);
+
   return (
-    <div className="flex flex-col items-center">
-      <div 
-        className={`relative flex items-center p-3 mb-1 rounded-lg shadow-sm border ${
-          isRoot ? 'bg-primary/10 border-primary' : 'bg-white border-gray-200'
-        }`}
-      >
-        <div className="flex items-center">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white mr-3 ${rankColors[node.rank]}`}>
-            <User className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="font-medium">{node.username}</div>
-            <div className="text-xs text-gray-500 flex items-center">
-              <span className="capitalize">{node.rank}</span>
-              <span className="mx-1">•</span>
-              <span>PV: {node.personalPV}</span>
-              <span className="mx-1">•</span>
-              <span>Group: {node.groupPV}</span>
-            </div>
-          </div>
-        </div>
-        {node.children.length > 0 && (
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="ml-4 text-gray-400 hover:text-gray-600"
-          >
-            {isExpanded ? '−' : '+'}
-          </button>
-        )}
-      </div>
-      
-      {isExpanded && node.children.length > 0 && (
-        <div className="ml-8 pl-4 border-l border-dashed border-gray-300">
-          <div className="space-y-4 pt-2">
-            {node.children.map(childNode => (
-              <TreeNode key={childNode.userId} node={childNode} />
-            ))}
-          </div>
+    <div className="bg-white rounded shadow p-4 mt-4 overflow-x-auto">
+      <h2 className="text-xl font-bold mb-4">My Network Tree</h2>
+      {isLoading && <div className="text-center p-8">Loading network tree...</div>}
+      {error && <div className="text-center p-8 text-red-500">{error}</div>}
+      {!isLoading && !error && networkTree && (
+        <div className="tree">
+          <ul>
+            <li>
+              <UserNode user={networkTree.root} level={0} upline={networkTree.upline} />
+              {renderTree(networkTree.tree, 1)}
+            </li>
+          </ul>
         </div>
       )}
+      {!isLoading && !error && !networkTree && <div className="text-center p-8">No network data found.</div>}
     </div>
   );
 };
 
-export function NetworkTree() {
-  const { networkStructure, fetchNetworkStructure, isLoading } = useMLMStore();
-  
-  useEffect(() => {
-    fetchNetworkStructure();
-  }, [fetchNetworkStructure]);
-  
-  if (isLoading) {
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>My Network</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center p-8">
-            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>My Network</CardTitle>
-        <div className="flex items-center space-x-2 text-sm">
-          <div className="flex items-center">
-            <UserCheck className="h-4 w-4 mr-1 text-green-500" />
-            <span>Active: 5</span>
-          </div>
-          <div className="flex items-center">
-            <Users className="h-4 w-4 mr-1 text-gray-400" />
-            <span>Total: 7</span>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-4">
-        <div className="mb-4">
-          <Button variant="secondary" size="sm">
-            <Users className="h-4 w-4 mr-2" />
-            Invite New Member
-          </Button>
-        </div>
-        
-        <div className="overflow-auto max-h-[500px] p-2">
-          {networkStructure ? (
-            <TreeNode node={networkStructure} isRoot />
-          ) : (
-            <p>No network data available</p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+export default NetworkTree;

@@ -93,15 +93,17 @@ export function LoginForm() {
               </div>
             </div>
             
-            <Button 
-              type="submit" 
-              className="w-full" 
-              isLoading={isLoading}
-              disabled={isLoading}
-              leftIcon={<LogIn className="h-4 w-4" />}
-            >
-              {isLoading ? 'Logging in...' : 'Login'}
-            </Button>
+            <div className="flex justify-center">
+              <Button 
+                type="submit" 
+                className="w-full max-w-xs" 
+                isLoading={isLoading}
+                disabled={isLoading}
+                leftIcon={<LogIn className="h-4 w-4" />}
+              >
+                {isLoading ? 'Logging in...' : 'Login'}
+              </Button>
+            </div>
           </form>
         </CardContent>
         <CardFooter>

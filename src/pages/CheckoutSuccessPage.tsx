@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/Button';
 
 export const CheckoutSuccessPage = () => {
   const navigate = useNavigate();
@@ -27,18 +28,12 @@ export const CheckoutSuccessPage = () => {
           You will receive an email confirmation shortly.
         </p>
         <div className="space-x-4">
-          <button
-            onClick={() => navigate('/my-orders')}
-            className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
-          >
+          <Button onClick={() => navigate('/my-orders')}>
             View Orders
-          </button>
-          <button
-            onClick={() => navigate('/products')}
-            className="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300"
-          >
+          </Button>
+          <Button onClick={() => navigate('/products')}>
             Continue Shopping
-          </button>
+          </Button>
         </div>
       </div>
     </div>

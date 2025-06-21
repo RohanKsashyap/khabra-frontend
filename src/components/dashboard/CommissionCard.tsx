@@ -6,18 +6,19 @@ import { Clock, CreditCard, CheckCircle, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 export function CommissionCard() {
-  const { commissions, fetchCommissions, isLoading } = useMLMStore();
+  const { earnings, fetchEarnings, isLoading } = useMLMStore();
+  const earningsArr = earnings || [];
   
   useEffect(() => {
-    fetchCommissions();
-  }, [fetchCommissions]);
+    fetchEarnings();
+  }, [fetchEarnings]);
   
-  const totalEarnings = commissions.reduce((total, commission) => {
-    return total + (commission.status !== 'cancelled' ? commission.amount : 0);
+  const totalEarnings = earningsArr.reduce((total, earning) => {
+    return total + (earning.status !== 'cancelled' ? earning.amount : 0);
   }, 0);
   
-  const pendingAmount = commissions.reduce((total, commission) => {
-    return total + (commission.status === 'pending' ? commission.amount : 0);
+  const pendingAmount = earningsArr.reduce((total, earning) => {
+    return total + (earning.status === 'pending' ? earning.amount : 0);
   }, 0);
   
   const getCommissionTypeIcon = (type: string) => {
@@ -53,31 +54,31 @@ export function CommissionCard() {
           <div className="flex items-center justify-center p-8">
             <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
           </div>
-        ) : commissions.length > 0 ? (
+        ) : earningsArr.length > 0 ? (
           <div className="space-y-4">
-            {commissions.map((commission) => (
+            {earningsArr.map((earning) => (
               <div 
-                key={commission.id} 
+                key={earning._id || earning.id} 
                 className="flex items-center justify-between p-4 border rounded-lg"
               >
                 <div className="flex items-center space-x-4">
-                  {getCommissionTypeIcon(commission.type)}
+                  {getCommissionTypeIcon(earning.type)}
                   <div>
-                    <p className="font-medium capitalize">{commission.type} Commission</p>
+                    <p className="font-medium capitalize">{earning.type} Commission</p>
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(commission.createdAt), 'dd MMM yyyy')}
-                      {commission.level && ` • Level ${commission.level}`}
+                      {earning.date ? format(new Date(earning.date), 'dd MMM yyyy') : ''}
+                      {earning.level && ` • Level ${earning.level}`}
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                  <p className="font-semibold">{formatCurrency(commission.amount)}</p>
+                  <p className="font-semibold">{formatCurrency(earning.amount)}</p>
                   <span className={`text-xs px-2 py-1 rounded-full ${
-                    commission.status === 'paid' ? 'bg-green-100 text-green-800' :
-                    commission.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    earning.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    earning.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                     'bg-red-100 text-red-800'
                   }`}>
-                    {commission.status}
+                    {earning.status}
                   </span>
                 </div>
               </div>

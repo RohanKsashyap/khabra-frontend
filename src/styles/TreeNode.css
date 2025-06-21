@@ -1,0 +1,110 @@
+.tree {
+  display: flex;
+  justify-content: center;
+}
+
+.tree ul {
+  padding-top: 20px;
+  position: relative;
+  transition: all 0.5s;
+}
+
+.tree li {
+  float: left;
+  text-align: center;
+  list-style-type: none;
+  position: relative;
+  padding: 20px 5px 0 5px;
+  transition: all 0.5s;
+}
+
+/* We use ::before and ::after to draw the connectors */
+.tree li::before, .tree li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 50%;
+  border-top: 1px solid #ccc;
+  width: 50%;
+  height: 20px;
+}
+
+.tree li::after {
+  right: auto;
+  left: 50%;
+  border-left: 1px solid #ccc;
+}
+
+/* We need to remove left-right connectors from elements without 
+any siblings */
+.tree li:only-child::after, .tree li:only-child::before {
+  display: none;
+}
+
+/* Remove space from the top of single children */
+.tree li:only-child {
+  padding-top: 0;
+}
+
+/* Remove left connector from first child and 
+right connector from last child */
+.tree li:first-child::before, .tree li:last-child::after {
+  border: 0 none;
+}
+/* Adding back the vertical connector to the last child */
+.tree li:last-child::before {
+  border-right: 1px solid #ccc;
+  border-radius: 0 5px 0 0;
+}
+.tree li:first-child::after {
+  border-radius: 5px 0 0 0;
+}
+
+/* Time to add downward connectors from parents */
+.tree ul ul::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-left: 1px solid #ccc;
+  width: 0;
+  height: 20px;
+}
+
+.tree li a {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-decoration: none;
+  color: #666;
+  font-family: arial, verdana, tahoma;
+  font-size: 11px;
+  display: inline-block;
+  border-radius: 5px;
+  transition: all 0.5s;
+}
+
+/* Node styles */
+.node {
+  padding: 1rem;
+  border-radius: 8px;
+  display: inline-block;
+  border: 1px solid #ddd;
+  background-color: white;
+  min-width: 150px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.node .name {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.node .id {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.node .rank {
+  font-size: 0.875rem;
+  font-weight: 500;
+} 
