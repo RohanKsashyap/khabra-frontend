@@ -7,7 +7,7 @@ export default defineConfig({
   define: {
     // Define process.env for compatibility with some libraries
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-    'process.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'http://localhost:5000/api'),
+    'process.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'http://localhost:5000'),
   },
   optimizeDeps: {
     exclude: ['lucide-react'],
