@@ -9,6 +9,7 @@ interface ProductState {
   isLoading: boolean;
   error: string | null;
   lastFetchTime: number | null;
+  retryCount: number;
   fetchProducts: (params?: { category?: string; search?: string; sort?: string }) => Promise<void>;
   fetchProduct: (id: string) => Promise<void>;
   createProduct: (productData: Partial<Product>) => Promise<void>;
@@ -17,7 +18,8 @@ interface ProductState {
   addReview: (productId: string, rating: number, review: string) => Promise<void>;
 }
 
-const DEBOUNCE_TIME = 2000; // 2 seconds
+const DEBOUNCE_TIME = 5000; // 5 seconds to prevent rate limiting
+const MAX_RETRIES = 3;
 
 export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
@@ -25,13 +27,22 @@ export const useProductStore = create<ProductState>((set, get) => ({
   isLoading: false,
   error: null,
   lastFetchTime: null,
+  retryCount: 0,
 
   fetchProducts: async (params) => {
     const now = Date.now();
     const lastFetch = get().lastFetchTime;
+    const retryCount = get().retryCount;
     
     // If we've fetched recently, don't fetch again
     if (lastFetch && now - lastFetch < DEBOUNCE_TIME) {
+      console.log('Skipping fetch - too recent');
+      return;
+    }
+
+    // If we've retried too many times, don't retry
+    if (retryCount >= MAX_RETRIES) {
+      console.log('Max retries reached, skipping fetch');
       return;
     }
 
@@ -41,22 +52,43 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set({ 
         products: response.data, 
         isLoading: false,
-        lastFetchTime: now
+        lastFetchTime: now,
+        retryCount: 0 // Reset retry count on success
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching products:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch products';
       
       // Handle rate limiting specifically
-      if (errorMessage.includes('429')) {
-        toast.error('Too many requests. Please wait a moment and try again.');
+      if (error.response?.status === 429) {
+        const newRetryCount = retryCount + 1;
+        const backoffTime = Math.pow(2, newRetryCount) * 1000; // Exponential backoff
+        
+        set({ 
+          error: 'Rate limited. Retrying...',
+          isLoading: false,
+          lastFetchTime: now,
+          retryCount: newRetryCount
+        });
+        
+        toast.error(`Too many requests. Retrying in ${backoffTime / 1000} seconds...`);
+        
+        // Retry after backoff
+        setTimeout(() => {
+          get().fetchProducts(params);
+        }, backoffTime);
+        
+        return;
       }
       
       set({ 
         error: errorMessage,
         isLoading: false,
-        lastFetchTime: now
+        lastFetchTime: now,
+        retryCount: retryCount + 1
       });
+      
+      toast.error('Failed to load products. Please try again later.');
     }
   },
 
@@ -65,9 +97,15 @@ export const useProductStore = create<ProductState>((set, get) => ({
     try {
       const response = await productAPI.getProduct(id);
       set({ currentProduct: response.data, isLoading: false });
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch product';
+      
+      if (error.response?.status === 429) {
+        toast.error('Too many requests. Please wait a moment and try again.');
+      }
+      
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to fetch product',
+        error: errorMessage,
         isLoading: false 
       });
     }
@@ -81,9 +119,15 @@ export const useProductStore = create<ProductState>((set, get) => ({
         products: [...state.products, response.data],
         isLoading: false 
       }));
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create product';
+      
+      if (error.response?.status === 429) {
+        toast.error('Too many requests. Please wait a moment and try again.');
+      }
+      
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to create product',
+        error: errorMessage,
         isLoading: false 
       });
     }
@@ -98,9 +142,15 @@ export const useProductStore = create<ProductState>((set, get) => ({
         currentProduct: state.currentProduct?._id === id ? response.data : state.currentProduct,
         isLoading: false
       }));
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update product';
+      
+      if (error.response?.status === 429) {
+        toast.error('Too many requests. Please wait a moment and try again.');
+      }
+      
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to update product',
+        error: errorMessage,
         isLoading: false 
       });
     }
@@ -115,9 +165,15 @@ export const useProductStore = create<ProductState>((set, get) => ({
         currentProduct: state.currentProduct?._id === id ? null : state.currentProduct,
         isLoading: false
       }));
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete product';
+      
+      if (error.response?.status === 429) {
+        toast.error('Too many requests. Please wait a moment and try again.');
+      }
+      
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to delete product',
+        error: errorMessage,
         isLoading: false 
       });
     }
@@ -136,9 +192,15 @@ export const useProductStore = create<ProductState>((set, get) => ({
           : state.currentProduct,
         isLoading: false
       }));
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to add review';
+      
+      if (error.response?.status === 429) {
+        toast.error('Too many requests. Please wait a moment and try again.');
+      }
+      
       set({ 
-        error: error instanceof Error ? error.message : 'Failed to add review',
+        error: errorMessage,
         isLoading: false 
       });
     }

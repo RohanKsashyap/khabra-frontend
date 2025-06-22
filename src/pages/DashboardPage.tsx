@@ -1,32 +1,39 @@
-import React, { useState } from 'react';
-import { Link, Outlet, useLocation, Routes, Route } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { 
-  LayoutDashboard, 
-  Users, 
-  ShoppingBag, 
-  CreditCard, 
-  Award, 
+import { useState, lazy, Suspense, useEffect } from 'react';
+import { NavLink, Route, Routes } from 'react-router-dom';
+import {
+  LayoutGrid,
+  Users,
+  GitBranch,
+  ShoppingBag,
+  DollarSign,
+  Award,
   Settings,
   LogOut,
-  Menu,
-  X,
-  User,
-  Repeat,
-  Package,
-  Bell
+  ChevronDown,
+  Building,
+  Bell,
+  Wallet,
+  Network,
 } from 'lucide-react';
-import { Button } from '../components/ui/Button';
-import AdminUsersPage from './AdminUsersPage';
+
+import { useAuth } from '../contexts/AuthContext';
+import { useMLMStore } from '../store/mlmStore';
 import { DashboardOverview } from '../components/dashboard/DashboardOverview';
-import MyNetworkPage from './MyNetworkPage';
-import { MyOrdersPage } from './MyOrdersPage';
-import EarningsPage from './EarningsPage';
-import RankRewardsPage from './RankRewardsPage';
-import SettingsPage from './SettingsPage';
-import AdminProductsPage from './AdminProductsPage';
-import { AdminReturnRequestsPage } from './AdminReturnRequestsPage';
-import AdminNotificationsPage from './AdminNotificationsPage';
+import WithdrawalPanel from '../components/dashboard/WithdrawalPanel';
+import DownlineVisualizer from '../components/dashboard/DownlineVisualizer';
+
+// Lazy load components to reduce initial bundle size
+const MyNetworkPage = lazy(() => import('./MyNetworkPage'));
+const MyOrdersPage = lazy(() => import('./MyOrdersPage').then(module => ({ default: module.MyOrdersPage })));
+const EarningsPage = lazy(() => import('./EarningsPage'));
+const RankRewardsPage = lazy(() => import('./RankRewardsPage'));
+const SettingsPage = lazy(() => import('./SettingsPage'));
+const AdminUsersPage = lazy(() => import('./AdminUsersPage'));
+const AdminProductsPage = lazy(() => import('./AdminProductsPage'));
+const AdminRanksPage = lazy(() => import('./AdminRanksPage'));
+const AdminReturnRequestsPage = lazy(() => import('./AdminReturnRequestsPage').then(module => ({ default: module.AdminReturnRequestsPage })));
+const AdminNotificationsPage = lazy(() => import('./AdminNotificationsPage'));
+const AdminWithdrawalsPage = lazy(() => import('./AdminWithdrawalsPage'));
 
 function LoadingSpinner() {
   return (
@@ -36,220 +43,117 @@ function LoadingSpinner() {
   );
 }
 
-export function DashboardPage() {
-  const { user, loading, logout } = useAuth();
+export const DashboardPage = () => {
+  const { user, logout, loading } = useAuth();
+  const { fetchEarnings } = useMLMStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const location = useLocation();
 
-  if (loading) {
+  useEffect(() => {
+    // Fetch essential data for the dashboard when the component mounts
+    fetchEarnings();
+  }, [fetchEarnings]);
+
+  if (loading || !user) {
     return <LoadingSpinner />;
   }
 
-  if (!user) {
-    return null; // ProtectedRoute will handle the redirect
-  }
-  
-  const navItems = [
-    { id: 'overview', label: 'Overview', icon: <LayoutDashboard className="h-5 w-5" />, path: '/dashboard' },
-    { id: 'network', label: 'My Network', icon: <Users className="h-5 w-5" />, path: '/dashboard/network' },
-    { id: 'orders', label: 'My Orders', icon: <ShoppingBag className="h-5 w-5" />, path: '/dashboard/orders' },
-    { id: 'earnings', label: 'Earnings', icon: <CreditCard className="h-5 w-5" />, path: '/dashboard/earnings' },
-    { id: 'ranks', label: 'Rank & Rewards', icon: <Award className="h-5 w-5" />, path: '/dashboard/rank-rewards' },
-    { id: 'settings', label: 'Settings', icon: <Settings className="h-5 w-5" />, path: '/dashboard/settings' },
-  ];
-  
-  if (user.role === 'admin') {
-    navItems.push(
-      { id: 'users', label: 'All Users', icon: <Users className="h-5 w-5" />, path: '/dashboard/users' },
-      { id: 'products', label: 'Manage Products', icon: <Package className="h-5 w-5" />, path: '/dashboard/products' },
-      { id: 'returns', label: 'Manage Returns', icon: <Repeat className="h-5 w-5" />, path: '/dashboard/returns' },
-      { id: 'notifications', label: 'Notifications', icon: <Bell className="h-5 w-5" />, path: '/dashboard/notifications' }
-    );
-  }
-
-  const isActive = (path: string) => {
-    if (path === '/dashboard') {
-      return location.pathname === '/dashboard';
-    }
-    return location.pathname.startsWith(path);
-  };
+  const getNavLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center px-4 py-2 rounded-lg transition-colors duration-200 ${
+      isActive ? 'bg-primary text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'
+    }`;
 
   const userInitial = user.name ? user.name.charAt(0).toUpperCase() : '?';
   
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex flex-col w-64 bg-white shadow-sm">
-        <div className="p-6 border-b">
-          <Link to="/" className="flex items-center">
-            <User className="h-6 w-6 text-primary mr-2" />
-            <span className="text-xl font-bold">welcome !!</span>
-          </Link>
+      {/* Sidebar */}
+      <aside className={`bg-white shadow-lg fixed md:relative w-64 h-full z-20 flex flex-col transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+        <div className="p-4 flex items-center gap-3 border-b">
+          <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold">
+            {userInitial}
+          </div>
+          <div>
+            <p className="font-semibold text-sm">{user.name}</p>
+            <p className="text-xs text-gray-500">{user.email}</p>
+            <p className="text-xs text-gray-500 capitalize">Role: {user.role}</p>
+          </div>
         </div>
-        
         <div className="p-4 border-b">
-          <div className="flex items-center">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
-              {userInitial}
-            </div>
-            <div className="ml-3">
-              <p className="font-medium">{user.name}</p>
-              <p className="text-xs text-gray-500">{user.email}</p>
-              {user.referralCode && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Referral ID: <span className="font-mono bg-gray-200 px-2 py-0.5 rounded">{user.referralCode}</span>
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="mt-2">
-            <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-              {user.role === 'distributor' ? 'Distributor' : user.role}
-            </span>
-            <span className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800 ml-2">
-              Gold Rank
-            </span>
-          </div>
+          <p className="text-xs text-gray-500">
+            Referral Code: <span className="font-semibold text-primary">{user.referralCode}</span>
+          </p>
+          {user.referredBy && (
+            <p className="text-xs text-gray-500 mt-1">
+              Referred By: <span className="font-semibold">{user.referrerName || 'N/A'} ({user.referredBy})</span>
+            </p>
+          )}
         </div>
-        
-        <nav className="flex-1 p-4 overflow-y-auto">
+        <nav className="flex-grow p-4 overflow-y-auto">
           <ul className="space-y-2">
-            {navItems.map(item => (
-              <li key={item.id}>
-                <Link
-                  to={item.path}
-                  className={`flex items-center w-full p-3 rounded-md transition-colors ${
-                    isActive(item.path)
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  {item.icon}
-                  <span className="ml-3">{item.label}</span>
-                </Link>
+            <li><NavLink to="/dashboard" end className={getNavLinkClass}> <LayoutGrid className="mr-3 h-5 w-5" /> Overview </NavLink></li>
+            <li><NavLink to="/dashboard/network" className={getNavLinkClass}> <GitBranch className="mr-3 h-5 w-5" /> My Network </NavLink></li>
+            <li><NavLink to="/dashboard/downline" className={getNavLinkClass}> <Network className="mr-3 h-5 w-5" /> Downline Visualizer </NavLink></li>
+            <li><NavLink to="/dashboard/orders" className={getNavLinkClass}> <ShoppingBag className="mr-3 h-5 w-5" /> My Orders </NavLink></li>
+            <li><NavLink to="/dashboard/earnings" className={getNavLinkClass}> <DollarSign className="mr-3 h-5 w-5" /> Earnings </NavLink></li>
+            <li><NavLink to="/dashboard/withdrawals" className={getNavLinkClass}> <Wallet className="mr-3 h-5 w-5" /> Withdrawals </NavLink></li>
+            <li><NavLink to="/dashboard/rank-rewards" className={getNavLinkClass}> <Award className="mr-3 h-5 w-5" /> Rank & Rewards </NavLink></li>
+            <li><NavLink to="/dashboard/settings" className={getNavLinkClass}> <Settings className="mr-3 h-5 w-5" /> Settings </NavLink></li>
+            {user.role === 'admin' && (
+              <li className="pt-4 mt-4 border-t">
+                <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase">Admin</p>
+                <ul className="space-y-2">
+                  <li><NavLink to="/dashboard/users" className={getNavLinkClass}> <Users className="mr-3 h-5 w-5" /> Manage Users </NavLink></li>
+                  <li><NavLink to="/dashboard/products" className={getNavLinkClass}> <Building className="mr-3 h-5 w-5" /> Manage Products </NavLink></li>
+                  <li><NavLink to="/dashboard/ranks" className={getNavLinkClass}> <Award className="mr-3 h-5 w-5" /> Manage Ranks </NavLink></li>
+                  <li><NavLink to="/dashboard/returns" className={getNavLinkClass}> <ShoppingBag className="mr-3 h-5 w-5" /> Return Requests </NavLink></li>
+                  <li><NavLink to="/dashboard/withdrawals-admin" className={getNavLinkClass}> <Wallet className="mr-3 h-5 w-5" /> Manage Withdrawals </NavLink></li>
+                  <li><NavLink to="/dashboard/notifications" className={getNavLinkClass}> <Bell className="mr-3 h-5 w-5" /> Notifications </NavLink></li>
+                </ul>
               </li>
-            ))}
+            )}
           </ul>
         </nav>
-        
-        <div className="p-4 border-t mt-auto">
-          <button
-            onClick={logout}
-            className="flex items-center justify-center w-full p-3 rounded-md text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
-          >
-            <LogOut className="h-5 w-5 mr-3" />
-            <span>Log Out</span>
+        <div className="p-4 border-t">
+          <button onClick={logout} className="w-full flex items-center justify-center px-4 py-2 rounded-lg text-gray-600 hover:bg-red-100 hover:text-red-600">
+            <LogOut className="mr-3 h-5 w-5" /> Logout
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile Header */}
-        <header className="md:hidden bg-white shadow-sm p-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-gray-700 mr-4"
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-            <span className="text-lg font-bold">Dashboard</span>
-          </div>
-          
-          <div className="flex items-center">
-            <Link to="/cart" className="relative text-gray-700 mr-4">
-              <ShoppingBag className="h-6 w-6" />
-            </Link>
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
-              {userInitial}
-            </div>
-          </div>
+      <div className="flex-1 flex flex-col">
+        {/* Top bar for mobile */}
+        <header className="md:hidden bg-white shadow-md p-4 flex justify-between items-center fixed top-0 w-full z-10">
+          <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            <ChevronDown className={`h-6 w-6 transition-transform ${isMobileMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
         </header>
-        
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-white shadow-lg absolute top-16 left-0 right-0 z-20 animate-slideUpAndFade">
-            <div className="p-4 border-b">
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
-                  {userInitial}
-                </div>
-                <div className="ml-3">
-                  <p className="font-medium">{user.name}</p>
-                  <p className="text-xs text-gray-500">{user.email}</p>
-                  {user.referralCode && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Referral ID: <span className="font-mono bg-gray-200 px-2 py-0.5 rounded">{user.referralCode}</span>
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            <nav className="p-4">
-              <ul className="space-y-2">
-                {navItems.map(item => (
-                  <li key={item.id}>
-                    <Link
-                      to={item.path}
-                      className={`flex items-center w-full p-3 rounded-md transition-colors ${
-                        isActive(item.path)
-                          ? 'bg-primary/10 text-primary font-medium'
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {item.icon}
-                      <span className="ml-3">{item.label}</span>
-                    </Link>
-                  </li>
-                ))}
-                <li>
-                  <button
-                    onClick={logout}
-                    className="flex items-center w-full p-3 rounded-md text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
-                  >
-                    <LogOut className="h-5 w-5 mr-3" />
-                    <span>Log Out</span>
-                  </button>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        )}
 
-        {/* Content Area */}
+        {/* Main Content */}
         <main className="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-8 pt-24">
           <div className="max-w-7xl mx-auto">
-            <Routes>
-              <Route index element={<DashboardOverview />} />
-              <Route path="users" element={<AdminUsersPage />} />
-              <Route path="network" element={<MyNetworkPage />} />
-              <Route path="orders" element={<MyOrdersPage />} />
-              <Route path="earnings" element={<EarningsPage />} />
-              <Route path="rank-rewards" element={<RankRewardsPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="products" element={<AdminProductsPage />} />
-              <Route path="returns" element={<AdminReturnRequestsPage />} />
-              <Route path="notifications" element={<AdminNotificationsPage />} />
-              <Route path="*" element={<DashboardOverview />} />
-            </Routes>
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                <Route index element={<DashboardOverview />} />
+                <Route path="users" element={<AdminUsersPage />} />
+                <Route path="network" element={<MyNetworkPage />} />
+                <Route path="downline" element={<DownlineVisualizer />} />
+                <Route path="orders" element={<MyOrdersPage />} />
+                <Route path="earnings" element={<EarningsPage />} />
+                <Route path="withdrawals" element={<WithdrawalPanel />} />
+                <Route path="rank-rewards" element={<RankRewardsPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="products" element={<AdminProductsPage />} />
+                <Route path="ranks" element={<AdminRanksPage />} />
+                <Route path="returns" element={<AdminReturnRequestsPage />} />
+                <Route path="withdrawals-admin" element={<AdminWithdrawalsPage />} />
+                <Route path="notifications" element={<AdminNotificationsPage />} />
+                <Route path="*" element={<DashboardOverview />} />
+              </Routes>
+            </Suspense>
           </div>
         </main>
       </div>
     </div>
   );
-}
-
-function ComingSoon() {
-  return (
-    <div className="flex flex-col items-center justify-center p-12 bg-white rounded-lg shadow">
-      <div className="text-6xl text-gray-300 mb-4">🚧</div>
-      <h2 className="text-2xl font-bold mb-2">Coming Soon</h2>
-      <p className="text-gray-500 text-center max-w-md">
-        We're working hard to bring you this feature. Please check back soon!
-      </p>
-    </div>
-  );
-}
+};

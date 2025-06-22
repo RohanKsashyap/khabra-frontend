@@ -31,6 +31,13 @@ api.interceptors.response.use(
       // Handle unauthorized access
       localStorage.removeItem('token');
       window.location.href = '/login';
+    } else if (error.response?.status === 429) {
+      // Handle rate limiting
+      console.warn('Rate limited by server. Consider implementing exponential backoff.');
+      // Don't redirect, just let the component handle the error
+    } else if (error.response?.status >= 500) {
+      // Handle server errors
+      console.error('Server error:', error.response?.data);
     }
     return Promise.reject(error);
   }
@@ -224,12 +231,20 @@ export const userAPI = {
 export const mlmAPI = {
   // Earnings
   getUserEarnings: async () => {
-    const response = await api.get('/api/users/earnings');
-    return response.data;
+    try {
+      const response = await api.get('/api/earnings');
+      return response.data;
+    } catch (error: any) {
+      throw error.response.data;
+    }
   },
-  getAllEarnings: async (params?: { user?: string; status?: string; type?: string; startDate?: string; endDate?: string }) => {
-    const response = await api.get('/api/users/earnings/all', { params });
-    return response.data;
+  getAllEarnings: async (params = {}) => {
+    try {
+      const response = await api.get('/api/earnings/all', { params });
+      return response.data;
+    } catch (error: any) {
+      throw error.response.data;
+    }
   },
 
   // Withdrawals
@@ -252,12 +267,35 @@ export const mlmAPI = {
 
   // Network Tree
   getNetworkTree: async () => {
-    const response = await api.get('/api/users/network/tree');
+    const response = await api.get('/api/network/tree');
     return response.data;
   },
   getNetworkTreeByUser: async (userId: string) => {
-    const response = await api.get(`/api/users/network/tree/${userId}`);
+    const response = await api.get(`/api/network/tree/${userId}`);
     return response.data;
+  },
+  getDownlineAnalytics: async () => {
+    const response = await api.get('/api/network/analytics');
+    return response.data;
+  },
+  clearUserEarnings: async () => {
+    const response = await api.delete('/api/earnings');
+    return response.data;
+  },
+};
+
+export const rankAPI = {
+  // Public
+  getRanks: async () => {
+    return api.get('/api/ranks');
+  },
+  // User
+  getMyRankStatus: async () => {
+    return api.get('/api/ranks/user/my-status');
+  },
+  // Admin
+  updateRank: async (id: string, data: any) => {
+    return api.put(`/api/ranks/${id}`, data);
   },
 };
 

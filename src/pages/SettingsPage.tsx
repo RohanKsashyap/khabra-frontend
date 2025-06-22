@@ -8,6 +8,8 @@ interface UserData {
   name: string;
   email: string;
   phone: string;
+  referralCode?: string;
+  referrerName?: string;
 }
 
 interface AddressData {
@@ -38,22 +40,12 @@ const SettingsPage: React.FC = () => {
         setLoading(true);
         // Fetch user data
         const userResponse = await axiosInstance.get('/users/me');
-        setUserData(userResponse.data);
+        setUserData(userResponse.data.data);
 
         // Fetch default address
-        try {
-          const addressResponse = await axiosInstance.get('/addresses/default');
-          setAddressData(addressResponse.data.data);
-          setFormData(addressResponse.data.data || {});
-        } catch (err: any) {
-          if (err.response?.status === 404) {
-            // No address found, this is not an error
-            setAddressData(null);
-            setFormData({});
-          } else {
-            throw err;
-          }
-        }
+        const addressResponse = await axiosInstance.get('/addresses/default');
+        setAddressData(addressResponse.data.data);
+        setFormData(addressResponse.data.data || {});
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch user data');
       } finally {
@@ -184,6 +176,26 @@ const SettingsPage: React.FC = () => {
                     className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Your Referral Code</label>
+                  <input
+                    type="text"
+                    value={userData.referralCode || 'N/A'}
+                    disabled
+                    className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm"
+                  />
+                </div>
+                {userData.referrerName && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Referred By</label>
+                    <input
+                      type="text"
+                      value={userData.referrerName}
+                      disabled
+                      className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Address Section */}

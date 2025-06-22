@@ -47,7 +47,15 @@ const NetworkTree: React.FC = () => {
           <ul>
             <li>
               <UserNode user={networkTree.root} level={0} upline={networkTree.upline} />
-              {renderTree(networkTree.tree, 1)}
+              {networkTree.tree && networkTree.tree.length > 0 ? (
+                renderTree(networkTree.tree, 1)
+              ) : (
+                <div className="text-center p-8 text-gray-500">
+                  You have no referrals in your downline.
+                  <br />
+                  Share your referral ID to add new members!
+                </div>
+              )}
             </li>
           </ul>
         </div>

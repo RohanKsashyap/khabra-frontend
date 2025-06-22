@@ -43,18 +43,34 @@ const AdminNetworkTreeViewer: React.FC = () => {
     setTreeData(null);
     try {
       let userId = userIdOrEmail;
+      // If input is not a MongoDB ObjectId, assume it's an email and find the user
       if (!/^[a-f\d]{24}$/i.test(userIdOrEmail)) {
         const users = await userAPI.getUsers({ email: userIdOrEmail });
         if (Array.isArray(users) && users.length > 0) {
           userId = users[0]._id;
         } else {
-          throw new Error('User not found');
+          throw new Error('User with that email not found.');
         }
       }
+      
       const data = await mlmAPI.getNetworkTreeByUser(userId);
-      setTreeData(data);
+
+      // Check if the returned data or the root of the tree is empty/null
+      if (!data || !data.root) {
+        // Set a specific error message for this case
+        setError('No downline found for this user.');
+      } else {
+        setTreeData(data);
+      }
+
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch network tree');
+      // Handle 404 from API specifically
+      if (err.response && err.response.status === 404) {
+        setError('User not found or has no network information.');
+      } else {
+        // Handle other errors, including the custom one thrown above
+        setError(err.message || 'Failed to fetch network tree');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -71,10 +87,14 @@ const AdminNetworkTreeViewer: React.FC = () => {
           value={userIdOrEmail}
           onChange={e => setUserIdOrEmail(e.target.value)}
         />
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">View Tree</button>
+        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded" disabled={isLoading}>
+          {isLoading ? 'Loading...' : 'View Tree'}
+        </button>
       </form>
+      
       {isLoading && <div className="text-center p-8">Loading network tree...</div>}
       {error && <div className="text-center p-8 text-red-500">{error}</div>}
+      
       {!isLoading && !error && treeData && (
         <div className="tree">
           <ul>
@@ -85,9 +105,15 @@ const AdminNetworkTreeViewer: React.FC = () => {
           </ul>
         </div>
       )}
-      {!isLoading && !error && !treeData && <div className="text-center p-8">Enter a user ID or email to view their network tree.</div>}
+      
+      {/* Initial state message */}
+      {!isLoading && !error && !treeData && (
+        <div className="text-center p-8 text-gray-500">
+            Enter a user ID or email to view their network tree.
+        </div>
+      )}
     </div>
   );
 };
 
-export default AdminNetworkTreeViewer; 
+export default AdminNetworkTreeViewer;

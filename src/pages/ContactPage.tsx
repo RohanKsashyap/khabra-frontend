@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 import axiosInstance from '../utils/axios';
 import { Button } from '../components/ui/Button';
+import { motion } from 'framer-motion';
 
 interface ContactFormData {
   name: string;
@@ -32,11 +33,23 @@ export const ContactPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-8">Contact Us</h1>
+      <motion.h1 
+        className="text-3xl font-bold text-center mb-8"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        Contact Us
+      </motion.h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Contact Information */}
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <motion.div 
+          className="bg-white rounded-lg shadow-md p-6"
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+        >
           <h2 className="text-2xl font-semibold mb-6">Get in Touch</h2>
           
           <div className="space-y-4">
@@ -75,10 +88,15 @@ export const ContactPage: React.FC = () => {
             <p className="text-gray-600">Saturday: 10:00 AM - 4:00 PM</p>
             <p className="text-gray-600">Sunday: Closed</p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Contact Form */}
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <motion.div 
+          className="bg-white rounded-lg shadow-md p-6"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+        >
           <h2 className="text-2xl font-semibold mb-6">Send us a Message</h2>
           
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -163,15 +181,17 @@ export const ContactPage: React.FC = () => {
               )}
             </div>
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full"
-            >
-              {isSubmitting ? 'Sending...' : 'Send Message'}
-            </Button>
+            <div className="flex justify-center">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-1/2 py-2 px-4"
+              >
+                {isSubmitting ? 'Sending...' : 'Send Message'}
+              </Button>
+            </div>
           </form>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

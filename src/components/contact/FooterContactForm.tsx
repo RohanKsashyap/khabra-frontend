@@ -63,13 +63,14 @@ export const FooterContactForm: React.FC = () => {
         )}
       </div>
 
-      <Button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full"
-      >
-        {isSubmitting ? 'Sending...' : 'Send Message'}
-      </Button>
+      <div className="flex justify-center">
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Sending...' : 'Send Message'}
+        </Button>
+      </div>
     </form>
   );
 }; 

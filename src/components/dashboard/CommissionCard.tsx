@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useCallback } from 'react';
 import { useMLMStore } from '../../store/mlmStore';
 import { formatCurrency } from '../../lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
@@ -13,15 +13,20 @@ export function CommissionCard() {
     fetchEarnings();
   }, [fetchEarnings]);
   
-  const totalEarnings = earningsArr.reduce((total, earning) => {
-    return total + (earning.status !== 'cancelled' ? earning.amount : 0);
-  }, 0);
+  // Memoize expensive calculations
+  const { totalEarnings, pendingAmount } = useMemo(() => {
+    const total = earningsArr.reduce((sum, earning) => {
+      return sum + (earning.status !== 'cancelled' ? earning.amount : 0);
+    }, 0);
+    
+    const pending = earningsArr.reduce((sum, earning) => {
+      return sum + (earning.status === 'pending' ? earning.amount : 0);
+    }, 0);
+    
+    return { totalEarnings: total, pendingAmount: pending };
+  }, [earningsArr]);
   
-  const pendingAmount = earningsArr.reduce((total, earning) => {
-    return total + (earning.status === 'pending' ? earning.amount : 0);
-  }, 0);
-  
-  const getCommissionTypeIcon = (type: string) => {
+  const getCommissionTypeIcon = useCallback((type: string) => {
     switch (type) {
       case 'direct':
         return <CreditCard className="h-4 w-4 text-blue-500" />;
@@ -32,7 +37,18 @@ export function CommissionCard() {
       default:
         return <AlertCircle className="h-4 w-4 text-yellow-500" />;
     }
-  };
+  }, []);
+  
+  const getStatusStyles = useCallback((status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-red-100 text-red-800';
+    }
+  }, []);
   
   return (
     <Card className="w-full">
@@ -59,7 +75,7 @@ export function CommissionCard() {
             {earningsArr.map((earning) => (
               <div 
                 key={earning._id || earning.id} 
-                className="flex items-center justify-between p-4 border rounded-lg"
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center space-x-4">
                   {getCommissionTypeIcon(earning.type)}
@@ -73,11 +89,7 @@ export function CommissionCard() {
                 </div>
                 <div className="flex flex-col items-end">
                   <p className="font-semibold">{formatCurrency(earning.amount)}</p>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    earning.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    earning.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
+                  <span className={`text-xs px-2 py-1 rounded-full ${getStatusStyles(earning.status)}`}>
                     {earning.status}
                   </span>
                 </div>

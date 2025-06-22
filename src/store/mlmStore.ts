@@ -4,6 +4,7 @@ import { mlmAPI } from '../services/api';
 interface MLMState {
   networkTree: any;
   earnings: any[];
+  stats: Record<string, number>;
   withdrawals: any[];
   isLoading: boolean;
   error: string | null;
@@ -16,6 +17,7 @@ interface MLMState {
 export const useMLMStore = create<MLMState>((set) => ({
   networkTree: null,
   earnings: [],
+  stats: {},
   withdrawals: [],
   isLoading: false,
   error: null,
@@ -34,7 +36,7 @@ export const useMLMStore = create<MLMState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const data = await mlmAPI.getUserEarnings();
-      set({ earnings: data.earnings, isLoading: false });
+      set({ earnings: data.earnings, stats: data.stats, isLoading: false });
     } catch (error: any) {
       set({ error: error.message || 'Failed to fetch earnings', isLoading: false });
     }

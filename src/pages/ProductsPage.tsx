@@ -5,6 +5,7 @@ import { useCartStore } from '../store/cartStore';
 import { Product } from '../types';
 import toast from 'react-hot-toast';
 import { ProductCard } from '../components/ecommerce/ProductCard';
+import { LoadingState } from '../components/ui/LoadingState';
 
 export const ProductsPage = () => {
   const navigate = useNavigate();
@@ -48,17 +49,22 @@ export const ProductsPage = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
+    return <LoadingState message="Loading products..." size="lg" />;
   }
 
   if (error) {
     return (
-      <div className="text-center text-red-500 py-8">
-        <p>Error: {error}</p>
+      <div className="text-center py-8">
+        <div className="text-red-500 mb-4">
+          <p className="text-lg font-semibold">Error loading products</p>
+          <p className="text-sm">{error}</p>
+        </div>
+        <button 
+          onClick={() => fetchProducts()}
+          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+        >
+          Try Again
+        </button>
       </div>
     );
   }

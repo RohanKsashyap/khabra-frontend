@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { format } from 'date-fns';
-import { API_ENDPOINTS } from '../config';
+import { mlmAPI } from '../services/api';
+import { Button } from '../components/ui/Button';
+import toast from 'react-hot-toast';
+import { useMLMStore } from '../store/mlmStore';
 
 interface Earning {
-  id: string;
+  _id: string;
   amount: number;
   type: 'direct' | 'level' | 'rank' | 'reward';
   description: string;
@@ -13,46 +16,22 @@ interface Earning {
 }
 
 const EarningsPage: React.FC = () => {
-  const { } = useAuth();
-  const [earnings, setEarnings] = useState<Earning[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [stats, setStats] = useState({
-    totalEarnings: 0,
-    pendingEarnings: 0,
-    thisMonth: 0,
-    lastMonth: 0,
-  });
+  const { user } = useAuth();
+  const { earnings, stats, fetchEarnings, isLoading, error } = useMLMStore();
 
-  useEffect(() => {
-    const fetchEarnings = async () => {
+  const handleClearHistory = async () => {
+    if (window.confirm('Are you sure you want to delete all your earnings history? This action cannot be undone.')) {
       try {
-        const response = await fetch(API_ENDPOINTS.USERS.EARNINGS, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch earnings');
-        }
-
-        const data = await response.json();
-        setEarnings(data.earnings);
-        setStats(data.stats);
+        await mlmAPI.clearUserEarnings();
+        fetchEarnings(); // Refetch after clearing
+        toast.success('Earnings history cleared successfully.');
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch earnings');
-      } finally {
-        setLoading(false);
+        toast.error('Failed to clear earnings history.');
       }
-    };
+    }
+  };
 
-    fetchEarnings();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -64,14 +43,10 @@ const EarningsPage: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-red-500">{error}</div>
-        
       </div>
     );
-
   }
-  console.log(error)
 
-  
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">My Earnings</h1>
@@ -98,8 +73,14 @@ const EarningsPage: React.FC = () => {
 
       {/* Earnings History */}
       <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-lg font-medium">Earnings History</h2>
+          <Button
+            onClick={handleClearHistory}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            Clear History
+          </Button>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -113,8 +94,8 @@ const EarningsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {earnings.map((earning) => (
-                <tr key={earning.id}>
+              {earnings && earnings.map((earning : Earning) => (
+                <tr key={earning._id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {format(new Date(earning.date), 'MMM dd, yyyy')}
                   </td>

@@ -6,6 +6,7 @@ export interface User {
   role: 'user' | 'distributor' | 'admin';
   referralCode: string;
   referredBy?: string;
+  referrerName?: string;
   wallet: {
     balance: number;
     transactions: string[];

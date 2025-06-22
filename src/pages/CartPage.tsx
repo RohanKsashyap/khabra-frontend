@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 import toast from 'react-hot-toast';
 import { useEffect } from 'react';
+import { Button } from '../components/ui/Button';
 
 export const CartPage = () => {
   const navigate = useNavigate();
@@ -42,12 +43,11 @@ export const CartPage = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Your Cart is Empty</h1>
           <p className="text-gray-600 mb-8">Add some products to your cart to see them here.</p>
-          <button
+          <Button
             onClick={() => navigate('/products')}
-            className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
           >
             Continue Shopping
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -125,13 +125,13 @@ export const CartPage = () => {
                 </div>
               </div>
             </div>
-            <button
+            <Button
               onClick={() => navigate('/checkout')}
-              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full"
               disabled={isLoading}
             >
               {isLoading ? 'Loading...' : 'Proceed to Checkout'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
