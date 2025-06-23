@@ -155,3 +155,17 @@ export interface Commission {
   status: 'pending' | 'paid' | 'cancelled';
   createdAt: Date;
 }
+
+export interface Franchise {
+  _id: string;
+  name: string;
+  district: string;
+  address: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  status: 'active' | 'inactive';
+  openingDate: string;
+  createdAt: string;
+  updatedAt: string;
+}

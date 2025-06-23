@@ -10,6 +10,8 @@ interface Rank {
     directReferrals: number;
     teamSize: number;
     teamSales: number;
+    personalPV: number;
+    teamPV: number;
   };
   rewards: {
     commission: number;
@@ -24,6 +26,8 @@ interface UserRank {
     directReferrals: number;
     teamSize: number;
     teamSales: number;
+    personalPV: number;
+    teamPV: number;
   };
   achievements: {
     _id: string;
@@ -159,6 +163,44 @@ const RankRewardsPage: React.FC = () => {
                       width: `${calculateProgress(
                         userRank.progress.teamSales,
                         userRank.nextRank.requirements.teamSales
+                      )}%`,
+                    }}
+                  ></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-700">Personal PV</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    {userRank.progress.personalPV || 0} / {userRank.nextRank.requirements.personalPV || 0}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-purple-600 h-2 rounded-full"
+                    style={{
+                      width: `${calculateProgress(
+                        userRank.progress.personalPV || 0,
+                        userRank.nextRank.requirements.personalPV || 0
+                      )}%`,
+                    }}
+                  ></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-700">Team PV</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    {userRank.progress.teamPV || 0} / {userRank.nextRank.requirements.teamPV || 0}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-purple-600 h-2 rounded-full"
+                    style={{
+                      width: `${calculateProgress(
+                        userRank.progress.teamPV || 0,
+                        userRank.nextRank.requirements.teamPV || 0
                       )}%`,
                     }}
                   ></div>

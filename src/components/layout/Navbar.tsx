@@ -67,15 +67,13 @@ export function Navbar() {
         </Link>
         {/* Links */}
         <div className="hidden md:flex gap-5 text-base font-medium">
-          <Link to="/business" className="hover:underline underline-offset-4">Business</Link>
+          <Link to="/" className="hover:underline underline-offset-4">Home</Link>
           <Link to="/products" className="hover:underline underline-offset-4">Products</Link>
-          <Link to="/about" className="hover:underline underline-offset-4">About</Link>
+          <Link to="/business" className="hover:underline underline-offset-4">Business</Link>
+          <Link to="/franchises" className="hover:underline underline-offset-4">Franchises</Link>
           <Link to="/contact" className="hover:underline underline-offset-4">Contact</Link>
           {!loading && user && (
             <Link to="/dashboard" className="hover:underline underline-offset-4">Dashboard</Link>
-          )}
-          {!loading && user && user.role === 'admin' && (
-            <Link to="/admin" className="hover:underline underline-offset-4 text-red-600 font-semibold">Admin</Link>
           )}
         </div>
         {/* Search Bar */}

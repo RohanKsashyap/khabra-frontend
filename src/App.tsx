@@ -29,6 +29,7 @@ const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const TermsAndConditionsPage = lazy(() => import('./pages/TermsAndConditionsPage'));
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
+const FranchisesPage = lazy(() => import('./pages/FranchisesPage'));
 
 function LoadingSpinner() {
   return (
@@ -91,6 +92,7 @@ function AppRoutes() {
             <Route path="/checkout/success" element={<Layout><CheckoutSuccessPage /></Layout>} />
             <Route path="/terms" element={<Layout><TermsAndConditionsPage /></Layout>} />
             <Route path="/privacy" element={<Layout><PrivacyPolicyPage /></Layout>} />
+            <Route path="/franchises" element={<Layout><FranchisesPage /></Layout>} />
 
             {/* Notification redirect */}
             <Route path="/notifications" element={<Navigate to="/dashboard/notifications" replace />} />

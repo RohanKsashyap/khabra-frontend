@@ -23,7 +23,7 @@ export function HomePage() {
         <div className="container mx-auto px-4 py-20 flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mb-10 md:mb-0">
             <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
-              Transform Your Future with NexGen MLM
+              Transform Your Future with Khabra Generations Care
             </h1>
             <p className="text-xl mb-8 text-white/90">
               Join our revolutionary platform combining premium products with a powerful MLM network. Start your journey to financial freedom today.
@@ -56,7 +56,7 @@ export function HomePage() {
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Why Choose NexGen MLM?</h2>
+            <h2 className="text-3xl font-bold mb-4">Why Choose Khabra Generations Care?</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               We combine cutting-edge technology with premium products and a rewarding compensation plan to help you succeed.
             </p>
@@ -166,7 +166,7 @@ export function HomePage() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to Start Your Journey?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Join thousands of successful distributors building their dream lifestyle with NexGen MLM.
+            Join thousands of successful distributors building their dream lifestyle with Khabra Generations Care.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link to="/register">

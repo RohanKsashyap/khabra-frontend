@@ -14,8 +14,8 @@ interface DashboardData {
   personalPV: { total: number; thisMonth: number };
   rank: {
     current: { name: string; benefits: string[] };
-    next: { name: string; requirements: { teamSales: number } };
-    progress: { teamSales: number };
+    next: { name: string; requirements: { teamSales: number; personalPV?: number; teamPV?: number } };
+    progress: { teamSales: number; personalPV?: number; teamPV?: number };
   };
 }
 
@@ -167,6 +167,44 @@ export function DashboardOverview() {
               <span>Current: {data.rank.progress.teamSales.toLocaleString()} PV</span>
               {data.rank.next && <span>Goal: {data.rank.next.requirements.teamSales.toLocaleString()} PV</span>}
             </div>
+            {/* Personal PV Progress Bar */}
+            {data.rank.next && (
+              <div className="mt-4">
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-700">Personal PV</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    {data.rank.progress.personalPV || 0} / {data.rank.next.requirements.personalPV || 0}
+                  </span>
+                </div>
+                <div className="w-full bg-purple-200 rounded-full h-2">
+                  <div
+                    className="bg-purple-600 h-2 rounded-full"
+                    style={{
+                      width: `${Math.min((data.rank.progress.personalPV || 0) / (data.rank.next.requirements.personalPV || 1) * 100, 100)}%`,
+                    }}
+                  ></div>
+                </div>
+              </div>
+            )}
+            {/* Team PV Progress Bar */}
+            {data.rank.next && (
+              <div className="mt-4">
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm font-medium text-gray-700">Team PV</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    {data.rank.progress.teamPV || 0} / {data.rank.next.requirements.teamPV || 0}
+                  </span>
+                </div>
+                <div className="w-full bg-purple-200 rounded-full h-2">
+                  <div
+                    className="bg-purple-600 h-2 rounded-full"
+                    style={{
+                      width: `${Math.min((data.rank.progress.teamPV || 0) / (data.rank.next.requirements.teamPV || 1) * 100, 100)}%`,
+                    }}
+                  ></div>
+                </div>
+              </div>
+            )}
             {data.rank.current.benefits && data.rank.current.benefits.length > 0 && (
             <div className="mt-4 p-4 bg-blue-50 rounded-lg">
               <h4 className="font-medium text-blue-800 mb-2">Rank Benefits:</h4>

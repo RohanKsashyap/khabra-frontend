@@ -10,6 +10,8 @@ interface Rank {
     directReferrals: number;
     teamSize: number;
     teamSales: number;
+    personalPV?: number;
+    teamPV?: number;
   };
   rewards: {
     commission: number;
@@ -94,6 +96,8 @@ const AdminRanksPage: React.FC = () => {
                 <th className="p-4 text-left">Referrals</th>
                 <th className="p-4 text-left">Team Size</th>
                 <th className="p-4 text-left">Team Sales (₹)</th>
+                <th className="p-4 text-left">Personal PV</th>
+                <th className="p-4 text-left">Team PV</th>
                 <th className="p-4 text-left">Commission (%)</th>
                 <th className="p-4 text-left">Bonus (₹)</th>
                 <th className="p-4 text-left">Actions</th>
@@ -108,6 +112,8 @@ const AdminRanksPage: React.FC = () => {
                   <td className="p-4">{rank.requirements.directReferrals}</td>
                   <td className="p-4">{rank.requirements.teamSize}</td>
                   <td className="p-4">{rank.requirements.teamSales.toLocaleString()}</td>
+                  <td className="p-4">{rank.requirements.personalPV || 0}</td>
+                  <td className="p-4">{rank.requirements.teamPV || 0}</td>
                   <td className="p-4">{rank.rewards.commission}%</td>
                   <td className="p-4">{rank.rewards.bonus.toLocaleString()}</td>
                   <td className="p-4">
@@ -140,6 +146,14 @@ const AdminRanksPage: React.FC = () => {
                 <label className="block mb-2">
                   Team Sales (₹):
                   <input type="number" name="teamSales" value={editingRank.requirements.teamSales} onChange={e => handleInputChange(e, 'requirements')} className="w-full mt-1 p-2 border rounded"/>
+                </label>
+                <label className="block mb-2">
+                  Personal PV:
+                  <input type="number" name="personalPV" value={editingRank.requirements.personalPV || 0} onChange={e => handleInputChange(e, 'requirements')} className="w-full mt-1 p-2 border rounded"/>
+                </label>
+                <label className="block mb-2">
+                  Team PV:
+                  <input type="number" name="teamPV" value={editingRank.requirements.teamPV || 0} onChange={e => handleInputChange(e, 'requirements')} className="w-full mt-1 p-2 border rounded"/>
                 </label>
               </div>
               {/* Rewards */}

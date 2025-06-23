@@ -14,6 +14,7 @@ import {
   Bell,
   Wallet,
   Network,
+  Store,
 } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
@@ -34,6 +35,7 @@ const AdminRanksPage = lazy(() => import('./AdminRanksPage'));
 const AdminReturnRequestsPage = lazy(() => import('./AdminReturnRequestsPage').then(module => ({ default: module.AdminReturnRequestsPage })));
 const AdminNotificationsPage = lazy(() => import('./AdminNotificationsPage'));
 const AdminWithdrawalsPage = lazy(() => import('./AdminWithdrawalsPage'));
+const AdminFranchisePage = lazy(() => import('./AdminFranchisePage'));
 
 function LoadingSpinner() {
   return (
@@ -104,6 +106,7 @@ export const DashboardPage = () => {
                 <ul className="space-y-2">
                   <li><NavLink to="/dashboard/users" className={getNavLinkClass}> <Users className="mr-3 h-5 w-5" /> Manage Users </NavLink></li>
                   <li><NavLink to="/dashboard/products" className={getNavLinkClass}> <Building className="mr-3 h-5 w-5" /> Manage Products </NavLink></li>
+                  <li><NavLink to="/dashboard/franchises" className={getNavLinkClass}> <Store className="mr-3 h-5 w-5" /> Manage Franchises </NavLink></li>
                   <li><NavLink to="/dashboard/ranks" className={getNavLinkClass}> <Award className="mr-3 h-5 w-5" /> Manage Ranks </NavLink></li>
                   <li><NavLink to="/dashboard/returns" className={getNavLinkClass}> <ShoppingBag className="mr-3 h-5 w-5" /> Return Requests </NavLink></li>
                   <li><NavLink to="/dashboard/withdrawals-admin" className={getNavLinkClass}> <Wallet className="mr-3 h-5 w-5" /> Manage Withdrawals </NavLink></li>
@@ -148,6 +151,7 @@ export const DashboardPage = () => {
                 <Route path="returns" element={<AdminReturnRequestsPage />} />
                 <Route path="withdrawals-admin" element={<AdminWithdrawalsPage />} />
                 <Route path="notifications" element={<AdminNotificationsPage />} />
+                <Route path="franchises" element={<AdminFranchisePage />} />
                 <Route path="*" element={<DashboardOverview />} />
               </Routes>
             </Suspense>
