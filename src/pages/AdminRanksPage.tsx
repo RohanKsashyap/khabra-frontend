@@ -73,14 +73,6 @@ const AdminRanksPage: React.FC = () => {
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Manage Ranks</h1>
-      {/* Level Commission Section Placeholder */}
-      <div className="mb-8 p-6 bg-white rounded-lg shadow">
-        <h2 className="text-xl font-bold mb-4">Level Commissions</h2>
-        <p className="text-gray-600">
-          This section will allow editing commission percentages per level. Feature coming soon.
-        </p>
-      </div>
-
       {isLoading ? (
         <p>Loading ranks...</p>
       ) : error ? (
@@ -99,7 +91,6 @@ const AdminRanksPage: React.FC = () => {
                 <th className="p-4 text-left">Personal PV</th>
                 <th className="p-4 text-left">Team PV</th>
                 <th className="p-4 text-left">Commission (%)</th>
-                <th className="p-4 text-left">Bonus (₹)</th>
                 <th className="p-4 text-left">Actions</th>
               </tr>
             </thead>
@@ -115,7 +106,6 @@ const AdminRanksPage: React.FC = () => {
                   <td className="p-4">{rank.requirements.personalPV || 0}</td>
                   <td className="p-4">{rank.requirements.teamPV || 0}</td>
                   <td className="p-4">{rank.rewards.commission}%</td>
-                  <td className="p-4">{rank.rewards.bonus.toLocaleString()}</td>
                   <td className="p-4">
                     <button onClick={() => handleEdit(rank)} className="text-blue-600 hover:underline">Edit</button>
                   </td>
@@ -162,10 +152,6 @@ const AdminRanksPage: React.FC = () => {
                 <label className="block mb-2">
                   Commission (%):
                   <input type="number" name="commission" value={editingRank.rewards.commission} onChange={e => handleInputChange(e, 'rewards')} className="w-full mt-1 p-2 border rounded"/>
-                </label>
-                <label className="block mb-2">
-                  Bonus (₹):
-                  <input type="number" name="bonus" value={editingRank.rewards.bonus} onChange={e => handleInputChange(e, 'rewards')} className="w-full mt-1 p-2 border rounded"/>
                 </label>
               </div>
             </div>

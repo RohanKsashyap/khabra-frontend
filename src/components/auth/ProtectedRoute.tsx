@@ -3,9 +3,11 @@ import { useAuth } from '../../contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  adminOnly?: boolean;
+  franchiseOwnerOnly?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly, franchiseOwnerOnly }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -22,6 +24,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   if (!user) {
     // Save the attempted URL for redirecting after login
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+
+  if (adminOnly && user.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (franchiseOwnerOnly && user.role !== 'franchise_owner') {
+    return <Navigate to="/dashboard" replace />;
   }
 
   // If authenticated, render the protected content

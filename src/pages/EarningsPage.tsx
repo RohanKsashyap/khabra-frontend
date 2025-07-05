@@ -20,13 +20,15 @@ const EarningsPage: React.FC = () => {
   const { earnings, stats, fetchEarnings, isLoading, error } = useMLMStore();
 
   const handleClearHistory = async () => {
-    if (window.confirm('Are you sure you want to delete all your earnings history? This action cannot be undone.')) {
-      try {
-        await mlmAPI.clearUserEarnings();
-        fetchEarnings(); // Refetch after clearing
-        toast.success('Earnings history cleared successfully.');
-      } catch (err) {
-        toast.error('Failed to clear earnings history.');
+    if (user?.role === 'admin') {
+      if (window.confirm('Are you sure you want to delete ALL users\' earnings history? This action cannot be undone.')) {
+        try {
+          await mlmAPI.clearAllEarnings();
+          fetchEarnings(); // Refetch after clearing
+          toast.success('All users\' earnings history cleared successfully.');
+        } catch (err) {
+          toast.error('Failed to clear all users\' earnings history.');
+        }
       }
     }
   };
@@ -55,19 +57,19 @@ const EarningsPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-gray-500 text-sm font-medium">Total Earnings</h3>
-          <p className="text-2xl font-bold text-gray-900">₹{stats.totalEarnings.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-gray-900">₹{(stats.totalEarnings ?? 0).toFixed(2)}</p>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-gray-500 text-sm font-medium">Pending Earnings</h3>
-          <p className="text-2xl font-bold text-gray-900">₹{stats.pendingEarnings.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-gray-900">₹{(stats.pendingEarnings ?? 0).toFixed(2)}</p>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-gray-500 text-sm font-medium">This Month</h3>
-          <p className="text-2xl font-bold text-gray-900">₹{stats.thisMonth.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-gray-900">₹{(stats.thisMonth ?? 0).toFixed(2)}</p>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-gray-500 text-sm font-medium">Last Month</h3>
-          <p className="text-2xl font-bold text-gray-900">₹{stats.lastMonth.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-gray-900">₹{(stats.lastMonth ?? 0).toFixed(2)}</p>
         </div>
       </div>
 
@@ -75,12 +77,14 @@ const EarningsPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-lg font-medium">Earnings History</h2>
-          <Button
-            onClick={handleClearHistory}
-            className="bg-red-600 hover:bg-red-700 text-white"
-          >
-            Clear History
-          </Button>
+          {user?.role === 'admin' && (
+            <Button
+              onClick={handleClearHistory}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Clear History
+            </Button>
+          )}
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">

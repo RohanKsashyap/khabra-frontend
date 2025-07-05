@@ -28,7 +28,7 @@ interface ProductReturnRequest {
   adminNotes?: string;
 }
 
-export const AdminReturnRequestsPage: React.FC = () => {
+const AdminReturnRequestsPage: React.FC = () => {
   const [returnRequests, setReturnRequests] = useState<ProductReturnRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,6 +71,28 @@ export const AdminReturnRequestsPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Manage Return Requests</h1>
+      <div className="mb-6 flex justify-end">
+        <button
+          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+          onClick={async () => {
+            if (window.confirm('Are you sure you want to clear all return request history? This cannot be undone.')) {
+              try {
+                setIsLoading(true);
+                await orderAPI.deleteAllReturnRequests();
+                toast.success('All return requests deleted successfully');
+                fetchReturnRequests();
+              } catch (err: any) {
+                toast.error(err.response?.data?.message || 'Failed to delete return requests');
+              } finally {
+                setIsLoading(false);
+              }
+            }
+          }}
+          disabled={isLoading}
+        >
+          Clear History
+        </button>
+      </div>
 
       {returnRequests.length === 0 ? (
         <div className="text-center text-gray-500">No return requests found.</div>
@@ -131,4 +153,6 @@ export const AdminReturnRequestsPage: React.FC = () => {
       )}
     </div>
   );
-}; 
+};
+
+export default AdminReturnRequestsPage; 

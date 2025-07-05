@@ -142,7 +142,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('token', data.token);
       setUser(data.user);
       toast.success('Login successful!');
-      navigate('/dashboard');
+      if (data.user.role === 'admin') {
+        navigate('/dashboard');
+      } else if (data.user.role === 'franchise_owner') {
+        navigate('/franchise/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       console.error('Login error:', error);
       toast.error(error instanceof Error ? error.message : 'Login failed');

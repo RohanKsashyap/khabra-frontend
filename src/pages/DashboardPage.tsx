@@ -1,5 +1,5 @@
-import { useState, lazy, Suspense, useEffect } from 'react';
-import { NavLink, Route, Routes } from 'react-router-dom';
+import { useState, Suspense, useEffect, lazy } from 'react';
+import { NavLink, Outlet } from 'react-router-dom';
 import {
   LayoutGrid,
   Users,
@@ -15,27 +15,12 @@ import {
   Wallet,
   Network,
   Store,
+  CreditCard,
+  Package,
 } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useMLMStore } from '../store/mlmStore';
-import { DashboardOverview } from '../components/dashboard/DashboardOverview';
-import WithdrawalPanel from '../components/dashboard/WithdrawalPanel';
-import DownlineVisualizer from '../components/dashboard/DownlineVisualizer';
-
-// Lazy load components to reduce initial bundle size
-const MyNetworkPage = lazy(() => import('./MyNetworkPage'));
-const MyOrdersPage = lazy(() => import('./MyOrdersPage').then(module => ({ default: module.MyOrdersPage })));
-const EarningsPage = lazy(() => import('./EarningsPage'));
-const RankRewardsPage = lazy(() => import('./RankRewardsPage'));
-const SettingsPage = lazy(() => import('./SettingsPage'));
-const AdminUsersPage = lazy(() => import('./AdminUsersPage'));
-const AdminProductsPage = lazy(() => import('./AdminProductsPage'));
-const AdminRanksPage = lazy(() => import('./AdminRanksPage'));
-const AdminReturnRequestsPage = lazy(() => import('./AdminReturnRequestsPage').then(module => ({ default: module.AdminReturnRequestsPage })));
-const AdminNotificationsPage = lazy(() => import('./AdminNotificationsPage'));
-const AdminWithdrawalsPage = lazy(() => import('./AdminWithdrawalsPage'));
-const AdminFranchisePage = lazy(() => import('./AdminFranchisePage'));
 
 function LoadingSpinner() {
   return (
@@ -100,6 +85,10 @@ export const DashboardPage = () => {
             <li><NavLink to="/dashboard/withdrawals" className={getNavLinkClass}> <Wallet className="mr-3 h-5 w-5" /> Withdrawals </NavLink></li>
             <li><NavLink to="/dashboard/rank-rewards" className={getNavLinkClass}> <Award className="mr-3 h-5 w-5" /> Rank & Rewards </NavLink></li>
             <li><NavLink to="/dashboard/settings" className={getNavLinkClass}> <Settings className="mr-3 h-5 w-5" /> Settings </NavLink></li>
+            <li><NavLink to="/dashboard/notifications" className={getNavLinkClass}> <Bell className="mr-3 h-5 w-5" /> Notifications </NavLink></li>
+            {user.role === 'franchise_owner' && (
+              <li><NavLink to="/dashboard/franchise" className={getNavLinkClass}> <Store className="mr-3 h-5 w-5" /> My Franchise </NavLink></li>
+            )}
             {user.role === 'admin' && (
               <li className="pt-4 mt-4 border-t">
                 <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase">Admin</p>
@@ -110,7 +99,9 @@ export const DashboardPage = () => {
                   <li><NavLink to="/dashboard/ranks" className={getNavLinkClass}> <Award className="mr-3 h-5 w-5" /> Manage Ranks </NavLink></li>
                   <li><NavLink to="/dashboard/returns" className={getNavLinkClass}> <ShoppingBag className="mr-3 h-5 w-5" /> Return Requests </NavLink></li>
                   <li><NavLink to="/dashboard/withdrawals-admin" className={getNavLinkClass}> <Wallet className="mr-3 h-5 w-5" /> Manage Withdrawals </NavLink></li>
-                  <li><NavLink to="/dashboard/notifications" className={getNavLinkClass}> <Bell className="mr-3 h-5 w-5" /> Notifications </NavLink></li>
+                  <li><NavLink to="/dashboard/sales" className={getNavLinkClass}> <DollarSign className="mr-3 h-5 w-5" /> Manage Sales </NavLink></li>
+                  <li><NavLink to="/dashboard/offline-orders" className={getNavLinkClass}> <Package className="mr-3 h-5 w-5" /> Manage Offline Orders </NavLink></li>
+                  <li><NavLink to="/dashboard/notifications-admin" className={getNavLinkClass}> <Bell className="mr-3 h-5 w-5" /> Manage Notifications </NavLink></li>
                 </ul>
               </li>
             )}
@@ -136,24 +127,7 @@ export const DashboardPage = () => {
         <main className="flex-1 overflow-y-auto bg-gray-100 p-4 md:p-8 pt-24">
           <div className="max-w-7xl mx-auto">
             <Suspense fallback={<LoadingSpinner />}>
-              <Routes>
-                <Route index element={<DashboardOverview />} />
-                <Route path="users" element={<AdminUsersPage />} />
-                <Route path="network" element={<MyNetworkPage />} />
-                <Route path="downline" element={<DownlineVisualizer />} />
-                <Route path="orders" element={<MyOrdersPage />} />
-                <Route path="earnings" element={<EarningsPage />} />
-                <Route path="withdrawals" element={<WithdrawalPanel />} />
-                <Route path="rank-rewards" element={<RankRewardsPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="products" element={<AdminProductsPage />} />
-                <Route path="ranks" element={<AdminRanksPage />} />
-                <Route path="returns" element={<AdminReturnRequestsPage />} />
-                <Route path="withdrawals-admin" element={<AdminWithdrawalsPage />} />
-                <Route path="notifications" element={<AdminNotificationsPage />} />
-                <Route path="franchises" element={<AdminFranchisePage />} />
-                <Route path="*" element={<DashboardOverview />} />
-              </Routes>
+              <Outlet />
             </Suspense>
           </div>
         </main>

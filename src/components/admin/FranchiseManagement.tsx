@@ -2,10 +2,19 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { Franchise } from '../../types';
+import { Franchise, User, Address } from '../../types';
 import toast from 'react-hot-toast';
 
 const API_BASE = import.meta.env.VITE_API_URL;
+
+interface FranchiseSales {
+    _id: string;
+    name: string;
+    owner?: { name: string; email: string };
+    commissionPercentage: number;
+    totalSales: number;
+    commission: number;
+}
 
 const FranchiseManagement: React.FC = () => {
     const [franchises, setFranchises] = useState<Franchise[]>([]);
@@ -18,10 +27,17 @@ const FranchiseManagement: React.FC = () => {
         contactPerson: '',
         phone: '',
         email: '',
-        status: 'active' as 'active' | 'inactive'
+        status: 'active' as 'active' | 'inactive',
+        owner: '',
+        commissionPercentage: ''
     });
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [franchiseSales, setFranchiseSales] = useState<FranchiseSales[]>([]);
+    const [salesLoading, setSalesLoading] = useState(true);
+    const [salesError, setSalesError] = useState<string | null>(null);
+    const [users, setUsers] = useState<User[]>([]);
+    const [addressLoading, setAddressLoading] = useState(false);
 
     const punjabDistricts = [
         'Amritsar', 'Barnala', 'Bathinda', 'Faridkot', 'Fatehgarh Sahib',
@@ -33,6 +49,8 @@ const FranchiseManagement: React.FC = () => {
 
     useEffect(() => {
         fetchFranchises();
+        fetchFranchiseSales();
+        fetchUsers();
     }, []);
 
     const fetchFranchises = async () => {
@@ -53,11 +71,69 @@ const FranchiseManagement: React.FC = () => {
         }
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const fetchFranchiseSales = async () => {
+        try {
+            setSalesLoading(true);
+            setSalesError(null);
+            const token = localStorage.getItem('token');
+            const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+            const response = await axios.get(`${API_BASE}/api/v1/franchises/admin/sales`, config);
+            setFranchiseSales(response.data);
+        } catch (error) {
+            setSalesError('Failed to load franchise sales.');
+        } finally {
+            setSalesLoading(false);
+        }
+    };
+
+    const fetchUsers = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+            const response = await axios.get(`${API_BASE}/api/users`, config);
+            setUsers(response.data);
+        } catch (error) {
+            // Optionally handle error
+        }
+    };
+
+    const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        if (name === 'owner') {
+            setFormData(prev => ({ ...prev, owner: value }));
+            if (value) {
+                setAddressLoading(true);
+                try {
+                    const token = localStorage.getItem('token');
+                    const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+                    const response = await axios.get(`${API_BASE}/api/addresses/user/${value}`, config);
+                    const addresses: Address[] = response.data;
+                    const defaultAddress = addresses.find(a => (a as any).isDefault) || addresses[0];
+                    const selectedUser = users.find(u => (u.id || u._id) === value);
+                    let phone = defaultAddress?.phone || '';
+                    // Use address phone if valid, else use user's phone
+                    if (!/^\d{10}$/.test(phone) && selectedUser?.phone) {
+                        phone = selectedUser.phone;
+                    }
+                    setFormData(prev => ({
+                        ...prev,
+                        address: defaultAddress ? defaultAddress.addressLine1 + (defaultAddress.addressLine2 ? (', ' + defaultAddress.addressLine2) : '') : '',
+                        phone: phone,
+                        email: selectedUser?.email || '',
+                        // Optionally fill more fields if needed
+                    }));
+                } catch (err) {
+                    // Optionally handle error
+                } finally {
+                    setAddressLoading(false);
+                }
+            }
+        } else {
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value
+                [name]: value
         });
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -89,7 +165,9 @@ const FranchiseManagement: React.FC = () => {
             contactPerson: franchise.contactPerson,
             phone: franchise.phone,
             email: franchise.email,
-            status: franchise.status
+            status: franchise.status,
+            owner: (franchise as any).owner || '',
+            commissionPercentage: (franchise as any).commissionPercentage || ''
         });
         setIsEditing(true);
         setEditingId(franchise._id);
@@ -119,7 +197,9 @@ const FranchiseManagement: React.FC = () => {
             contactPerson: '',
             phone: '',
             email: '',
-            status: 'active'
+            status: 'active',
+            owner: '',
+            commissionPercentage: ''
         });
         setIsEditing(false);
         setEditingId(null);
@@ -142,6 +222,41 @@ const FranchiseManagement: React.FC = () => {
                     {error}
                 </div>
             )}
+            
+            {/* Franchise Sales & Commission Table */}
+            <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-2">Franchise Sales & Commissions</h3>
+                {salesLoading ? (
+                    <div>Loading sales data...</div>
+                ) : salesError ? (
+                    <div className="text-red-600">{salesError}</div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full bg-white border border-gray-200">
+                            <thead>
+                                <tr>
+                                    <th className="px-4 py-2 border">Franchise</th>
+                                    <th className="px-4 py-2 border">Owner</th>
+                                    <th className="px-4 py-2 border">Total Sales</th>
+                                    <th className="px-4 py-2 border">Commission %</th>
+                                    <th className="px-4 py-2 border">Commission</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {franchiseSales.map(f => (
+                                    <tr key={f._id}>
+                                        <td className="px-4 py-2 border">{f.name}</td>
+                                        <td className="px-4 py-2 border">{f.owner?.name || '-'}</td>
+                                        <td className="px-4 py-2 border">₹{f.totalSales.toLocaleString()}</td>
+                                        <td className="px-4 py-2 border">{f.commissionPercentage}%</td>
+                                        <td className="px-4 py-2 border">₹{f.commission.toLocaleString()}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
             
             <Card className="mb-6 p-4">
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -179,7 +294,8 @@ const FranchiseManagement: React.FC = () => {
                                 name="address"
                                 value={formData.address}
                                 onChange={handleInputChange}
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border rounded bg-gray-100"
+                                readOnly
                                 required
                             />
                         </div>
@@ -201,7 +317,8 @@ const FranchiseManagement: React.FC = () => {
                                 name="phone"
                                 value={formData.phone}
                                 onChange={handleInputChange}
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border rounded bg-gray-100"
+                                readOnly
                                 required
                                 pattern="[0-9]{10}"
                             />
@@ -213,7 +330,8 @@ const FranchiseManagement: React.FC = () => {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleInputChange}
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border rounded bg-gray-100"
+                                readOnly
                                 required
                             />
                         </div>
@@ -229,6 +347,34 @@ const FranchiseManagement: React.FC = () => {
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
                             </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Owner (User)</label>
+                            <select
+                                name="owner"
+                                value={formData.owner}
+                                onChange={handleInputChange}
+                                className="w-full p-2 border rounded"
+                                required
+                            >
+                                <option value="">Select Owner</option>
+                                {users.map(user => (
+                                    <option key={user.id || user._id} value={user.id || user._id}>{user.name} ({user.email})</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Commission Percentage</label>
+                            <input
+                                type="number"
+                                name="commissionPercentage"
+                                value={formData.commissionPercentage}
+                                onChange={handleInputChange}
+                                className="w-full p-2 border rounded"
+                                min="0"
+                                max="100"
+                                required
+                            />
                         </div>
                     </div>
                     <div className="flex gap-2">

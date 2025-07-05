@@ -1,13 +1,13 @@
 import { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { Navbar } from './components/layout/Navbar';
-import { Footer } from './components/layout/Footer';
-import { PageTransition } from './components/layout/PageTransition';
 import { AnimatePresence } from 'framer-motion';
 import { useProductStore } from './store/productStore';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Navbar } from './components/layout/Navbar';
+import { Footer } from './components/layout/Footer';
+import { PageTransition } from './components/layout/PageTransition';
 
 // Lazy load pages to reduce initial bundle size
 const HomePage = lazy(() => import('./pages/HomePage').then(module => ({ default: module.HomePage })));
@@ -28,26 +28,35 @@ const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 const TermsAndConditionsPage = lazy(() => import('./pages/TermsAndConditionsPage'));
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
-const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
 const FranchisesPage = lazy(() => import('./pages/FranchisesPage'));
+const FranchiseDashboard = lazy(() => import('./pages/FranchiseDashboard'));
+
+// Dashboard pages
+const DashboardOverview = lazy(() => import('./components/dashboard/DashboardOverview').then(module => ({ default: module.DashboardOverview })));
+const MyNetworkPage = lazy(() => import('./pages/MyNetworkPage'));
+const DownlineVisualizer = lazy(() => import('./components/dashboard/DownlineVisualizer'));
+const EarningsPage = lazy(() => import('./pages/EarningsPage'));
+const WithdrawalPanel = lazy(() => import('./components/dashboard/WithdrawalPanel'));
+const RankRewardsPage = lazy(() => import('./pages/RankRewardsPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const NotificationPage = lazy(() => import('./pages/NotificationPage').then(module => ({ default: module.NotificationPage })));
+
+// Admin pages
+const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'));
+const AdminProductsPage = lazy(() => import('./pages/AdminProductsPage'));
+const AdminFranchisePage = lazy(() => import('./pages/AdminFranchisePage'));
+const AdminRanksPage = lazy(() => import('./pages/AdminRanksPage'));
+const AdminReturnRequestsPage = lazy(() => import('./pages/AdminReturnRequestsPage'));
+const AdminWithdrawalsPage = lazy(() => import('./pages/AdminWithdrawalsPage'));
+const AdminTotalSalesPage = lazy(() => import('./pages/AdminTotalSalesPage'));
+const AdminOfflineOrdersPage = lazy(() => import('./pages/AdminOfflineOrdersPage'));
+const AdminNotificationsPage = lazy(() => import('./pages/AdminNotificationsPage'));
 
 function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
     </div>
-  );
-}
-
-function Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <Navbar />
-      <main className="flex-grow pt-24">
-        <PageTransition>{children}</PageTransition>
-      </main>
-      <Footer />
-    </>
   );
 }
 
@@ -59,7 +68,6 @@ function AppRoutes() {
   useEffect(() => {
     // Only fetch products if we're on a page that needs them and not on auth pages
     const productPages = ['/products', '/', '/business'];
-    const authPages = ['/login', '/register', '/forgot-password', '/reset-password'];
     
     if (productPages.includes(location.pathname) || location.pathname.startsWith('/products/')) {
       fetchProducts();
@@ -70,91 +78,85 @@ function AppRoutes() {
     return <LoadingSpinner />;
   }
 
-  // If user is authenticated and trying to access auth pages, redirect to dashboard
-  if (user && ['/login', '/register'].includes(location.pathname)) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   return (
-    <div className="flex flex-col min-h-screen">
-      <Suspense fallback={<LoadingSpinner />}>
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            {/* Public Routes */}
-            <Route path="/" element={<Layout><HomePage /></Layout>} />
-            <Route path="/business" element={<Layout><BusinessPage /></Layout>} />
-            <Route path="/products" element={<Layout><ProductsPage /></Layout>} />
-            <Route path="/products/:id" element={<Layout><ProductDetailPage /></Layout>} />
-            <Route path="/about" element={<Layout><AboutPage /></Layout>} />
-            <Route path="/contact" element={<Layout><ContactPage /></Layout>} />
-            <Route path="/cart" element={<Layout><CartPage /></Layout>} />
-            <Route path="/checkout" element={<Layout><CheckoutPage /></Layout>} />
-            <Route path="/checkout/success" element={<Layout><CheckoutSuccessPage /></Layout>} />
-            <Route path="/terms" element={<Layout><TermsAndConditionsPage /></Layout>} />
-            <Route path="/privacy" element={<Layout><PrivacyPolicyPage /></Layout>} />
-            <Route path="/franchises" element={<Layout><FranchisesPage /></Layout>} />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          {/* Public Routes */}
+          <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+          <Route path="/business" element={<PageTransition><BusinessPage /></PageTransition>} />
+          <Route path="/products" element={<PageTransition><ProductsPage /></PageTransition>} />
+          <Route path="/products/:id" element={<PageTransition><ProductDetailPage /></PageTransition>} />
+          <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
+          <Route path="/contact" element={<PageTransition><ContactPage /></PageTransition>} />
+          <Route path="/cart" element={<PageTransition><CartPage /></PageTransition>} />
+          <Route path="/checkout" element={<PageTransition><CheckoutPage /></PageTransition>} />
+          <Route path="/checkout/success" element={<PageTransition><CheckoutSuccessPage /></PageTransition>} />
+          <Route path="/terms" element={<PageTransition><TermsAndConditionsPage /></PageTransition>} />
+          <Route path="/privacy" element={<PageTransition><PrivacyPolicyPage /></PageTransition>} />
+          <Route path="/franchises" element={<PageTransition><FranchisesPage /></PageTransition>} />
 
-            {/* Notification redirect */}
-            <Route path="/notifications" element={<Navigate to="/dashboard/notifications" replace />} />
+          {/* Auth Routes */}
+          <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <PageTransition><LoginPage /></PageTransition>} />
+          <Route path="/register" element={user ? <Navigate to="/dashboard" replace /> : <PageTransition><RegisterPage /></PageTransition>} />
+          <Route path="/forgot-password" element={<PageTransition><ForgotPasswordPage /></PageTransition>} />
+          <Route path="/reset-password/:token" element={<PageTransition><ResetPasswordPage /></PageTransition>} />
 
-            {/* Auth Routes */}
-            <Route path="/login" element={<Layout><LoginPage /></Layout>} />
-            <Route path="/register" element={<Layout><RegisterPage /></Layout>} />
-            <Route path="/forgot-password" element={<Layout><ForgotPasswordPage /></Layout>} />
-            <Route path="/reset-password/:token" element={<Layout><ResetPasswordPage /></Layout>} />
+          {/* User & Admin Protected Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<DashboardOverview />} />
+            <Route path="network" element={<MyNetworkPage />} />
+            <Route path="downline" element={<DownlineVisualizer />} />
+            <Route path="orders" element={<MyOrdersPage />} />
+            <Route path="earnings" element={<EarningsPage />} />
+            <Route path="withdrawals" element={<WithdrawalPanel />} />
+            <Route path="rank-rewards" element={<RankRewardsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="notifications" element={<NotificationPage />} />
+            {/* Franchise Owner Only Route */}
+            <Route path="franchise" element={<ProtectedRoute franchiseOwnerOnly><FranchiseDashboard /></ProtectedRoute>} />
+            {/* Admin Only Routes */}
+            <Route path="users" element={<ProtectedRoute adminOnly><AdminUsersPage /></ProtectedRoute>} />
+            <Route path="products" element={<ProtectedRoute adminOnly><AdminProductsPage /></ProtectedRoute>} />
+            <Route path="franchises" element={<ProtectedRoute adminOnly><AdminFranchisePage /></ProtectedRoute>} />
+            <Route path="ranks" element={<ProtectedRoute adminOnly><AdminRanksPage /></ProtectedRoute>} />
+            <Route path="returns" element={<ProtectedRoute adminOnly><AdminReturnRequestsPage /></ProtectedRoute>} />
+            <Route path="withdrawals-admin" element={<ProtectedRoute adminOnly><AdminWithdrawalsPage /></ProtectedRoute>} />
+            <Route path="sales" element={<ProtectedRoute adminOnly><AdminTotalSalesPage /></ProtectedRoute>} />
+            <Route path="offline-orders" element={<ProtectedRoute adminOnly><AdminOfflineOrdersPage /></ProtectedRoute>} />
+            <Route path="notifications-admin" element={<ProtectedRoute adminOnly><AdminNotificationsPage /></ProtectedRoute>} />
+          </Route>
 
-            {/* Protected Routes */}
-            <Route
-              path="/dashboard/*"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <DashboardPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
+          <Route
+            path="/my-orders/:orderId"
+            element={
+              <ProtectedRoute>
+                <OrderDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-orders"
+            element={
+              <ProtectedRoute>
+                <MyOrdersPage />
+              </ProtectedRoute>
+            }
+          />
 
-            <Route
-              path="/my-orders/:orderId"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <OrderDetailPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/my-orders"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <MyOrdersPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    {/* Only render for admin users */}
-                    {user && user.role === 'admin' ? <AdminDashboardPage /> : <Navigate to="/dashboard" replace />}
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Catch all route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </AnimatePresence>
-      </Suspense>
-    </div>
+          {/* Notification redirect */}
+          <Route path="/notifications" element={<Navigate to="/dashboard/notifications" replace />} />
+          
+          {/* Catch all route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
   );
 }
 
@@ -162,8 +164,16 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Toaster position="top-right" />
-        <AppRoutes />
+        <Toaster position="top-center" reverseOrder={false} />
+        <Suspense fallback={<LoadingSpinner />}>
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow pt-24">
+              <AppRoutes />
+            </main>
+            <Footer />
+          </div>
+        </Suspense>
       </AuthProvider>
     </Router>
   );

@@ -116,6 +116,10 @@ export const orderAPI = {
     const response = await api.post('/api/orders', orderData);
     return response.data;
   },
+  createAdminOrder: async (orderData: any) => {
+    const response = await api.post('/api/orders/admin/create', orderData);
+    return response.data;
+  },
   fetchOrderById: async (orderId: string) => {
     const response = await api.get(`/api/orders/${orderId}`);
     return response.data;
@@ -142,6 +146,14 @@ export const orderAPI = {
   },
   requestReturn: async (orderId: string, productId: string, reason: string) => {
     const response = await api.post('/api/returns/request', { orderId, productId, reason });
+    return response.data;
+  },
+  fetchTotalProductSales: async () => {
+    const response = await api.get('/api/orders/admin/total-sales');
+    return response.data;
+  },
+  deleteAllReturnRequests: async () => {
+    const response = await api.delete('/api/returns/admin/all');
     return response.data;
   },
 };
@@ -214,8 +226,12 @@ export const notificationAPI = {
 };
 
 export const userAPI = {
-  getUsers: async (params?: { email?: string }) => {
+  getUsers: async (params?: { search?: string; email?: string }) => {
     const response = await api.get('/api/users', { params });
+    return response.data;
+  },
+  getUser: async (id: string) => {
+    const response = await api.get(`/api/users/${id}`);
     return response.data;
   },
   updateUser: async (id: string, userData: any) => {
@@ -282,6 +298,10 @@ export const mlmAPI = {
     const response = await api.delete('/api/earnings');
     return response.data;
   },
+  clearAllEarnings: async () => {
+    const response = await api.delete('/api/earnings/admin/clear-all');
+    return response.data;
+  },
 };
 
 export const rankAPI = {
@@ -296,6 +316,14 @@ export const rankAPI = {
   // Admin
   updateRank: async (id: string, data: any) => {
     return api.put(`/api/ranks/${id}`, data);
+  },
+  getCommissionRates: async () => {
+    const response = await api.get('/api/ranks/mlm-commission');
+    return response.data;
+  },
+  updateCommissionRates: async (rates: number[]) => {
+    const response = await api.put('/api/ranks/mlm-commission', { rates });
+    return response.data;
   },
 };
 

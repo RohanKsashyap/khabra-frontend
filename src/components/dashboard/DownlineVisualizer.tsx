@@ -6,6 +6,7 @@ import { Skeleton } from '../ui/Skeleton';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import { mlmAPI } from '../../services/api';
 import '../../styles/TreeNode.css';
+import { LoadingState } from '../ui/LoadingState';
 
 interface DownlineStats {
   totalMembers: number;
@@ -103,7 +104,7 @@ function renderTree(nodes: any[], level = 1, expandedNodes: Set<string>, onToggl
 }
 
 const DownlineVisualizer: React.FC = () => {
-  const { networkTree, isLoading, error, fetchNetworkTree } = useMLMStore();
+  const { networkTree, isLoading, error, fetchNetworkTree } = useMLMStore() as { networkTree: any, isLoading: boolean, error: string | null, fetchNetworkTree: () => void };
   const [viewMode, setViewMode] = useState<'tree' | 'list' | 'stats'>('tree');
   const [downlineStats, setDownlineStats] = useState<DownlineStats | null>(null);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
@@ -197,10 +198,7 @@ const DownlineVisualizer: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-96 w-full" />
-      </div>
+      <LoadingState message="Loading your downline network..." size="md" />
     );
   }
 
@@ -208,7 +206,7 @@ const DownlineVisualizer: React.FC = () => {
     return (
       <Card>
         <CardContent>
-          <div className="text-center p-8 text-red-500">{error}</div>
+          <div className="text-center p-8 text-red-500">{error?.toString() || 'An error occurred.'}</div>
         </CardContent>
       </Card>
     );

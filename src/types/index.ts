@@ -3,7 +3,7 @@ export interface User {
   name: string;
   email: string;
   phone: string;
-  role: 'user' | 'distributor' | 'admin';
+  role: 'user' | 'distributor' | 'admin' | 'franchise_owner';
   referralCode: string;
   referredBy?: string;
   referrerName?: string;
