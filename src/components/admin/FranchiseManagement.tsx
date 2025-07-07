@@ -22,13 +22,14 @@ const FranchiseManagement: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: '',
+        location: '',
         district: '',
         address: '',
         contactPerson: '',
         phone: '',
         email: '',
         status: 'active' as 'active' | 'inactive',
-        owner: '',
+        ownerId: '',
         commissionPercentage: ''
     });
     const [isEditing, setIsEditing] = useState(false);
@@ -57,7 +58,10 @@ const FranchiseManagement: React.FC = () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await axios.get(`${API_BASE}/api/v1/franchises`);
+            const token = localStorage.getItem('token');
+            const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+            console.log('fetchFranchises config:', config);
+            const response = await axios.get(`${API_BASE}/api/v1/franchises`, config);
             if (response.data && response.data.data) {
                 setFranchises(response.data.data);
             } else {
@@ -77,8 +81,9 @@ const FranchiseManagement: React.FC = () => {
             setSalesError(null);
             const token = localStorage.getItem('token');
             const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-            const response = await axios.get(`${API_BASE}/api/v1/franchises/admin/sales`, config);
-            setFranchiseSales(response.data);
+            console.log('fetchFranchiseSales config:', config);
+            const response = await axios.get(`${API_BASE}/api/v1/franchises/admin/overview`, config);
+            setFranchiseSales(response.data.data || []);
         } catch (error) {
             setSalesError('Failed to load franchise sales.');
         } finally {
@@ -90,17 +95,28 @@ const FranchiseManagement: React.FC = () => {
         try {
             const token = localStorage.getItem('token');
             const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-            const response = await axios.get(`${API_BASE}/api/users`, config);
+            const response = await axios.get(`${API_BASE}/api/users/franchise-owners`, config);
+            console.log('Users loaded:', response.data);
             setUsers(response.data);
         } catch (error) {
-            // Optionally handle error
+            console.error('Error loading users:', error);
+            // Fallback to regular users endpoint
+            try {
+                const token = localStorage.getItem('token');
+                const fallbackConfig = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+                const response = await axios.get(`${API_BASE}/api/users`, fallbackConfig);
+                console.log('Users loaded (fallback):', response.data);
+                setUsers(response.data);
+            } catch (fallbackError) {
+                console.error('Fallback error loading users:', fallbackError);
+            }
         }
     };
 
     const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        if (name === 'owner') {
-            setFormData(prev => ({ ...prev, owner: value }));
+        if (name === 'ownerId') {
+            setFormData(prev => ({ ...prev, ownerId: value }));
             if (value) {
                 setAddressLoading(true);
                 try {
@@ -109,7 +125,7 @@ const FranchiseManagement: React.FC = () => {
                     const response = await axios.get(`${API_BASE}/api/addresses/user/${value}`, config);
                     const addresses: Address[] = response.data;
                     const defaultAddress = addresses.find(a => (a as any).isDefault) || addresses[0];
-                    const selectedUser = users.find(u => (u.id || u._id) === value);
+                    const selectedUser = users.find(u => u.id === value);
                     let phone = defaultAddress?.phone || '';
                     // Use address phone if valid, else use user's phone
                     if (!/^\d{10}$/.test(phone) && selectedUser?.phone) {
@@ -117,9 +133,11 @@ const FranchiseManagement: React.FC = () => {
                     }
                     setFormData(prev => ({
                         ...prev,
+                        location: '', // Remove location as it's not in Franchise interface
                         address: defaultAddress ? defaultAddress.addressLine1 + (defaultAddress.addressLine2 ? (', ' + defaultAddress.addressLine2) : '') : '',
                         phone: phone,
                         email: selectedUser?.email || '',
+                        contactPerson: selectedUser?.name || '',
                         // Optionally fill more fields if needed
                     }));
                 } catch (err) {
@@ -138,15 +156,38 @@ const FranchiseManagement: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Debug: Log form data
+        console.log('Form data being sent:', formData);
+        
+        // Validate required fields
+        if (!formData.ownerId) {
+            setError('Please select an owner');
+            return;
+        }
+        if (!formData.commissionPercentage) {
+            setError('Please enter commission percentage');
+            return;
+        }
+        
         try {
             setError(null);
             const token = localStorage.getItem('token');
             const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+            
+            // Convert commissionPercentage to number
+            const dataToSend = {
+                ...formData,
+                commissionPercentage: Number(formData.commissionPercentage)
+            };
+            
+            console.log('Data being sent to backend:', dataToSend);
+            
             if (isEditing && editingId) {
-                await axios.put(`${API_BASE}/api/v1/franchises/${editingId}`, formData, config);
+                await axios.put(`${API_BASE}/api/v1/franchises/${editingId}`, dataToSend, config);
                 toast.success('Franchise updated successfully!');
             } else {
-                await axios.post(`${API_BASE}/api/v1/franchises`, formData, config);
+                await axios.post(`${API_BASE}/api/v1/franchises`, dataToSend, config);
                 toast.success('Franchise added successfully!');
             }
             fetchFranchises();
@@ -160,13 +201,14 @@ const FranchiseManagement: React.FC = () => {
     const handleEdit = (franchise: Franchise) => {
         setFormData({
             name: franchise.name,
+            location: '', // Remove location as it's not in Franchise interface
             district: franchise.district,
             address: franchise.address,
             contactPerson: franchise.contactPerson,
             phone: franchise.phone,
             email: franchise.email,
             status: franchise.status,
-            owner: (franchise as any).owner || '',
+            ownerId: (franchise as any).ownerId || (franchise as any).owner || '',
             commissionPercentage: (franchise as any).commissionPercentage || ''
         });
         setIsEditing(true);
@@ -192,13 +234,14 @@ const FranchiseManagement: React.FC = () => {
     const resetForm = () => {
         setFormData({
             name: '',
+            location: '',
             district: '',
             address: '',
             contactPerson: '',
             phone: '',
             email: '',
             status: 'active',
-            owner: '',
+            ownerId: '',
             commissionPercentage: ''
         });
         setIsEditing(false);
@@ -217,19 +260,21 @@ const FranchiseManagement: React.FC = () => {
         <div className="p-4">
             <h2 className="text-2xl font-bold mb-4">Franchise Management</h2>
             
-            {error && (
+            {error && franchises.length === 0 ? (
                 <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded-lg">
                     {error}
                 </div>
-            )}
+            ) : null}
             
             {/* Franchise Sales & Commission Table */}
             <div className="mb-8">
                 <h3 className="text-xl font-semibold mb-2">Franchise Sales & Commissions</h3>
                 {salesLoading ? (
                     <div>Loading sales data...</div>
-                ) : salesError ? (
+                ) : salesError && franchiseSales.length === 0 ? (
                     <div className="text-red-600">{salesError}</div>
+                ) : franchiseSales.length === 0 ? (
+                    <div className="text-gray-500">No franchise sales data found yet. Sales and commissions will appear here after your first order.</div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="min-w-full bg-white border border-gray-200">
@@ -247,9 +292,9 @@ const FranchiseManagement: React.FC = () => {
                                     <tr key={f._id}>
                                         <td className="px-4 py-2 border">{f.name}</td>
                                         <td className="px-4 py-2 border">{f.owner?.name || '-'}</td>
-                                        <td className="px-4 py-2 border">₹{f.totalSales.toLocaleString()}</td>
-                                        <td className="px-4 py-2 border">{f.commissionPercentage}%</td>
-                                        <td className="px-4 py-2 border">₹{f.commission.toLocaleString()}</td>
+                                        <td className="px-4 py-2 border">₹{(f.totalSales || 0).toLocaleString()}</td>
+                                        <td className="px-4 py-2 border">{f.commissionPercentage || 0}%</td>
+                                        <td className="px-4 py-2 border">₹{(f.commission || 0).toLocaleString()}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -349,19 +394,33 @@ const FranchiseManagement: React.FC = () => {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Owner (User)</label>
+                            <label className="block text-sm font-medium mb-1">Location</label>
+                            <input
+                                type="text"
+                                name="location"
+                                value={formData.location}
+                                onChange={handleInputChange}
+                                className="w-full p-2 border rounded"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Owner (User) - {users.length} users available</label>
                             <select
-                                name="owner"
-                                value={formData.owner}
+                                name="ownerId"
+                                value={formData.ownerId}
                                 onChange={handleInputChange}
                                 className="w-full p-2 border rounded"
                                 required
                             >
                                 <option value="">Select Owner</option>
                                 {users.map(user => (
-                                    <option key={user.id || user._id} value={user.id || user._id}>{user.name} ({user.email})</option>
+                                    <option key={user.id} value={user.id}>{user.name} ({user.email})</option>
                                 ))}
                             </select>
+                            {users.length === 0 && (
+                                <p className="text-red-500 text-sm mt-1">No users available. Please create a user first.</p>
+                            )}
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Commission Percentage</label>
@@ -390,9 +449,9 @@ const FranchiseManagement: React.FC = () => {
                 </form>
             </Card>
 
-            {franchises.length === 0 ? (
+            {franchises.length === 0 && !error ? (
                 <div className="text-center text-gray-500 py-8">
-                    No franchises found. Add your first franchise using the form above.
+                    No franchises found. Please add your first franchise using the form above.
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

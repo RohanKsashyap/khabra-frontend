@@ -259,11 +259,11 @@ export const MyOrdersPage = () => {
                           <p className="font-medium">{item.productName}</p>
                           <p className="text-gray-600 text-sm">Quantity: {item.quantity}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold">₹{item.productPrice?.toFixed(2)}</p>
-                        </div>
                       </div>
                     ))}
+                  </div>
+                  <div className="mt-2 text-right">
+                    <span className="font-bold text-lg">₹{order.totalAmount?.toFixed(2)}</span>
                   </div>
 
                   {order.tracking && order.tracking.number && (

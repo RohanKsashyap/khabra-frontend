@@ -120,6 +120,10 @@ export const orderAPI = {
     const response = await api.post('/api/orders/admin/create', orderData);
     return response.data;
   },
+  createFranchiseOrder: async (orderData: any) => {
+    const response = await api.post('/api/v1/franchises/orders', orderData);
+    return response.data;
+  },
   fetchOrderById: async (orderId: string) => {
     const response = await api.get(`/api/orders/${orderId}`);
     return response.data;
@@ -154,6 +158,58 @@ export const orderAPI = {
   },
   deleteAllReturnRequests: async () => {
     const response = await api.delete('/api/returns/admin/all');
+    return response.data;
+  },
+};
+
+export const franchiseAPI = {
+  // Admin endpoints
+  getAllFranchises: async () => {
+    const response = await api.get('/api/v1/franchises');
+    return response.data;
+  },
+  getFranchiseOverview: async () => {
+    const response = await api.get('/api/v1/franchises/admin/overview');
+    return response.data;
+  },
+  getFranchiseStatistics: async () => {
+    const response = await api.get('/api/v1/franchises/admin/statistics');
+    return response.data;
+  },
+  getFranchiseDetails: async (franchiseId: string) => {
+    const response = await api.get(`/api/v1/franchises/${franchiseId}/details`);
+    return response.data;
+  },
+  createFranchise: async (franchiseData: any) => {
+    const response = await api.post('/api/v1/franchises', franchiseData);
+    return response.data;
+  },
+  updateFranchise: async (franchiseId: string, franchiseData: any) => {
+    const response = await api.put(`/api/v1/franchises/${franchiseId}`, franchiseData);
+    return response.data;
+  },
+  deleteFranchise: async (franchiseId: string) => {
+    const response = await api.delete(`/api/v1/franchises/${franchiseId}`);
+    return response.data;
+  },
+
+  // Franchise owner endpoints
+  getMyFranchiseSales: async () => {
+    const response = await api.get('/api/v1/franchises/my/sales');
+    return response.data;
+  },
+  createFranchiseOrder: async (orderData: any) => {
+    const response = await api.post('/api/v1/franchises/orders', orderData);
+    return response.data;
+  },
+  addDownlineMember: async (memberData: any) => {
+    const response = await api.post('/api/v1/franchises/downline', memberData);
+    return response.data;
+  },
+
+  // Public endpoints
+  getFranchisesByDistrict: async (district: string) => {
+    const response = await api.get(`/api/v1/franchises/district/${district}`);
     return response.data;
   },
 };

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import  { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Users, ShoppingBag, CreditCard, TrendingUp, Award } from 'lucide-react';
 import { formatCurrency } from '../../lib/utils';
@@ -8,7 +8,7 @@ import { Skeleton } from '../ui/Skeleton';
 import { useApiCache } from '../../hooks/useApiCache';
 
 interface DashboardData {
-  earnings: { total: number; thisMonth: number };
+  earnings: { total: number; pending: number; paid: number; thisMonth: number };
   orders: { total: number; thisMonth: number };
   team: { total: number; newThisMonth: number };
   personalPV: { total: number; thisMonth: number };
@@ -132,6 +132,10 @@ export function DashboardOverview() {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Earnings</p>
                 <p className="text-2xl font-bold mt-1">{formatCurrency(data.earnings.total)}</p>
+                <div className="flex gap-4 mt-2">
+                  <span className="text-xs text-muted-foreground">Pending: <span className="font-semibold text-yellow-600">{formatCurrency(data.earnings.pending)}</span></span>
+                  <span className="text-xs text-muted-foreground">Paid: <span className="font-semibold text-green-600">{formatCurrency(data.earnings.paid)}</span></span>
+                </div>
               </div>
               <div className="p-2 bg-green-100 rounded-lg">
                 <CreditCard className="h-6 w-6 text-green-700" />

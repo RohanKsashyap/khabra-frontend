@@ -70,6 +70,9 @@ const AdminTotalSalesPage: React.FC = () => {
       } else if (sortBy === 'mode') {
         vA = a.orderType;
         vB = b.orderType;
+      } else if (sortBy === 'franchise') {
+        vA = a.franchiseName || 'Direct';
+        vB = b.franchiseName || 'Direct';
       } else {
         vA = a[sortBy];
         vB = b[sortBy];
@@ -90,6 +93,14 @@ const AdminTotalSalesPage: React.FC = () => {
   const onlineCount = sortedSales.filter(s => s.orderType === 'online').length;
   const offlineCount = sortedSales.filter(s => s.orderType === 'offline').length;
 
+  // Franchise breakdown
+  const franchiseSales = sortedSales.filter(s => s.franchiseName);
+  const directSales = sortedSales.filter(s => !s.franchiseName);
+  const franchiseSum = franchiseSales.reduce((sum, s) => sum + (s.totalSales || 0), 0);
+  const directSum = directSales.reduce((sum, s) => sum + (s.totalSales || 0), 0);
+  const franchiseCount = franchiseSales.length;
+  const directCount = directSales.length;
+
   // Pie chart data
   const totalPie = onlineSum + offlineSum;
   const onlinePercent = totalPie ? (onlineSum / totalPie) * 100 : 0;
@@ -97,7 +108,7 @@ const AdminTotalSalesPage: React.FC = () => {
 
   // CSV download
   const handleDownloadCSV = () => {
-    const headers = ['productName', 'productPrice', 'productImage', 'orderType', 'totalQuantity', 'totalSales', 'saleDate'];
+    const headers = ['productName', 'productPrice', 'productImage', 'orderType', 'franchiseName', 'totalQuantity', 'totalSales', 'orderCount', 'saleDate'];
     const csv = toCSV(sortedSales, headers);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -153,6 +164,31 @@ const AdminTotalSalesPage: React.FC = () => {
           <span className="text-yellow-700">Offline</span>
         </div>
       </div>
+
+      {/* Franchise/Direct breakdown */}
+      <div className="flex flex-col sm:flex-row gap-6 mb-6 items-center">
+        <div className="flex gap-8">
+          <div className="bg-purple-50 px-4 py-2 rounded text-purple-800 font-semibold">Franchise Sales: ₹{franchiseSum.toLocaleString(undefined, { minimumFractionDigits: 2 })} ({franchiseCount})</div>
+          <div className="bg-gray-50 px-4 py-2 rounded text-gray-800 font-semibold">Direct Sales: ₹{directSum.toLocaleString(undefined, { minimumFractionDigits: 2 })} ({directCount})</div>
+        </div>
+        {/* Bar graph for franchise/direct split */}
+        <div className="w-64 h-6 bg-gray-200 rounded overflow-hidden flex mt-4 sm:mt-0">
+          <div
+            className="bg-purple-500 h-full"
+            style={{ width: `${totalPie ? (franchiseSum / totalPie) * 100 : 0}%` }}
+            title={`Franchise: ₹${franchiseSum.toLocaleString()}`}
+          />
+          <div
+            className="bg-gray-500 h-full"
+            style={{ width: `${totalPie ? (directSum / totalPie) * 100 : 0}%` }}
+            title={`Direct: ₹${directSum.toLocaleString()}`}
+          />
+        </div>
+        <div className="flex justify-between w-64 text-xs mt-1">
+          <span className="text-purple-700">Franchise</span>
+          <span className="text-gray-700">Direct</span>
+        </div>
+      </div>
       {/* Sorting */}
       <div className="mb-2 flex gap-4 items-center">
         <label className="font-medium">Sort by:</label>
@@ -160,6 +196,7 @@ const AdminTotalSalesPage: React.FC = () => {
           <option value="date">Date</option>
           <option value="amount">Amount</option>
           <option value="mode">Mode</option>
+          <option value="franchise">Franchise</option>
         </select>
         <button onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')} className="px-2 py-1 border rounded bg-gray-100">{sortDir === 'asc' ? '↑' : '↓'}</button>
       </div>
@@ -178,8 +215,10 @@ const AdminTotalSalesPage: React.FC = () => {
                   <th className="px-2 py-1 text-left">Product Price</th>
                   <th className="px-2 py-1 text-left">Product Image</th>
                   <th className="px-2 py-1 text-left">Order Type</th>
+                  <th className="px-2 py-1 text-left">Franchise</th>
                   <th className="px-2 py-1 text-left">Total Quantity Sold</th>
                   <th className="px-2 py-1 text-left">Total Sales Amount</th>
+                  <th className="px-2 py-1 text-left">Order Count</th>
                   <th className="px-2 py-1 text-left">Sale Date</th>
                 </tr>
               </thead>
@@ -190,8 +229,18 @@ const AdminTotalSalesPage: React.FC = () => {
                     <td className="px-2 py-1">₹{s.productPrice}</td>
                     <td className="px-2 py-1">{s.productImage ? <img src={s.productImage} alt={s.productName} className="h-8 w-8 object-cover rounded" /> : '-'}</td>
                     <td className="px-2 py-1 capitalize">{s.orderType}</td>
+                    <td className="px-2 py-1">
+                      {s.franchiseName ? (
+                        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
+                          {s.franchiseName}
+                        </span>
+                      ) : (
+                        <span className="text-gray-500 text-xs">Direct</span>
+                      )}
+                    </td>
                     <td className="px-2 py-1">{s.totalQuantity}</td>
                     <td className="px-2 py-1">₹{s.totalSales.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td className="px-2 py-1">{s.orderCount || 1}</td>
                     <td className="px-2 py-1">{formatDate(s.saleDate)}</td>
                   </tr>
                 ))}
