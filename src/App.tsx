@@ -30,6 +30,7 @@ const TermsAndConditionsPage = lazy(() => import('./pages/TermsAndConditionsPage
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const FranchisesPage = lazy(() => import('./pages/FranchisesPage'));
 const FranchiseDashboard = lazy(() => import('./pages/FranchiseDashboard'));
+const FranchiseCreateOrderPage = lazy(() => import('./pages/FranchiseCreateOrderPage'));
 
 // Dashboard pages
 const DashboardOverview = lazy(() => import('./components/dashboard/DashboardOverview').then(module => ({ default: module.DashboardOverview })));
@@ -132,6 +133,9 @@ function AppRoutes() {
             <Route path="offline-orders" element={<ProtectedRoute adminOnly><AdminOfflineOrdersPage /></ProtectedRoute>} />
             <Route path="notifications-admin" element={<ProtectedRoute adminOnly><AdminNotificationsPage /></ProtectedRoute>} />
           </Route>
+
+          {/* Franchise Owner Only Route: Franchise Create Order */}
+          <Route path="/franchise/create-order" element={<ProtectedRoute franchiseOwnerOnly><FranchiseCreateOrderPage /></ProtectedRoute>} />
 
           <Route
             path="/my-orders/:orderId"

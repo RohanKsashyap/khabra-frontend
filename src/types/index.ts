@@ -1,5 +1,6 @@
 export interface User {
   id: string;
+  _id?: string; // Add this line for MongoDB ObjectId compatibility
   name: string;
   email: string;
   phone: string;
@@ -168,4 +169,5 @@ export interface Franchise {
   openingDate: string;
   createdAt: string;
   updatedAt: string;
+  additionalLocation?: string;
 }

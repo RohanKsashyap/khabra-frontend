@@ -27,7 +27,9 @@ const FranchiseList: React.FC = () => {
             const url = selectedDistrict 
                 ? `${API_BASE}/api/v1/franchises/district/${selectedDistrict}`
                 : `${API_BASE}/api/v1/franchises`;
-            const response = await axios.get(url);
+            const token = localStorage.getItem('token');
+            const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+            const response = await axios.get(url, config);
             setFranchises(response.data.data.filter((f: Franchise) => f.status === 'active'));
             setLoading(false);
         } catch (error) {

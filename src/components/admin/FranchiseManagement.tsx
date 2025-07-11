@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Franchise, User, Address } from '../../types';
 import toast from 'react-hot-toast';
+import FranchiseNetworkTree from '../franchise/FranchiseNetworkTree';
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -11,9 +12,11 @@ interface FranchiseSales {
     _id: string;
     name: string;
     owner?: { name: string; email: string };
+    ownerId?: { name?: string; email?: string };
     commissionPercentage: number;
     totalSales: number;
     commission: number;
+    sales?: { total: number };
 }
 
 const FranchiseManagement: React.FC = () => {
@@ -22,7 +25,7 @@ const FranchiseManagement: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: '',
-        location: '',
+        additionalLocation: '',
         district: '',
         address: '',
         contactPerson: '',
@@ -39,6 +42,7 @@ const FranchiseManagement: React.FC = () => {
     const [salesError, setSalesError] = useState<string | null>(null);
     const [users, setUsers] = useState<User[]>([]);
     const [addressLoading, setAddressLoading] = useState(false);
+    const [expandedNetworkId, setExpandedNetworkId] = useState<string | null>(null);
 
     const punjabDistricts = [
         'Amritsar', 'Barnala', 'Bathinda', 'Faridkot', 'Fatehgarh Sahib',
@@ -83,7 +87,12 @@ const FranchiseManagement: React.FC = () => {
             const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
             console.log('fetchFranchiseSales config:', config);
             const response = await axios.get(`${API_BASE}/api/v1/franchises/admin/overview`, config);
-            setFranchiseSales(response.data.data || []);
+            // Normalize totalSales to always be a number
+            const normalized = (response.data.data || []).map((f: any) => ({
+                ...f,
+                totalSales: typeof f.totalSales === 'object' && f.totalSales !== null ? (f.totalSales.total ?? 0) : (f.totalSales ?? 0)
+            }));
+            setFranchiseSales(normalized);
         } catch (error) {
             setSalesError('Failed to load franchise sales.');
         } finally {
@@ -125,20 +134,20 @@ const FranchiseManagement: React.FC = () => {
                     const response = await axios.get(`${API_BASE}/api/addresses/user/${value}`, config);
                     const addresses: Address[] = response.data;
                     const defaultAddress = addresses.find(a => (a as any).isDefault) || addresses[0];
-                    const selectedUser = users.find(u => u.id === value);
+                    // Find user by id or _id
+                    const selectedUser = users.find(u => u.id === value || u._id === value);
+                    console.log('Selected user for autofill:', selectedUser);
                     let phone = defaultAddress?.phone || '';
                     // Use address phone if valid, else use user's phone
-                    if (!/^\d{10}$/.test(phone) && selectedUser?.phone) {
+                    if (!/^[0-9]{10}$/.test(phone) && selectedUser?.phone) {
                         phone = selectedUser.phone;
                     }
                     setFormData(prev => ({
                         ...prev,
-                        location: '', // Remove location as it's not in Franchise interface
                         address: defaultAddress ? defaultAddress.addressLine1 + (defaultAddress.addressLine2 ? (', ' + defaultAddress.addressLine2) : '') : '',
                         phone: phone,
                         email: selectedUser?.email || '',
                         contactPerson: selectedUser?.name || '',
-                        // Optionally fill more fields if needed
                     }));
                 } catch (err) {
                     // Optionally handle error
@@ -147,19 +156,17 @@ const FranchiseManagement: React.FC = () => {
                 }
             }
         } else {
-        setFormData({
-            ...formData,
+            setFormData({
+                ...formData,
                 [name]: value
-        });
+            });
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
         // Debug: Log form data
         console.log('Form data being sent:', formData);
-        
         // Validate required fields
         if (!formData.ownerId) {
             setError('Please select an owner');
@@ -169,20 +176,25 @@ const FranchiseManagement: React.FC = () => {
             setError('Please enter commission percentage');
             return;
         }
-        
+        if (!formData.email || !/^[^@]+@[^@]+\.[^@]+$/.test(formData.email)) {
+            setError('Please enter a valid email');
+            return;
+        }
+        if (!formData.phone || !/^[0-9]{10}$/.test(formData.phone)) {
+            setError('Please enter a valid 10-digit phone number');
+            return;
+        }
         try {
             setError(null);
             const token = localStorage.getItem('token');
             const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-            
             // Convert commissionPercentage to number
             const dataToSend = {
                 ...formData,
+                location: formData.additionalLocation, // Map additionalLocation to location for backend
                 commissionPercentage: Number(formData.commissionPercentage)
             };
-            
             console.log('Data being sent to backend:', dataToSend);
-            
             if (isEditing && editingId) {
                 await axios.put(`${API_BASE}/api/v1/franchises/${editingId}`, dataToSend, config);
                 toast.success('Franchise updated successfully!');
@@ -201,7 +213,7 @@ const FranchiseManagement: React.FC = () => {
     const handleEdit = (franchise: Franchise) => {
         setFormData({
             name: franchise.name,
-            location: '', // Remove location as it's not in Franchise interface
+            additionalLocation: franchise.additionalLocation || '',
             district: franchise.district,
             address: franchise.address,
             contactPerson: franchise.contactPerson,
@@ -234,7 +246,7 @@ const FranchiseManagement: React.FC = () => {
     const resetForm = () => {
         setFormData({
             name: '',
-            location: '',
+            additionalLocation: '',
             district: '',
             address: '',
             contactPerson: '',
@@ -247,6 +259,7 @@ const FranchiseManagement: React.FC = () => {
         setIsEditing(false);
         setEditingId(null);
     };
+    console.log('API_BASE:', API_BASE);
 
     if (loading) {
         return (
@@ -285,17 +298,35 @@ const FranchiseManagement: React.FC = () => {
                                     <th className="px-4 py-2 border">Total Sales</th>
                                     <th className="px-4 py-2 border">Commission %</th>
                                     <th className="px-4 py-2 border">Commission</th>
+                                    <th className="px-4 py-2 border">Network</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {franchiseSales.map(f => (
-                                    <tr key={f._id}>
-                                        <td className="px-4 py-2 border">{f.name}</td>
-                                        <td className="px-4 py-2 border">{f.owner?.name || '-'}</td>
-                                        <td className="px-4 py-2 border">₹{(f.totalSales || 0).toLocaleString()}</td>
-                                        <td className="px-4 py-2 border">{f.commissionPercentage || 0}%</td>
-                                        <td className="px-4 py-2 border">₹{(f.commission || 0).toLocaleString()}</td>
-                                    </tr>
+                                    <React.Fragment key={f._id}>
+                                        <tr>
+                                            <td className="px-4 py-2 border">{f.name}</td>
+                                            <td className="px-4 py-2 border">{f.owner?.name || f.ownerId?.name || f.ownerId?.email || '-'}</td>
+                                            <td className="px-4 py-2 border">₹{(typeof f.totalSales === 'number' ? f.totalSales : (f.sales?.total ?? 0)).toLocaleString()}</td>
+                                            <td className="px-4 py-2 border">{f.commissionPercentage || 0}%</td>
+                                            <td className="px-4 py-2 border">₹{(f.commission || 0).toLocaleString()}</td>
+                                            <td className="px-4 py-2 border">
+                                                <button
+                                                    className="bg-blue-500 text-white px-3 py-1 rounded text-xs"
+                                                    onClick={() => setExpandedNetworkId(expandedNetworkId === f._id ? null : f._id)}
+                                                >
+                                                    {expandedNetworkId === f._id ? 'Hide Network' : 'View Network'}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {expandedNetworkId === f._id && (
+                                            <tr>
+                                                <td colSpan={6} className="p-4 bg-gray-50">
+                                                    <FranchiseNetworkTree franchiseId={f._id} />
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
                                 ))}
                             </tbody>
                         </table>
@@ -394,11 +425,11 @@ const FranchiseManagement: React.FC = () => {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Location</label>
+                            <label className="block text-sm font-medium mb-1">Additional Location</label>
                             <input
                                 type="text"
-                                name="location"
-                                value={formData.location}
+                                name="additionalLocation"
+                                value={formData.additionalLocation}
                                 onChange={handleInputChange}
                                 className="w-full p-2 border rounded"
                                 required
@@ -415,7 +446,7 @@ const FranchiseManagement: React.FC = () => {
                             >
                                 <option value="">Select Owner</option>
                                 {users.map(user => (
-                                    <option key={user.id} value={user.id}>{user.name} ({user.email})</option>
+                                    <option key={user._id} value={user._id}>{user.name} ({user.email})</option>
                                 ))}
                             </select>
                             {users.length === 0 && (
@@ -480,8 +511,10 @@ const FranchiseManagement: React.FC = () => {
                         </Card>
                     ))}
                 </div>
+                
             )}
         </div>
+        
     );
 };
 

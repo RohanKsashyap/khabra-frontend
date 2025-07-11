@@ -71,7 +71,7 @@ export const authAPI = {
 };
 
 export const productAPI = {
-  getProducts: async (params?: { category?: string; search?: string; sort?: string }) => {
+  getProducts: async (params?: { category?: string; search?: string; sort?: string; page?: number; limit?: number }) => {
     const response = await api.get('/api/products', { params });
     return response.data;
   },
@@ -282,8 +282,8 @@ export const notificationAPI = {
 };
 
 export const userAPI = {
-  getUsers: async (params?: { search?: string; email?: string }) => {
-    const response = await api.get('/api/users', { params });
+  getUsers: async (params?: { search?: string }) => {
+    const response = await api.get('/api/users/search', { params });
     return response.data;
   },
   getUser: async (id: string) => {
