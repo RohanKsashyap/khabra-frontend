@@ -46,6 +46,8 @@ const NotificationPage = lazy(() => import('./pages/NotificationPage').then(modu
 const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'));
 const AdminProductsPage = lazy(() => import('./pages/AdminProductsPage'));
 const AdminFranchisePage = lazy(() => import('./pages/AdminFranchisePage'));
+const AdminFranchiseDetailPage = lazy(() => import('./pages/AdminFranchiseDetailPage'));
+const AdminClientManagementPage = lazy(() => import('./pages/AdminClientManagementPage'));
 const AdminRanksPage = lazy(() => import('./pages/AdminRanksPage'));
 const AdminReturnRequestsPage = lazy(() => import('./pages/AdminReturnRequestsPage'));
 const AdminWithdrawalsPage = lazy(() => import('./pages/AdminWithdrawalsPage'));
@@ -126,6 +128,8 @@ function AppRoutes() {
             <Route path="users" element={<ProtectedRoute adminOnly><AdminUsersPage /></ProtectedRoute>} />
             <Route path="products" element={<ProtectedRoute adminOnly><AdminProductsPage /></ProtectedRoute>} />
             <Route path="franchises" element={<ProtectedRoute adminOnly><AdminFranchisePage /></ProtectedRoute>} />
+            <Route path="franchises/:id" element={<ProtectedRoute adminOnly><AdminFranchiseDetailPage /></ProtectedRoute>} />
+            <Route path="clients" element={<ProtectedRoute adminOnly><AdminClientManagementPage /></ProtectedRoute>} />
             <Route path="ranks" element={<ProtectedRoute adminOnly><AdminRanksPage /></ProtectedRoute>} />
             <Route path="returns" element={<ProtectedRoute adminOnly><AdminReturnRequestsPage /></ProtectedRoute>} />
             <Route path="withdrawals-admin" element={<ProtectedRoute adminOnly><AdminWithdrawalsPage /></ProtectedRoute>} />

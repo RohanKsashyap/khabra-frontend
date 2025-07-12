@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -501,6 +502,11 @@ const FranchiseManagement: React.FC = () => {
                                 </span>
                             </p>
                             <div className="flex gap-2 mt-2">
+                                <Link to={`/dashboard/franchises/${franchise._id}`}>
+                                    <Button className="bg-green-500 text-white">
+                                        View Details
+                                    </Button>
+                                </Link>
                                 <Button onClick={() => handleEdit(franchise)} className="bg-blue-500 text-white">
                                     Edit
                                 </Button>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { orderAPI } from '../services/api';
+import { orderAPI, franchiseAPI } from '../services/api';
 import { format } from 'date-fns';
 import AdminAddOrderPage from './AdminAddOrderPage';
 import { Button } from '../components/ui/Button';
@@ -7,19 +7,30 @@ import { useAuth } from '../contexts/AuthContext';
 
 const AdminOfflineOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
+  const [allOrders, setAllOrders] = useState<any[]>([]);
+  const [franchises, setFranchises] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddOrderModal, setShowAddOrderModal] = useState(false);
+  const [franchiseFilter, setFranchiseFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
   const { user } = useAuth();
 
   const fetchOfflineOrders = async () => {
     try {
       setIsLoading(true);
-      const allOrders = await orderAPI.fetchOrders(true);
-      const offlineOrders = allOrders.data.filter(
+      const [ordersRes, franchisesRes] = await Promise.all([
+        orderAPI.fetchOrders(true),
+        franchiseAPI.getAllFranchises()
+      ]);
+      const offlineOrders = ordersRes.data.filter(
         (order: any) => order.orderType === 'offline'
       );
+      setAllOrders(offlineOrders);
       setOrders(offlineOrders);
+      setFranchises(franchisesRes.data || []);
     } catch (err) {
       setError('Failed to fetch offline orders.');
       console.error(err);
@@ -32,6 +43,35 @@ const AdminOfflineOrdersPage: React.FC = () => {
     fetchOfflineOrders();
     // eslint-disable-next-line
   }, []);
+
+  // Filter orders based on selected filters
+  useEffect(() => {
+    let filtered = allOrders;
+    
+    if (franchiseFilter) {
+      filtered = filtered.filter((order: any) => 
+        order.franchise && order.franchise.name === franchiseFilter
+      );
+    }
+    
+    if (statusFilter) {
+      filtered = filtered.filter((order: any) => order.status === statusFilter);
+    }
+    
+    if (dateFrom) {
+      filtered = filtered.filter((order: any) => 
+        new Date(order.createdAt) >= new Date(dateFrom)
+      );
+    }
+    
+    if (dateTo) {
+      filtered = filtered.filter((order: any) => 
+        new Date(order.createdAt) <= new Date(dateTo)
+      );
+    }
+    
+    setOrders(filtered);
+  }, [allOrders, franchiseFilter, statusFilter, dateFrom, dateTo]);
 
   // Modal overlay
   const Modal: React.FC<{ onClose: () => void; children: React.ReactNode }> = ({ onClose, children }) => (
@@ -67,12 +107,71 @@ const AdminOfflineOrdersPage: React.FC = () => {
           </Button>
         )}
       </h1>
+
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <h2 className="text-lg font-semibold mb-4">Filters</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Franchise</label>
+            <select
+              value={franchiseFilter}
+              onChange={(e) => setFranchiseFilter(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md"
+            >
+              <option value="">All Franchises</option>
+              {franchises.map(franchise => (
+                <option key={franchise._id} value={franchise.name}>
+                  {franchise.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">Status</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md"
+            >
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">Date From</label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">Date To</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md"
+            />
+          </div>
+        </div>
+      </div>
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="w-full text-sm text-left">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
               <th className="px-6 py-3">Order ID</th>
               <th className="px-6 py-3">User</th>
+              <th className="px-6 py-3">Franchise</th>
               <th className="px-6 py-3">Date</th>
               <th className="px-6 py-3">Total Amount</th>
               <th className="px-6 py-3">Status</th>
@@ -84,6 +183,15 @@ const AdminOfflineOrdersPage: React.FC = () => {
                 <tr key={order._id} className="bg-white border-b">
                   <td className="px-6 py-4 font-medium text-gray-900">{order._id}</td>
                   <td className="px-6 py-4">{order.user?.name || 'N/A'}</td>
+                  <td className="px-6 py-4">
+                    {order.franchise?.name ? (
+                      <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
+                        {order.franchise.name}
+                      </span>
+                    ) : (
+                      <span className="text-gray-500 text-xs">N/A</span>
+                    )}
+                  </td>
                   <td className="px-6 py-4">{format(new Date(order.createdAt), 'PPpp')}</td>
                   <td className="px-6 py-4">₹{order.totalAmount.toFixed(2)}</td>
                   <td className="px-6 py-4">
@@ -97,7 +205,7 @@ const AdminOfflineOrdersPage: React.FC = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="text-center p-8 text-gray-500">
+                <td colSpan={6} className="text-center p-8 text-gray-500">
                   No offline orders found.
                 </td>
               </tr>

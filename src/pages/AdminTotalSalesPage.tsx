@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { orderAPI } from '../services/api';
+import { orderAPI, franchiseAPI } from '../services/api';
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
@@ -13,27 +13,34 @@ function toCSV(rows: any[], headers: string[]) {
 
 const AdminTotalSalesPage: React.FC = () => {
   const [sales, setSales] = useState<any[]>([]);
+  const [franchises, setFranchises] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [franchiseFilter, setFranchiseFilter] = useState<string>('');
+  const [orderTypeFilter, setOrderTypeFilter] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('date');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
-    const fetchSales = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const res = await orderAPI.fetchTotalProductSales();
-        setSales(res.data || []);
+        const [salesRes, franchisesRes] = await Promise.all([
+          orderAPI.fetchTotalProductSales(),
+          franchiseAPI.getAllFranchises()
+        ]);
+        setSales(salesRes.data || []);
+        setFranchises(franchisesRes.data || []);
       } catch (err: any) {
-        setError(err.message || 'Failed to fetch total sales');
+        setError(err.message || 'Failed to fetch data');
       } finally {
         setIsLoading(false);
       }
     };
-    fetchSales();
+    fetchData();
   }, []);
 
   // Add saleDate to each sale (simulate, as backend does not provide it)
@@ -44,7 +51,7 @@ const AdminTotalSalesPage: React.FC = () => {
     }));
   }, [sales]);
 
-  // Filter by date range
+  // Filter by date range, franchise, and order type
   const filteredSales = useMemo(() => {
     let filtered = salesWithDate;
     if (startDate) {
@@ -53,8 +60,14 @@ const AdminTotalSalesPage: React.FC = () => {
     if (endDate) {
       filtered = filtered.filter(s => new Date(s.saleDate) <= new Date(endDate));
     }
+    if (franchiseFilter) {
+      filtered = filtered.filter(s => s.franchiseName === franchiseFilter);
+    }
+    if (orderTypeFilter) {
+      filtered = filtered.filter(s => s.orderType === orderTypeFilter);
+    }
     return filtered;
-  }, [salesWithDate, startDate, endDate]);
+  }, [salesWithDate, startDate, endDate, franchiseFilter, orderTypeFilter]);
 
   // Sorting
   const sortedSales = useMemo(() => {
@@ -136,6 +149,25 @@ const AdminTotalSalesPage: React.FC = () => {
           <div>
             <label className="block text-sm font-medium">End Date</label>
             <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="border rounded px-2 py-1" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Franchise</label>
+            <select value={franchiseFilter} onChange={e => setFranchiseFilter(e.target.value)} className="border rounded px-2 py-1">
+              <option value="">All Franchises</option>
+              {franchises.map(franchise => (
+                <option key={franchise._id} value={franchise.name}>
+                  {franchise.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Order Type</label>
+            <select value={orderTypeFilter} onChange={e => setOrderTypeFilter(e.target.value)} className="border rounded px-2 py-1">
+              <option value="">All Types</option>
+              <option value="online">Online</option>
+              <option value="offline">Offline</option>
+            </select>
           </div>
           <button onClick={handleDownloadCSV} className="ml-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Download CSV</button>
         </div>

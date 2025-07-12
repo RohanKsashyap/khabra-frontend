@@ -96,6 +96,7 @@ export const DashboardPage = () => {
                   <li><NavLink to="/dashboard/users" className={getNavLinkClass}> <Users className="mr-3 h-5 w-5" /> Manage Users </NavLink></li>
                   <li><NavLink to="/dashboard/products" className={getNavLinkClass}> <Building className="mr-3 h-5 w-5" /> Manage Products </NavLink></li>
                   <li><NavLink to="/dashboard/franchises" className={getNavLinkClass}> <Store className="mr-3 h-5 w-5" /> Manage Franchises </NavLink></li>
+                  <li><NavLink to="/dashboard/clients" className={getNavLinkClass}> <Users className="mr-3 h-5 w-5" /> Client Management </NavLink></li>
                   <li><NavLink to="/dashboard/ranks" className={getNavLinkClass}> <Award className="mr-3 h-5 w-5" /> Manage Ranks </NavLink></li>
                   <li><NavLink to="/dashboard/returns" className={getNavLinkClass}> <ShoppingBag className="mr-3 h-5 w-5" /> Return Requests </NavLink></li>
                   <li><NavLink to="/dashboard/withdrawals-admin" className={getNavLinkClass}> <Wallet className="mr-3 h-5 w-5" /> Manage Withdrawals </NavLink></li>
