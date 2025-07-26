@@ -21,6 +21,13 @@ export interface User {
   updatedAt: Date;
 }
 
+export interface ProductStock {
+  currentQuantity: number;
+  minimumThreshold: number;
+  maximumCapacity: number;
+  status: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK';
+}
+
 export interface Product {
   _id: string;
   name: string;
@@ -28,7 +35,8 @@ export interface Product {
   price: number;
   image: string;
   category: string;
-  stock: number;
+  stock: number; // Legacy field
+  stockInfo?: ProductStock; // New inventory system field
   commission: number;
   isActive: boolean;
   ratings: Array<{

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { User as AppUser } from '../types';
 
@@ -21,13 +21,16 @@ const RATE_LIMIT_DELAY = 1000; // 1 second delay between requests
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY = 1000; // 1 second
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+// Create a separate component that uses hooks
+function AuthProviderContent({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const lastRequestTime = useRef<number>(0);
   const retryCount = useRef<number>(0);
+  const mountedRef = useRef(true);
 
   const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -35,7 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        setUser(null);
+        if (mountedRef.current) {
+          setUser(null);
+          setLoading(false);
+        }
         return;
       }
 
@@ -65,36 +71,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         const data = await response.json();
-        setUser(data.user);
-        retryCount.current = 0;
+        if (mountedRef.current) {
+          setUser(data.user);
+          retryCount.current = 0;
+        }
       } else {
         localStorage.removeItem('token');
-        setUser(null);
+        if (mountedRef.current) {
+          setUser(null);
+        }
       }
     } catch (error) {
       console.error('Auth check failed:', error);
       localStorage.removeItem('token');
-      setUser(null);
+      if (mountedRef.current) {
+        setUser(null);
+      }
+    } finally {
+      if (mountedRef.current) {
+        setLoading(false);
+        setInitialized(true);
+      }
     }
   }, []);
 
   useEffect(() => {
-    let mounted = true;
+    mountedRef.current = true;
 
     const initializeAuth = async () => {
-      if (!initialized && mounted) {
+      if (!initialized) {
         await checkAuth();
-        if (mounted) {
-          setLoading(false);
-          setInitialized(true);
-        }
       }
     };
 
     initializeAuth();
 
     return () => {
-      mounted = false;
+      mountedRef.current = false;
     };
   }, [initialized, checkAuth]);
 
@@ -267,10 +280,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Main AuthProvider that doesn't use hooks
+export function AuthProvider({ children }: { children: ReactNode }) {
+  return <AuthProviderContent>{children}</AuthProviderContent>;
+}
+
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-} 
+}
+
+// Add an alias for useAuth to maintain compatibility with existing code
+export const useAuthContext = useAuth; 

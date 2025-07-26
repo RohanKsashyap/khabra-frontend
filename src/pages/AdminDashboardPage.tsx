@@ -2,18 +2,21 @@ import React, { useState } from 'react';
 import AdminEarningsTable from '../components/admin/AdminEarningsTable';
 import AdminWithdrawalsTable from '../components/admin/AdminWithdrawalsTable';
 import AdminNetworkTreeViewer from '../components/admin/AdminNetworkTreeViewer';
+import AdminDashboardOverview from '../components/admin/AdminDashboardOverview';
 import AdminRanksPage from './AdminRanksPage';
 import AdminTotalSalesPage from './AdminTotalSalesPage';
 import AdminAddOrderPage from './AdminAddOrderPage';
 import { Button } from '../components/ui/Button';
 
-type AdminTab = 'ranks' | 'earnings' | 'sales' | 'withdrawals' | 'network' | 'addOrder';
+type AdminTab = 'overview' | 'ranks' | 'earnings' | 'sales' | 'withdrawals' | 'network' | 'addOrder';
 
 const AdminDashboardPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<AdminTab>('ranks');
+  const [activeTab, setActiveTab] = useState<AdminTab>('overview');
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'overview':
+        return <AdminDashboardOverview />;
       case 'ranks':
         return <AdminRanksPage />;
       case 'earnings':
@@ -27,7 +30,7 @@ const AdminDashboardPage: React.FC = () => {
       case 'addOrder':
         return <AdminAddOrderPage />;
       default:
-        return <AdminRanksPage />;
+        return <AdminDashboardOverview />;
     }
   };
 
@@ -44,6 +47,7 @@ const AdminDashboardPage: React.FC = () => {
     <div className="max-w-7xl mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
       <div className="flex flex-wrap gap-2 mb-6 border-b pb-4">
+        <TabButton tab="overview" label="Overview" />
         <TabButton tab="ranks" label="Ranks" />
         <TabButton tab="earnings" label="Earnings" />
         <TabButton tab="sales" label="Total Sales" />

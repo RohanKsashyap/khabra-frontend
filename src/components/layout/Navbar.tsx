@@ -6,7 +6,8 @@ import { useCartStore } from '../../store/cartStore';
 import { Button } from '../ui/Button';
 
 export function Navbar() {
-  const { user, loading, logout } = useAuth();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { totalItems, items, getTotalAmount } = useCartStore();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,6 +16,36 @@ export function Navbar() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isCartPreviewOpen, setIsCartPreviewOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  // Safely attempt to get auth context
+  useEffect(() => {
+    const getAuthContext = () => {
+      try {
+        const auth = useAuth();
+        setUser(auth.user);
+        setLoading(auth.loading);
+      } catch (error) {
+        // If AuthProvider is not available, keep default state
+        setUser(null);
+        setLoading(false);
+      }
+    };
+
+    getAuthContext();
+  }, []);
+
+  // Logout function with safe fallback
+  const handleLogout = () => {
+    try {
+      const auth = useAuth();
+      auth.logout();
+    } catch (error) {
+      // Fallback logout behavior
+      localStorage.removeItem('token');
+      setUser(null);
+      navigate('/login');
+    }
+  };
 
   useEffect(() => {
     const onScroll = () => {
@@ -160,7 +191,7 @@ export function Navbar() {
               <Link to="/dashboard">
                 <User className="h-5 w-5" />
               </Link>
-              <button onClick={logout}>
+              <button onClick={handleLogout}>
                 <LogOut className="h-5 w-5" />
               </button>
             </div>

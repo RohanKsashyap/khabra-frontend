@@ -8,8 +8,10 @@ import { orderAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import { colors } from '../styles/theme'; // Import colors for styling progress indicator
 import { Button } from '../components/ui/Button';
+import RazorpayCheckout from '../components/payment/RazorpayCheckout';
+import { processRazorpayPayment } from '../utils/razorpay';
 
-type PaymentMethod = 'card' | 'upi' | 'netbanking' | 'cod';
+type PaymentMethod = 'card' | 'upi' | 'netbanking' | 'cod' | 'razorpay';
 
 enum CheckoutStep {
   Shipping = 'Shipping',
@@ -265,16 +267,38 @@ export const CheckoutPage = () => {
         totalAmount: directPurchaseOrder ? directPurchaseOrder.totalAmount : getTotalAmount()
       });
 
-      if (!directPurchaseOrder) {
-        await clearCart();
-      }
-      
-      navigate('/checkout/success', { 
-        state: { 
-          orderId: order._id,
-          totalAmount: order.totalAmount
+      if (paymentMethod === 'razorpay') {
+        try {
+          // Process Razorpay payment
+          await processRazorpayPayment(order._id);
+          if (!directPurchaseOrder) {
+            await clearCart();
+          }
+          
+          navigate('/checkout/success', { 
+            state: { 
+              orderId: order._id,
+              totalAmount: order.totalAmount
+            }
+          });
+        } catch (paymentError: any) {
+          toast.error(paymentError.message || 'Payment failed. Please try again.');
+          setIsProcessing(false);
+          return;
         }
-      });
+      } else {
+        // For other payment methods
+        if (!directPurchaseOrder) {
+          await clearCart();
+        }
+        
+        navigate('/checkout/success', { 
+          state: { 
+            orderId: order._id,
+            totalAmount: order.totalAmount
+          }
+        });
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to place order. Please try again.');
     } finally {
@@ -554,6 +578,21 @@ export const CheckoutPage = () => {
                         onChange={() => setPaymentMethod('cod')}
                       />
                       <span className="ml-2 text-gray-700">Cash on Delivery (COD)</span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        className="form-radio text-blue-600 h-5 w-5 transition-colors duration-200"
+                        name="paymentMethod"
+                        value="razorpay"
+                        checked={paymentMethod === 'razorpay'}
+                        onChange={() => setPaymentMethod('razorpay')}
+                      />
+                      <span className="ml-2 text-gray-700">Razorpay</span>
+                      <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" className="h-6 ml-2 inline" />
                     </label>
                   </div>
                 </div>

@@ -3,10 +3,13 @@ import { useCartStore } from '../store/cartStore';
 import toast from 'react-hot-toast';
 import { useEffect } from 'react';
 import { Button } from '../components/ui/Button';
+import DirectRazorpayCheckout from '../components/payment/DirectRazorpayCheckout';
+import { useAuth } from '../contexts/AuthContext';
 
 export const CartPage = () => {
   const navigate = useNavigate();
   const { items, removeFromCart, updateQuantity, getTotalAmount, fetchCart, isLoading } = useCartStore();
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchCart();
@@ -27,6 +30,17 @@ export const CartPage = () => {
     }
   };
 
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Please login to continue shopping</h1>
+          <Button onClick={() => navigate('/login')}>Login</Button>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -37,7 +51,7 @@ export const CartPage = () => {
     );
   }
 
-  if (items.length === 0) {
+  if (!Array.isArray(items) || items.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
@@ -127,11 +141,30 @@ export const CartPage = () => {
             </div>
             <Button
               onClick={() => navigate('/checkout')}
-              className="w-full"
+              className="w-full mb-2"
               disabled={isLoading}
             >
               {isLoading ? 'Loading...' : 'Proceed to Checkout'}
             </Button>
+            
+            <div className="mt-3 text-center text-sm text-gray-500 mb-2">- OR -</div>
+            
+            <DirectRazorpayCheckout 
+              className="w-full"
+              buttonText="Pay Now with Razorpay"
+              onSuccess={() => {
+                toast.success('Payment successful!', {
+                  duration: 3000,
+                  position: 'top-center'
+                });
+              }}
+              onError={(error) => {
+                toast.error(`Payment failed: ${error.message}`, {
+                  duration: 3000,
+                  position: 'top-center'
+                });
+              }}
+            />
           </div>
         </div>
       </div>

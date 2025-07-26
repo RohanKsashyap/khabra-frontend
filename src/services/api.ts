@@ -2,6 +2,7 @@ import axios from 'axios';
 import config from '../config';
 import { useAuthStore } from '../store/authStore';
 
+// Create API instance
 const api = axios.create({
   baseURL: config.apiUrl,
   headers: {
@@ -43,6 +44,12 @@ api.interceptors.response.use(
   }
 );
 
+// Export the api instance
+export { api };
+
+// Also export as default for backward compatibility
+export default api;
+
 export const authAPI = {
   register: async (userData: any) => {
     const response = await api.post('/api/auth/register', userData);
@@ -71,13 +78,15 @@ export const authAPI = {
 };
 
 export const productAPI = {
-  getProducts: async (params?: { category?: string; search?: string; sort?: string; page?: number; limit?: number }) => {
+  getProducts: async (params?: { category?: string; search?: string; sort?: string; page?: number; limit?: number; franchiseId?: string }) => {
     const response = await api.get('/api/products', { params });
     return response.data;
   },
 
-  getProduct: async (id: string) => {
-    const response = await api.get(`/api/products/${id}`);
+  getProduct: async (id: string, franchiseId?: string) => {
+    const response = await api.get(`/api/products/${id}`, { 
+      params: franchiseId ? { franchiseId } : {} 
+    });
     return response.data;
   },
 
@@ -300,6 +309,22 @@ export const userAPI = {
   },
 };
 
+export const dashboardAPI = {
+  // Admin dashboard overview
+  getAdminOverview: async (dateRange?: string) => {
+    const response = await api.get('/api/dashboard/admin/overview', {
+      params: { dateRange }
+    });
+    return response.data;
+  },
+  
+  // Real-time stats
+  getRealTimeStats: async () => {
+    const response = await api.get('/api/dashboard/admin/realtime');
+    return response.data;
+  }
+};
+
 export const mlmAPI = {
   // Earnings
   getUserEarnings: async () => {
@@ -381,6 +406,79 @@ export const rankAPI = {
     const response = await api.put('/api/ranks/mlm-commission', { rates });
     return response.data;
   },
-};
+}; 
 
-export default api; 
+export const inventoryAPI = {
+  // Get inventory dashboard statistics
+  getInventoryStats: async (franchiseId?: string) => {
+    // Only include franchiseId in params if it's a non-empty string
+    const params = franchiseId ? { franchiseId } : {};
+    const response = await api.get('/api/v1/inventory/stats', { params });
+    return response.data;
+  },
+  
+  // Debug inventory stats
+  debugInventoryStats: async (franchiseId: string) => {
+    const response = await api.get(`/api/v1/inventory/debug-stats/${franchiseId}`);
+    return response.data;
+  },
+  
+  // Stock levels management
+  getStockLevels: async (franchiseId: string, params?: { page?: number; limit?: number }) => {
+    const response = await api.get(`/api/v1/inventory/stock-levels/${franchiseId}`, { params });
+    return response.data;
+  },
+  
+  createOrUpdateStock: async (stockData: any) => {
+    const response = await api.post('/api/v1/inventory/stock', stockData);
+    return response.data;
+  },
+  
+  // Stock movements
+  getStockMovementHistory: async (stockId: string, params?: { page?: number; limit?: number }) => {
+    const response = await api.get(`/api/v1/inventory/stock-movements/${stockId}`, { params });
+    return response.data;
+  },
+  
+  recordStockMovement: async (movementData: any) => {
+    const response = await api.post('/api/v1/inventory/stock-movement', movementData);
+    return response.data;
+  },
+  
+  // Inventory audits
+  initiateInventoryAudit: async (auditData: { franchiseId: string; notes?: string }) => {
+    const response = await api.post('/api/v1/inventory/audits/initiate', auditData);
+    return response.data;
+  },
+  
+  addAuditItems: async (auditData: { auditId: string; items: any[] }) => {
+    const response = await api.post('/api/v1/inventory/audits/items', auditData);
+    return response.data;
+  },
+  
+  getOngoingAudit: async (franchiseId: string) => {
+    const response = await api.get(`/api/v1/inventory/audits/ongoing/${franchiseId}`);
+    return response.data;
+  },
+  
+  getAuditHistory: async (franchiseId: string, params?: { page?: number; limit?: number }) => {
+    const response = await api.get(`/api/v1/inventory/audits/history/${franchiseId}`, { params });
+    return response.data;
+  },
+  
+  getAuditDetails: async (auditId: string) => {
+    const response = await api.get(`/api/v1/inventory/audits/${auditId}`);
+    return response.data;
+  },
+  
+  completeInventoryAudit: async (completeData: { auditId: string; notes?: string }) => {
+    const response = await api.post('/api/v1/inventory/audits/complete', completeData);
+    return response.data;
+  },
+  
+  // Stock by category statistics
+  getStockByCategory: async (franchiseId: string) => {
+    const response = await api.get(`/api/v1/inventory/stock-by-category/${franchiseId}`);
+    return response.data;
+  }
+}; 

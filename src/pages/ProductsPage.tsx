@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
 import { useCartStore } from '../store/cartStore';
+import { useAuth } from '../contexts/AuthContext';
 import { Product } from '../types';
 import toast from 'react-hot-toast';
 import { ProductCard } from '../components/ecommerce/ProductCard';
@@ -11,21 +12,32 @@ export const ProductsPage = () => {
   const navigate = useNavigate();
   const { products, isLoading, error, fetchProducts } = useProductStore();
   const { addToCart } = useCartStore();
+  const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Get the active franchise ID from user or localStorage
+  const franchiseId = (user as any)?.franchise?._id || localStorage.getItem('activeFranchiseId');
+
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    // Include franchiseId when fetching products
+    fetchProducts({ franchiseId });
+  }, [fetchProducts, franchiseId]);
 
   const handleCategoryChange = (category: string | null) => {
     setSelectedCategory(category);
-    fetchProducts({ category: category || undefined });
+    fetchProducts({ 
+      category: category || undefined,
+      franchiseId 
+    });
   };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    fetchProducts({ search: query });
+    fetchProducts({ 
+      search: query,
+      franchiseId 
+    });
   };
 
   const handleProductClick = (productId: string) => {

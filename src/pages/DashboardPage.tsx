@@ -17,6 +17,7 @@ import {
   Store,
   CreditCard,
   Package,
+  Boxes
 } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
@@ -102,6 +103,7 @@ export const DashboardPage = () => {
                   <li><NavLink to="/dashboard/withdrawals-admin" className={getNavLinkClass}> <Wallet className="mr-3 h-5 w-5" /> Manage Withdrawals </NavLink></li>
                   <li><NavLink to="/dashboard/sales" className={getNavLinkClass}> <DollarSign className="mr-3 h-5 w-5" /> Manage Sales </NavLink></li>
                   <li><NavLink to="/dashboard/offline-orders" className={getNavLinkClass}> <Package className="mr-3 h-5 w-5" /> Manage Offline Orders </NavLink></li>
+                  <li><NavLink to="/dashboard/inventory" className={getNavLinkClass}> <Boxes className="mr-3 h-5 w-5" /> Inventory Management </NavLink></li>
                   <li><NavLink to="/dashboard/notifications-admin" className={getNavLinkClass}> <Bell className="mr-3 h-5 w-5" /> Manage Notifications </NavLink></li>
                 </ul>
               </li>

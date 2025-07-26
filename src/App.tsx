@@ -9,13 +9,14 @@ import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { PageTransition } from './components/layout/PageTransition';
 
-// Lazy load pages to reduce initial bundle size
-const HomePage = lazy(() => import('./pages/HomePage').then(module => ({ default: module.HomePage })));
+// Import HomePage directly instead of lazy loading
+import { HomePage } from './pages/HomePage';
 const BusinessPage = lazy(() => import('./pages/BusinessPage').then(module => ({ default: module.BusinessPage })));
 const ProductsPage = lazy(() => import('./pages/ProductsPage').then(module => ({ default: module.ProductsPage })));
 const CartPage = lazy(() => import('./pages/CartPage').then(module => ({ default: module.CartPage })));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage').then(module => ({ default: module.CheckoutPage })));
 const CheckoutSuccessPage = lazy(() => import('./pages/CheckoutSuccessPage').then(module => ({ default: module.CheckoutSuccessPage })));
+const PaymentSuccessPage = lazy(() => import('./pages/PaymentSuccessPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage').then(module => ({ default: module.LoginPage })));
 const RegisterPage = lazy(() => import('./pages/RegisterPage').then(module => ({ default: module.RegisterPage })));
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(module => ({ default: module.DashboardPage })));
@@ -31,6 +32,7 @@ const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const FranchisesPage = lazy(() => import('./pages/FranchisesPage'));
 const FranchiseDashboard = lazy(() => import('./pages/FranchiseDashboard'));
 const FranchiseCreateOrderPage = lazy(() => import('./pages/FranchiseCreateOrderPage'));
+const InventoryManagementPage = lazy(() => import('./pages/InventoryManagementPage').then(module => ({ default: module.InventoryManagementPage })));
 
 // Dashboard pages
 const DashboardOverview = lazy(() => import('./components/dashboard/DashboardOverview').then(module => ({ default: module.DashboardOverview })));
@@ -54,6 +56,7 @@ const AdminWithdrawalsPage = lazy(() => import('./pages/AdminWithdrawalsPage'));
 const AdminTotalSalesPage = lazy(() => import('./pages/AdminTotalSalesPage'));
 const AdminOfflineOrdersPage = lazy(() => import('./pages/AdminOfflineOrdersPage'));
 const AdminNotificationsPage = lazy(() => import('./pages/AdminNotificationsPage'));
+const AdminInventoryPage = lazy(() => import('./pages/AdminInventoryPage').then(module => ({ default: module.AdminInventoryPage })));
 
 function LoadingSpinner() {
   return (
@@ -85,7 +88,7 @@ function AppRoutes() {
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           {/* Public Routes */}
-          <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/business" element={<PageTransition><BusinessPage /></PageTransition>} />
           <Route path="/products" element={<PageTransition><ProductsPage /></PageTransition>} />
           <Route path="/products/:id" element={<PageTransition><ProductDetailPage /></PageTransition>} />
@@ -94,6 +97,7 @@ function AppRoutes() {
           <Route path="/cart" element={<PageTransition><CartPage /></PageTransition>} />
           <Route path="/checkout" element={<PageTransition><CheckoutPage /></PageTransition>} />
           <Route path="/checkout/success" element={<PageTransition><CheckoutSuccessPage /></PageTransition>} />
+          <Route path="/payment/success" element={<PageTransition><PaymentSuccessPage /></PageTransition>} />
           <Route path="/terms" element={<PageTransition><TermsAndConditionsPage /></PageTransition>} />
           <Route path="/privacy" element={<PageTransition><PrivacyPolicyPage /></PageTransition>} />
           <Route path="/franchises" element={<PageTransition><FranchisesPage /></PageTransition>} />
@@ -136,6 +140,7 @@ function AppRoutes() {
             <Route path="sales" element={<ProtectedRoute adminOnly><AdminTotalSalesPage /></ProtectedRoute>} />
             <Route path="offline-orders" element={<ProtectedRoute adminOnly><AdminOfflineOrdersPage /></ProtectedRoute>} />
             <Route path="notifications-admin" element={<ProtectedRoute adminOnly><AdminNotificationsPage /></ProtectedRoute>} />
+            <Route path="inventory" element={<ProtectedRoute adminOnly><AdminInventoryPage /></ProtectedRoute>} />
           </Route>
 
           {/* Franchise Owner Only Route: Franchise Create Order */}
@@ -170,18 +175,23 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      }}
+    >
+      <Toaster position="top-center" reverseOrder={false} />
       <AuthProvider>
-        <Toaster position="top-center" reverseOrder={false} />
-        <Suspense fallback={<LoadingSpinner />}>
-          <div className="flex flex-col min-h-screen">
-            <Navbar />
-            <main className="flex-grow pt-24">
+        <div className="flex flex-col min-h-screen">
+          <Navbar />
+          <main className="flex-grow pt-24">
+            <Suspense fallback={<LoadingSpinner />}>
               <AppRoutes />
-            </main>
-            <Footer />
-          </div>
-        </Suspense>
+            </Suspense>
+          </main>
+          <Footer />
+        </div>
       </AuthProvider>
     </Router>
   );

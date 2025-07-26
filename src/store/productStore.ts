@@ -10,8 +10,8 @@ interface ProductState {
   error: string | null;
   lastFetchTime: number | null;
   retryCount: number;
-  fetchProducts: (params?: { category?: string; search?: string; sort?: string }) => Promise<void>;
-  fetchProduct: (id: string) => Promise<void>;
+  fetchProducts: (params?: { category?: string; search?: string; sort?: string; franchiseId?: string }) => Promise<void>;
+  fetchProduct: (id: string, franchiseId?: string) => Promise<void>;
   createProduct: (productData: Partial<Product>) => Promise<void>;
   updateProduct: (id: string, productData: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
@@ -92,10 +92,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  fetchProduct: async (id) => {
+  fetchProduct: async (id, franchiseId) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await productAPI.getProduct(id);
+      const response = await productAPI.getProduct(id, franchiseId);
       set({ currentProduct: response.data, isLoading: false });
     } catch (error: any) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch product';

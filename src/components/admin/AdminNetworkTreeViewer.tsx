@@ -45,7 +45,7 @@ const AdminNetworkTreeViewer: React.FC = () => {
       let userId = userIdOrEmail;
       // If input is not a MongoDB ObjectId, assume it's an email and find the user
       if (!/^[a-f\d]{24}$/i.test(userIdOrEmail)) {
-        const users = await userAPI.getUsers({ email: userIdOrEmail });
+        const users = await userAPI.getUsers({ search: userIdOrEmail });
         if (Array.isArray(users) && users.length > 0) {
           userId = users[0]._id;
         } else {
@@ -79,6 +79,12 @@ const AdminNetworkTreeViewer: React.FC = () => {
   return (
     <div className="bg-white rounded shadow p-4 mt-4 overflow-x-auto">
       <h2 className="text-xl font-bold mb-4">View Any User's Network Tree</h2>
+      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-sm text-blue-800">
+          <strong>Admin Access:</strong> You can view infinite downline levels for any user. 
+          Regular users are limited to 5 levels.
+        </p>
+      </div>
       <form onSubmit={handleFetch} className="flex flex-wrap gap-2 mb-4">
         <input
           type="text"
