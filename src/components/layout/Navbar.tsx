@@ -6,8 +6,7 @@ import { useCartStore } from '../../store/cartStore';
 import { Button } from '../ui/Button';
 
 export function Navbar() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
   const { totalItems, items, getTotalAmount } = useCartStore();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,23 +16,6 @@ export function Navbar() {
   const [isCartPreviewOpen, setIsCartPreviewOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // Safely attempt to get auth context
-  useEffect(() => {
-    const getAuthContext = () => {
-      try {
-        const auth = useAuth();
-        setUser(auth.user);
-        setLoading(auth.loading);
-      } catch (error) {
-        // If AuthProvider is not available, keep default state
-        setUser(null);
-        setLoading(false);
-      }
-    };
-
-    getAuthContext();
-  }, []);
-
   // Logout function with safe fallback
   const handleLogout = () => {
     try {
@@ -42,7 +24,6 @@ export function Navbar() {
     } catch (error) {
       // Fallback logout behavior
       localStorage.removeItem('token');
-      setUser(null);
       navigate('/login');
     }
   };

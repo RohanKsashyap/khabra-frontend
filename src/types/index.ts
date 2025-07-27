@@ -19,6 +19,7 @@ export interface User {
   };
   createdAt: Date;
   updatedAt: Date;
+  franchise?: string; // Optional franchise property for users
 }
 
 export interface ProductStock {

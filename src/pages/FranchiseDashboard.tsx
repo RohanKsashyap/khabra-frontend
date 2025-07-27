@@ -73,6 +73,17 @@ const FranchiseDashboard: React.FC = () => {
     fetchData();
   }, []);
 
+  const filteredOrders = useMemo(() => {
+    if (!data?.orders) return [];
+    return data.orders.filter(order =>
+      (!orderStatusFilter || order.status === orderStatusFilter) &&
+      (!orderSearch || ((order.guestName || (order.user && order.user.name) || '').toLowerCase().includes(orderSearch.toLowerCase()))) &&
+      (!paymentMethodFilter || order.paymentMethod === paymentMethodFilter) &&
+      (!dateFrom || (order.createdAt && new Date(order.createdAt) >= new Date(dateFrom))) &&
+      (!dateTo || (order.createdAt && new Date(order.createdAt) <= new Date(dateTo + 'T23:59:59')))
+    );
+  }, [data?.orders, orderStatusFilter, orderSearch, paymentMethodFilter, dateFrom, dateTo]);
+
   if (loading) return <div className="p-8 text-center">Loading...</div>;
   if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
   if (!data || !data.franchise) return <div className="p-8 text-center">No franchise data found.</div>;
@@ -82,15 +93,6 @@ const FranchiseDashboard: React.FC = () => {
   const commission = totalCommission ?? 0;
   // If totalProductsSold is not present in sales, default to 0
   const totalProductsSold = sales?.totalProductsSold ?? 0;
-
-  const filteredOrders = useMemo(() => (data.orders || [])
-    .filter(order =>
-      (!orderStatusFilter || order.status === orderStatusFilter) &&
-      (!orderSearch || ((order.guestName || (order.user && order.user.name) || '').toLowerCase().includes(orderSearch.toLowerCase()))) &&
-      (!paymentMethodFilter || order.paymentMethod === paymentMethodFilter) &&
-      (!dateFrom || (order.createdAt && new Date(order.createdAt) >= new Date(dateFrom))) &&
-      (!dateTo || (order.createdAt && new Date(order.createdAt) <= new Date(dateTo + 'T23:59:59')))
-    ), [data.orders, orderStatusFilter, orderSearch, paymentMethodFilter, dateFrom, dateTo]);
 
   // Export CSV logic
   const handleExportCSV = () => {

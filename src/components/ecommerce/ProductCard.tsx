@@ -63,11 +63,11 @@ export function ProductCard({ product }: ProductCardProps) {
       return;
     }
 
-    // Validate franchise
-    if (!user?.franchise) {
-      toast.error('No franchise associated with your account.');
-      return;
-    }
+    // Remove this check:
+    // if (!user?.franchise) {
+    //   toast.error('No franchise associated with your account.');
+    //   return;
+    // }
 
     if (!stockInfo || stockInfo.currentQuantity < 1) {
       toast.error('Sorry, this product is out of stock.');
@@ -79,7 +79,8 @@ export function ProductCard({ product }: ProductCardProps) {
       await addToCart({
         productId: product._id,
         quantity: 1,
-        franchiseId: user.franchise
+        // Only include franchiseId if user.franchise exists
+        ...(user?.franchise ? { franchiseId: user.franchise } : {})
       });
       toast.success(`${product.name} added to cart!`);
     } catch (error: any) {
@@ -109,11 +110,11 @@ export function ProductCard({ product }: ProductCardProps) {
       return;
     }
 
-    // Validate franchise
-    if (!user?.franchise) {
-      toast.error('No franchise associated with your account.');
-      return;
-    }
+    // Remove this check:
+    // if (!user?.franchise) {
+    //   toast.error('No franchise associated with your account.');
+    //   return;
+    // }
 
     if (!stockInfo || stockInfo.currentQuantity < 1) {
       toast.error('Sorry, this product is out of stock.');
@@ -125,7 +126,8 @@ export function ProductCard({ product }: ProductCardProps) {
       await addToCart({
         productId: product._id,
         quantity: 1,
-        franchiseId: user.franchise
+        // Only include franchiseId if user.franchise exists
+        ...(user?.franchise ? { franchiseId: user.franchise } : {})
       });
       toast.success(`${product.name} added to cart. Redirecting to checkout...`);
       navigate('/checkout');
