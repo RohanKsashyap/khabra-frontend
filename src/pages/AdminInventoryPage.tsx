@@ -62,12 +62,24 @@ export const AdminInventoryPage: React.FC = () => {
   useEffect(() => {
     const fetchFranchises = async () => {
       try {
-        const response = await api.get('/api/v1/franchises');
-        if (response.data.data && response.data.data.length > 0) {
-          setFranchises(response.data.data);
-          setSelectedFranchise(response.data.data[0]._id);
+        if (user.role === 'franchise') {
+          // Franchise user: only allow their own franchise
+          if (user.franchiseId) {
+            setFranchises([{ _id: user.franchiseId, name: user.name, location: '' }]);
+            setSelectedFranchise(user.franchiseId);
+          } else {
+            toast.error('No franchise associated with your account');
+            setFranchises([]);
+          }
         } else {
-          toast.error('No franchises found');
+          // Admin: fetch all franchises
+          const response = await api.get('/api/v1/franchises');
+          if (response.data.data && response.data.data.length > 0) {
+            setFranchises(response.data.data);
+            setSelectedFranchise(response.data.data[0]._id);
+          } else {
+            toast.error('No franchises found');
+          }
         }
         setFranchisesLoaded(true);
       } catch (error) {
@@ -76,9 +88,8 @@ export const AdminInventoryPage: React.FC = () => {
         setFranchisesLoaded(true);
       }
     };
-
     fetchFranchises();
-  }, []);
+  }, [user]);
 
   // Fetch stocks when franchise is selected
   useEffect(() => {
@@ -359,17 +370,23 @@ export const AdminInventoryPage: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Inventory Management</h1>
         <div className="flex items-center space-x-4">
-          <select
-            className="p-2 border rounded"
-            value={selectedFranchise}
-            onChange={(e) => setSelectedFranchise(e.target.value)}
-          >
-            {franchises.map((franchise) => (
-              <option key={franchise._id} value={franchise._id}>
-                {franchise.name} - {franchise.location}
-              </option>
-            ))}
-          </select>
+          {user.role === 'franchise' ? (
+            <span className="p-2 border rounded bg-gray-100">
+              {franchises[0]?.name || 'My Franchise'}
+            </span>
+          ) : (
+            <select
+              className="p-2 border rounded"
+              value={selectedFranchise}
+              onChange={(e) => setSelectedFranchise(e.target.value)}
+            >
+              {franchises.map((franchise) => (
+                <option key={franchise._id} value={franchise._id}>
+                  {franchise.name} - {franchise.location}
+                </option>
+              ))}
+            </select>
+          )}
           {activeTab === 'stock' && (
             <>
               <Button 

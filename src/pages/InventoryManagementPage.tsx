@@ -6,7 +6,7 @@ export const InventoryManagementPage: React.FC = () => {
   const { user } = useAuthContext();
 
   // Ensure only franchise owners or admins can access this page
-  if (!user || !['franchise_owner', 'admin'].includes(user.role)) {
+  if (!user || !['franchise', 'admin'].includes(user.role)) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">

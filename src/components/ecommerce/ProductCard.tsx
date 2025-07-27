@@ -11,65 +11,54 @@ import axios from '../../utils/axios';
 
 interface ProductCardProps {
   product: Product;
+  franchiseId?: string; // Optional franchise ID
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, franchiseId }: ProductCardProps) {
   const { addToCart } = useCartStore();
-  const { user } = useAuth(); // <-- useAuth at top level
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [stockInfo, setStockInfo] = useState<{
-    currentQuantity: number;
-    status: string;
-  } | null>(null);
   
-  // Remove useEffect for user
+  // Determine current franchise ID
+  const currentFranchiseId = franchiseId || user?.franchise;
 
-  // Fetch stock information
-  useEffect(() => {
-    const fetchStockInfo = async () => {
-      try {
-        // Ensure we have a valid franchise ID
-        if (!user?.franchise) {
-          console.warn('No franchise ID available for stock check');
-          return;
-        }
-
-        const response = await axios.get(`/products/${product._id}/stock`, {
-          params: { franchiseId: user.franchise }
-        });
-        setStockInfo(response.data.data);
-      } catch (error) {
-        console.error('Failed to fetch stock info', error);
-        // Optionally show a toast or handle the error
-        toast.error('Unable to check product stock');
-      }
-    };
-
-    if (user) {
-      fetchStockInfo();
+  // Get stock information
+  const getStockInfo = () => {
+    // If inventoryDetails exist, use that
+    if (product.inventoryDetails) {
+      return {
+        currentQuantity: product.inventoryDetails.currentQuantity,
+        status: product.inventoryDetails.status,
+        franchiseStock: product.inventoryDetails.franchiseStocks?.find(
+          stock => stock.franchiseId === currentFranchiseId
+        )?.quantity || 0
+      };
     }
-  }, [product._id, user]);
-  
-  const isAuthenticated = !!user;
+
+    // Fallback to legacy stock
+    return {
+      currentQuantity: product.stock || 0,
+      status: product.stock > 0 ? 
+        (product.stock <= 10 ? 'LOW_STOCK' : 'IN_STOCK') : 
+        'OUT_OF_STOCK',
+      franchiseStock: product.stock || 0
+    };
+  };
+
+  const stockInfo = getStockInfo();
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!isAuthenticated) {
+    if (!user) {
       toast.error('Please login to add to cart.');
       navigate('/login', { state: { from: `/products/${product._id}` } });
       return;
     }
 
-    // Remove this check:
-    // if (!user?.franchise) {
-    //   toast.error('No franchise associated with your account.');
-    //   return;
-    // }
-
-    if (!stockInfo || stockInfo.currentQuantity < 1) {
+    if (stockInfo.currentQuantity < 1) {
       toast.error('Sorry, this product is out of stock.');
       return;
     }
@@ -79,22 +68,12 @@ export function ProductCard({ product }: ProductCardProps) {
       await addToCart({
         productId: product._id,
         quantity: 1,
-        // Only include franchiseId if user.franchise exists
-        ...(user?.franchise ? { franchiseId: user.franchise } : {})
+        ...(currentFranchiseId ? { franchiseId: currentFranchiseId } : {})
       });
       toast.success(`${product.name} added to cart!`);
     } catch (error: any) {
       console.error('Failed to add to cart', error);
-      
-      // More detailed error handling
-      if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.error?.message || 
-                             error.response?.data?.message || 
-                             'Failed to add item to cart';
-        toast.error(errorMessage);
-      } else {
-        toast.error('An unexpected error occurred');
-      }
+      toast.error('Failed to add item to cart');
     } finally {
       setIsProcessing(false);
     }
@@ -104,19 +83,13 @@ export function ProductCard({ product }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!isAuthenticated) {
+    if (!user) {
       toast.error('Please login to buy now.');
       navigate('/login', { state: { from: `/products/${product._id}` } });
       return;
     }
 
-    // Remove this check:
-    // if (!user?.franchise) {
-    //   toast.error('No franchise associated with your account.');
-    //   return;
-    // }
-
-    if (!stockInfo || stockInfo.currentQuantity < 1) {
+    if (stockInfo.currentQuantity < 1) {
       toast.error('Sorry, this product is out of stock.');
       return;
     }
@@ -126,71 +99,37 @@ export function ProductCard({ product }: ProductCardProps) {
       await addToCart({
         productId: product._id,
         quantity: 1,
-        // Only include franchiseId if user.franchise exists
-        ...(user?.franchise ? { franchiseId: user.franchise } : {})
+        ...(currentFranchiseId ? { franchiseId: currentFranchiseId } : {})
       });
       toast.success(`${product.name} added to cart. Redirecting to checkout...`);
       navigate('/checkout');
     } catch (error: any) {
       console.error('Error adding item to cart for Buy Now:', error);
-      
-      // More detailed error handling
-      if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.error?.message || 
-                             error.response?.data?.message || 
-                             'Failed to add item to prepare for checkout';
-        toast.error(errorMessage);
-      } else {
-        toast.error('An unexpected error occurred');
-      }
+      toast.error('Failed to prepare for checkout');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Calculate points (now using commission field)
-  const points = product.commission;
-
-  // Get stock status
+  // Stock status display logic
   const getStockStatusDisplay = () => {
-    // Prioritize fetched stock info
-    if (stockInfo) {
-      switch (stockInfo.status) {
-        case 'OUT_OF_STOCK':
-          return {
-            text: 'Out of Stock',
-            color: 'text-red-600'
-          };
-        case 'LOW_STOCK':
-          return {
-            text: `Only ${stockInfo.currentQuantity} left`,
-            color: 'text-yellow-600'
-          };
-        case 'IN_STOCK':
-        default:
-          return {
-            text: 'In Stock',
-            color: 'text-green-600'
-          };
-      }
-    }
-    
-    // Fallback to legacy stock field
-    if (product.stock <= 0) {
-      return {
-        text: 'Out of Stock',
-        color: 'text-red-600'
-      };
-    } else if (product.stock <= 10) {
-      return {
-        text: `Only ${product.stock} left`,
-        color: 'text-yellow-600'
-      };
-    } else {
-      return {
-        text: 'In Stock',
-        color: 'text-green-600'
-      };
+    switch (stockInfo.status) {
+      case 'OUT_OF_STOCK':
+        return {
+          text: 'Out of Stock',
+          color: 'text-red-600'
+        };
+      case 'LOW_STOCK':
+        return {
+          text: `Only ${stockInfo.currentQuantity} left`,
+          color: 'text-yellow-600'
+        };
+      case 'IN_STOCK':
+      default:
+        return {
+          text: 'In Stock',
+          color: 'text-green-600'
+        };
     }
   };
 
@@ -212,7 +151,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* Points badge */}
           <span className="absolute bottom-3 right-3 z-20 bg-orange-500 text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center">
             <Gift className="w-4 h-4 mr-1" />
-            {points} pts
+            {product.commission} pts
           </span>
           {/* Product Image */}
           <div className="relative h-56 overflow-hidden bg-gray-100">
@@ -234,35 +173,38 @@ export function ProductCard({ product }: ProductCardProps) {
                 {stockStatus.text}
               </span>
             </div>
-            {/* Points info box */}
-            <div className="bg-orange-50 rounded-lg p-3 mb-4">
-              <span className="text-orange-700 font-semibold">Earn Points:</span>
-              <span className="text-orange-500 font-bold ml-2">{points} pts</span>
-              <div className="text-xs text-gray-500 mt-1">
-                Points earned when you purchase this product
+            {/* Stock information */}
+            <div className="bg-gray-50 rounded-lg p-3 mb-4">
+              <div className="flex justify-between">
+                <span className="text-gray-700 font-semibold">Available Stock:</span>
+                <span className={`font-bold ${stockStatus.color}`}>
+                  {stockInfo.currentQuantity}
+                </span>
               </div>
+              {currentFranchiseId && (
+                <div className="text-xs text-gray-500 mt-1">
+                  Franchise Stock: {stockInfo.franchiseStock}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </Link>
       
-      {/* Action Buttons - Outside the Link to prevent navigation conflicts */}
+      {/* Action Buttons */}
       <div className="p-5 pt-0">
         <div className="flex flex-col space-y-2">
           <Button
-            size="sm"
-            className="bg-gradient-to-r from-blue-600 to-purple-500 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 hover:from-blue-700 hover:to-purple-600 transition"
             onClick={handleAddToCart}
-            leftIcon={<ShoppingCart className="h-4 w-4" />}
-            disabled={isProcessing || stockStatus.text === 'Out of Stock'}
+            disabled={isProcessing || stockInfo.currentQuantity < 1}
+            className="bg-gradient-to-r from-blue-600 to-purple-500 text-white font-semibold py-3 rounded-xl"
           >
             Add to Cart
           </Button>
           <Button
-            size="sm"
             variant="secondary"
             onClick={handleBuyNow}
-            disabled={isProcessing || stockStatus.text === 'Out of Stock'}
+            disabled={isProcessing || stockInfo.currentQuantity < 1}
           >
             {isProcessing ? 'Processing...' : 'Buy Now'}
           </Button>

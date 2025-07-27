@@ -125,8 +125,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/distributor-agreement" className="text-gray-400 hover:text-primary">
-                    Distributor Agreement
+                  <Link to="/franchise-agreement" className="text-gray-400 hover:text-primary">
+                    Franchise Agreement
                   </Link>
                 </li>
               </ul>

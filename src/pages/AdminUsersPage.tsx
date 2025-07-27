@@ -19,7 +19,7 @@ interface User {
   } | null;
 }
 
-const roles = ['user', 'distributor', 'admin'];
+const roles = ['user', 'franchise', 'admin'];
 
 function exportToCSV(users: User[]) {
   const headers = ['Name', 'Email', 'Phone', 'Role', 'Referral Code', 'Referred By'];

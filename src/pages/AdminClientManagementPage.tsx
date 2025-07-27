@@ -198,8 +198,7 @@ const AdminClientManagementPage: React.FC = () => {
             >
               <option value="">All Roles</option>
               <option value="user">Customer</option>
-              <option value="distributor">Distributor</option>
-              <option value="franchise_owner">Franchise Owner</option>
+              <option value="franchise">Franchise</option>
             </select>
           </div>
 
@@ -258,9 +257,9 @@ const AdminClientManagementPage: React.FC = () => {
         <Card className="p-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-600">
-              {filteredClients.filter(c => c.role === 'distributor').length}
+              {filteredClients.filter(c => c.role === 'franchise').length}
             </div>
-            <div className="text-sm text-gray-600">Distributors</div>
+            <div className="text-sm text-gray-600">Franchises</div>
           </div>
         </Card>
         <Card className="p-4">
@@ -307,8 +306,7 @@ const AdminClientManagementPage: React.FC = () => {
                   </td>
                   <td className="px-4 py-3 border">
                     <span className={`px-2 py-1 rounded text-xs ${
-                      client.role === 'distributor' ? 'bg-purple-100 text-purple-800' :
-                      client.role === 'franchise_owner' ? 'bg-blue-100 text-blue-800' :
+                      client.role === 'franchise' ? 'bg-blue-100 text-blue-800' :
                       'bg-green-100 text-green-800'
                     }`}>
                       {client.role}
@@ -398,8 +396,7 @@ const AdminClientManagementPage: React.FC = () => {
                   <p><span className="font-medium">Phone:</span> {selectedClient.phone}</p>
                   <p><span className="font-medium">Role:</span> 
                     <span className={`ml-2 px-2 py-1 rounded text-xs ${
-                      selectedClient.role === 'distributor' ? 'bg-purple-100 text-purple-800' :
-                      selectedClient.role === 'franchise_owner' ? 'bg-blue-100 text-blue-800' :
+                      selectedClient.role === 'franchise' ? 'bg-blue-100 text-blue-800' :
                       'bg-green-100 text-green-800'
                     }`}>
                       {selectedClient.role}

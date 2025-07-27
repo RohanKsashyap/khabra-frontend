@@ -87,8 +87,11 @@ export const DashboardPage = () => {
             <li><NavLink to="/dashboard/rank-rewards" className={getNavLinkClass}> <Award className="mr-3 h-5 w-5" /> Rank & Rewards </NavLink></li>
             <li><NavLink to="/dashboard/settings" className={getNavLinkClass}> <Settings className="mr-3 h-5 w-5" /> Settings </NavLink></li>
             <li><NavLink to="/dashboard/notifications" className={getNavLinkClass}> <Bell className="mr-3 h-5 w-5" /> Notifications </NavLink></li>
-            {user.role === 'franchise_owner' && (
+            {user.role === 'franchise' && (
               <li><NavLink to="/dashboard/franchise" className={getNavLinkClass}> <Store className="mr-3 h-5 w-5" /> My Franchise </NavLink></li>
+            )}
+            {user.role === 'franchise' && (
+              <li><NavLink to="/dashboard/franchise-products" className={getNavLinkClass}> <Building className="mr-3 h-5 w-5" /> Manage Products </NavLink></li>
             )}
             {user.role === 'admin' && (
               <li className="pt-4 mt-4 border-t">
@@ -107,6 +110,9 @@ export const DashboardPage = () => {
                   <li><NavLink to="/dashboard/notifications-admin" className={getNavLinkClass}> <Bell className="mr-3 h-5 w-5" /> Manage Notifications </NavLink></li>
                 </ul>
               </li>
+            )}
+            {['admin', 'franchise'].includes(user.role) && (
+              <li><NavLink to="/dashboard/inventory" className={getNavLinkClass}> <Boxes className="mr-3 h-5 w-5" /> Inventory Management </NavLink></li>
             )}
           </ul>
         </nav>

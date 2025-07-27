@@ -157,7 +157,7 @@ function AuthProviderContent({ children }: { children: ReactNode }) {
       toast.success('Login successful!');
       if (data.user.role === 'admin') {
         navigate('/dashboard');
-      } else if (data.user.role === 'franchise_owner') {
+      } else if (data.user.role === 'franchise') {
         navigate('/franchise/dashboard');
       } else {
         navigate('/dashboard');

@@ -3,17 +3,7 @@ import { useAuthContext } from '../../contexts/AuthContext';
 import { ProductCard } from './ProductCard';
 import { api } from '../../services/api';
 import { LoadingState } from '../ui/LoadingState';
-
-interface Product {
-  _id: string;
-  name: string;
-  price: number;
-  images: string[];
-  stock?: {
-    currentQuantity: number;
-    status: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK';
-  };
-}
+import { Product } from '../../types';
 
 interface ProductGridProps {
   category?: string;
@@ -32,7 +22,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
   const [hasMore, setHasMore] = useState(true);
 
   // Get the active franchise ID from context or local storage
-  const franchiseId = user?.activeFranchiseId || localStorage.getItem('activeFranchiseId');
+  const franchiseId = user?.franchise || localStorage.getItem('activeFranchiseId');
 
   useEffect(() => {
     // Reset products and pagination when search or category changes
@@ -56,7 +46,20 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
           }
         });
 
-        const newProducts = response.data.data;
+        const newProducts = response.data.data.map((product: Product) => ({
+          ...product,
+          // Ensure inventoryDetails are populated
+          inventoryDetails: {
+            currentQuantity: product.stock || 0,
+            status: product.stock > 0 ? 
+              (product.stock <= 10 ? 'LOW_STOCK' : 'IN_STOCK') : 
+              'OUT_OF_STOCK',
+            franchiseStocks: franchiseId ? [{
+              franchiseId,
+              quantity: product.stock || 0
+            }] : []
+          }
+        }));
 
         // Update products
         setProducts(prev => page === 1 
@@ -106,7 +109,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
           <ProductCard 
             key={product._id} 
             product={product}
-            franchiseId={franchiseId}
+            franchiseId={franchiseId || undefined}
           />
         ))}
       </div>

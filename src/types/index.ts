@@ -4,7 +4,7 @@ export interface User {
   name: string;
   email: string;
   phone: string;
-  role: 'user' | 'distributor' | 'admin' | 'franchise_owner';
+  role: 'user' | 'franchise' | 'admin';
   referralCode: string;
   referredBy?: string;
   referrerName?: string;
@@ -34,20 +34,21 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  image: string;
   category: string;
-  stock: number; // Legacy field
-  stockInfo?: ProductStock; // New inventory system field
+  image: string;
+  stock: number;
   commission: number;
-  isActive: boolean;
-  ratings: Array<{
-    user: string;
-    rating: number;
-    review: string;
-  }>;
-  averageRating: number;
-  createdAt: string;
-  updatedAt: string;
+  averageRating?: number;
+  
+  // Enhanced stock management
+  inventoryDetails?: {
+    currentQuantity: number;
+    status: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK';
+    franchiseStocks?: {
+      franchiseId: string;
+      quantity: number;
+    }[];
+  };
 }
 
 export interface CartItem {

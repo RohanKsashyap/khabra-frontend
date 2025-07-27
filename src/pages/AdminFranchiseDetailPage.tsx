@@ -401,7 +401,7 @@ const AdminFranchiseDetailPage: React.FC = () => {
                     <td className="px-4 py-2 border">{member.phone}</td>
                     <td className="px-4 py-2 border">
                       <span className={`px-2 py-1 rounded text-xs ${
-                        member.role === 'distributor' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                        member.role === 'franchise' ? 'bg-blue-100 text-blue-800' : ''
                       }`}>
                         {member.role}
                       </span>
