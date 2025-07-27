@@ -116,7 +116,7 @@ export function HomePage() {
                 />
                 <div>
                   <h3 className="font-bold">Priya Sharma</h3>
-                  <p className="text-primary text-sm">Diamond Distributor</p>
+                  <p className="text-primary text-sm">Diamond Franchise</p>
                 </div>
               </div>
               <p className="text-gray-600">
@@ -133,7 +133,7 @@ export function HomePage() {
                 />
                 <div>
                   <h3 className="font-bold">Rahul Verma</h3>
-                  <p className="text-primary text-sm">Platinum Distributor</p>
+                  <p className="text-primary text-sm">Platinum Franchise</p>
                 </div>
               </div>
               <p className="text-gray-600">
@@ -150,7 +150,7 @@ export function HomePage() {
                 />
                 <div>
                   <h3 className="font-bold">Neha Patel</h3>
-                  <p className="text-primary text-sm">Gold Distributor</p>
+                  <p className="text-primary text-sm">Gold Franchise</p>
                 </div>
               </div>
               <p className="text-gray-600">
@@ -166,7 +166,7 @@ export function HomePage() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to Start Your Journey?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Join thousands of successful distributors building their dream lifestyle with Khabra Generations Care.
+            Join thousands of successful franchise partners building their dream lifestyle with Khabra Generations Care.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link to="/register">
@@ -199,7 +199,7 @@ export function HomePage() {
             </div>
             <div className="flex items-center">
               <Users className="h-6 w-6 text-gray-500 mr-2" />
-              <span className="text-gray-600">10,000+ Distributors</span>
+              <span className="text-gray-600">10,000+ Franchise Partners</span>
             </div>
             <div className="flex items-center">
               <TrendingUp className="h-6 w-6 text-gray-500 mr-2" />

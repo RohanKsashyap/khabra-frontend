@@ -33,6 +33,7 @@ const FranchisesPage = lazy(() => import('./pages/FranchisesPage'));
 const FranchiseDashboard = lazy(() => import('./pages/FranchiseDashboard'));
 const FranchiseCreateOrderPage = lazy(() => import('./pages/FranchiseCreateOrderPage'));
 const InventoryManagementPage = lazy(() => import('./pages/InventoryManagementPage').then(module => ({ default: module.InventoryManagementPage })));
+const FranchiseProductsPage = lazy(() => import('./pages/FranchiseProductsPage'));
 
 // Dashboard pages
 const DashboardOverview = lazy(() => import('./components/dashboard/DashboardOverview').then(module => ({ default: module.DashboardOverview })));
@@ -128,6 +129,8 @@ function AppRoutes() {
             <Route path="notifications" element={<NotificationPage />} />
             {/* Franchise Owner Only Route */}
             <Route path="franchise" element={<ProtectedRoute franchiseOwnerOnly><FranchiseDashboard /></ProtectedRoute>} />
+            {/* Franchise Product Management */}
+            <Route path="franchise-products" element={<ProtectedRoute><FranchiseProductsPage /></ProtectedRoute>} />
             {/* Admin Only Routes */}
             <Route path="users" element={<ProtectedRoute adminOnly><AdminUsersPage /></ProtectedRoute>} />
             <Route path="products" element={<ProtectedRoute adminOnly><AdminProductsPage /></ProtectedRoute>} />
@@ -140,7 +143,7 @@ function AppRoutes() {
             <Route path="sales" element={<ProtectedRoute adminOnly><AdminTotalSalesPage /></ProtectedRoute>} />
             <Route path="offline-orders" element={<ProtectedRoute adminOnly><AdminOfflineOrdersPage /></ProtectedRoute>} />
             <Route path="notifications-admin" element={<ProtectedRoute adminOnly><AdminNotificationsPage /></ProtectedRoute>} />
-            <Route path="inventory" element={<ProtectedRoute adminOnly><AdminInventoryPage /></ProtectedRoute>} />
+            <Route path="inventory" element={<ProtectedRoute><AdminInventoryPage /></ProtectedRoute>} />
           </Route>
 
           {/* Franchise Owner Only Route: Franchise Create Order */}

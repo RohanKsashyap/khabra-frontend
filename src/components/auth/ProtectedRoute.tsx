@@ -30,7 +30,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly, fr
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (franchiseOwnerOnly && user.role !== 'franchise_owner') {
+  if (franchiseOwnerOnly && user.role !== 'franchise') {
     return <Navigate to="/dashboard" replace />;
   }
 
