@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
-import { useAuthStore } from '../store/authStore';
+import { useAuth } from '../contexts/AuthContext';
 import { Address, SavedAddress } from '../types';
 import { SavedAddresses } from '../components/address/SavedAddresses';
 import { orderAPI } from '../services/api';
@@ -27,7 +27,7 @@ interface StepStatus {
 export const CheckoutPage = () => {
   const navigate = useNavigate();
   const { items, getTotalAmount, clearCart } = useCartStore();
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState<CheckoutStep>(CheckoutStep.Shipping); // New state for current step
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');

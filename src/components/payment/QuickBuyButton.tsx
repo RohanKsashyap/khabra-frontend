@@ -4,31 +4,38 @@ import { orderAPI } from '../../services/api';
 import { processRazorpayPayment } from '../../utils/razorpay';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
-import { useAuthStore } from '../../store/authStore';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface QuickBuyButtonProps {
   product: {
     _id: string;
     name: string;
     price: number;
-    images: string[];
+    images?: string[];
   };
   quantity: number;
   className?: string;
   buttonText?: string;
+  disabled?: boolean;
 }
 
 const QuickBuyButton: React.FC<QuickBuyButtonProps> = ({
   product,
   quantity,
   className = '',
-  buttonText = 'Buy Now'
+  buttonText = 'Buy Now',
+  disabled = false
 }) => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleQuickBuy = async () => {
+    if (disabled) {
+      toast.error('Product is currently out of stock');
+      return;
+    }
+
     if (!user) {
       toast.error('Please login to continue');
       navigate('/login');
@@ -37,24 +44,12 @@ const QuickBuyButton: React.FC<QuickBuyButtonProps> = ({
 
     setIsProcessing(true);
     try {
-      // Create a default address if user doesn't have one
-      const defaultAddress = {
-        fullName: user.name || '',
-        addressLine1: user.address?.addressLine1 || '',
-        addressLine2: user.address?.addressLine2 || '',
-        city: user.address?.city || '',
-        state: user.address?.state || '',
-        postalCode: user.address?.postalCode || '',
-        country: 'India',
-        phone: user.phone || '',
-      };
-
-      // Prepare order items
+      // Prepare order items for checkout
       const orderItems = [{
         product: product._id,
         productName: product.name,
         productPrice: product.price,
-        productImage: product.images[0],
+        productImage: product.images && product.images.length > 0 ? product.images[0] : '/placeholder-image.jpg',
         quantity: quantity
       }];
 
@@ -64,44 +59,24 @@ const QuickBuyButton: React.FC<QuickBuyButtonProps> = ({
       // Store order data in session storage for checkout page
       const directPurchaseOrder = {
         items: orderItems,
-        totalAmount
+        totalAmount,
+        isDirectPurchase: true // Flag to indicate this is a direct purchase
       };
       
-      // Option 1: Navigate to checkout with the order data
-      if (false) { // Set to true to enable checkout page flow
-        sessionStorage.setItem('directPurchaseOrder', JSON.stringify(directPurchaseOrder));
-        navigate('/checkout');
-        return;
-      }
+      // Store in session storage and navigate to checkout
+      sessionStorage.setItem('directPurchaseOrder', JSON.stringify(directPurchaseOrder));
       
-      // Option 2: Direct Razorpay payment
-      // Create order with Razorpay payment method
-      const order = await orderAPI.createOrder({
-        shippingAddress: defaultAddress,
-        billingAddress: defaultAddress,
-        paymentMethod: 'razorpay',
-        paymentDetails: {},
-        items: orderItems,
-        totalAmount
-      });
-
-      // Process payment with Razorpay
-      await processRazorpayPayment(order._id);
-      
-      toast.success('Payment successful!', {
-        duration: 3000,
+      toast.success('Redirecting to checkout...', {
+        duration: 1500,
         position: 'top-center'
       });
       
-      navigate('/payment/success', { 
-        state: { 
-          orderId: order._id,
-          totalAmount: order.totalAmount
-        }
-      });
+      // Navigate to checkout page
+      navigate('/checkout');
+      
     } catch (error: any) {
-      console.error('Payment failed:', error);
-      toast.error(error.message || 'Payment failed. Please try again.');
+      console.error('Failed to proceed to checkout:', error);
+      toast.error('Failed to proceed to checkout. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -110,8 +85,8 @@ const QuickBuyButton: React.FC<QuickBuyButtonProps> = ({
   return (
     <Button
       onClick={handleQuickBuy}
-      disabled={isProcessing}
-      className={`bg-green-600 hover:bg-green-700 text-white ${className}`}
+      disabled={disabled || isProcessing}
+      className={`bg-green-600 hover:bg-green-700 text-white ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
     >
       {isProcessing ? 'Processing...' : buttonText}
     </Button>

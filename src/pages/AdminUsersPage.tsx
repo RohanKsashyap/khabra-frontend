@@ -19,6 +19,96 @@ interface User {
   } | null;
 }
 
+interface SalesOverview {
+  targetUser: {
+    _id: string;
+    name: string;
+    email: string;
+    role: string;
+    personalSales: {
+      _id: string | null;
+      totalOrders: number;
+      totalAmount: number;
+      totalCommission: number;
+      avgOrderValue: number;
+      statusBreakdown: Array<{
+        status: string;
+        amount: number;
+      }>;
+      statusSummary: {
+        [key: string]: {
+          count: number;
+          amount: number;
+        };
+      };
+    };
+  };
+  networkSummary: {
+    totalNetworkSize: number;
+    maxLevel: number;
+    totalNetworkSales: {
+      totalOrders: number;
+      totalAmount: number;
+      totalCommission: number;
+    };
+  };
+  levelSummary: {
+    [key: string]: {
+      userCount: number;
+      totalOrders: number;
+      totalAmount: number;
+      totalCommission: number;
+    };
+  };
+  topPerformers: Array<{
+    _id: string;
+    name: string;
+    email: string;
+    role: string;
+    uplineId: string;
+    createdAt: string;
+    level: number;
+    sales: {
+      totalOrders: number;
+      totalAmount: number;
+      totalCommission: number;
+    };
+  }>;
+  downlineDetails: Array<{
+    _id: string;
+    name: string;
+    email: string;
+    role: string;
+    uplineId: string;
+    createdAt: string;
+    level: number;
+    sales: {
+      totalOrders: number;
+      totalAmount: number;
+      totalCommission: number;
+    };
+  }>;
+  recentOrders: Array<{
+    _id: string;
+    user: {
+      _id: string;
+      name: string;
+      email: string;
+    };
+    items: Array<any>;
+    totalAmount: number;
+    status: string;
+    paymentStatus: string;
+    createdAt: string;
+    [key: string]: any;
+  }>;
+  filters: {
+    dateFrom: string | null;
+    dateTo: string | null;
+    levels: string;
+  };
+}
+
 const roles = ['user', 'franchise', 'admin'];
 
 function exportToCSV(users: User[]) {
@@ -53,6 +143,10 @@ export default function AdminUsersPage() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [processingDelete, setProcessingDelete] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [salesOverviewUser, setSalesOverviewUser] = useState<User | null>(null);
+  const [salesOverview, setSalesOverview] = useState<SalesOverview | null>(null);
+  const [loadingSalesOverview, setLoadingSalesOverview] = useState(false);
+  const [salesDateRange, setSalesDateRange] = useState({ startDate: '', endDate: '' });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -173,6 +267,44 @@ export default function AdminUsersPage() {
   // Close edit modal
   const closeEditModal = () => setEditUser(null);
 
+  // Sales Overview functionality
+  const handleSalesOverview = async (user: User) => {
+    setSalesOverviewUser(user);
+    setLoadingSalesOverview(true);
+    const token = localStorage.getItem('token');
+    
+    try {
+      const params = new URLSearchParams();
+      if (salesDateRange.startDate) params.append('startDate', salesDateRange.startDate);
+      if (salesDateRange.endDate) params.append('endDate', salesDateRange.endDate);
+      
+      const response = await axios.get(`/dashboard/admin/user-sales/${user._id}?${params}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSalesOverview(response.data.data);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to fetch sales overview');
+      setSalesOverview(null);
+    } finally {
+      setLoadingSalesOverview(false);
+    }
+  };
+
+  const closeSalesOverviewModal = () => {
+    setSalesOverviewUser(null);
+    setSalesOverview(null);
+    setSalesDateRange({ startDate: '', endDate: '' });
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-[300px]"><div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div></div>;
   }
@@ -266,6 +398,10 @@ export default function AdminUsersPage() {
                     onClick={() => handleEdit(u)}
                   >Edit</button>
                   <button
+                    className="text-green-600 hover:underline text-xs"
+                    onClick={() => handleSalesOverview(u)}
+                  >Sales</button>
+                  <button
                     className="text-red-600 hover:underline text-xs"
                     onClick={() => handleDelete(u._id)}
                     disabled={processingDelete}
@@ -307,6 +443,195 @@ export default function AdminUsersPage() {
           </div>
         </div>
       )}
+      
+      {/* Sales Overview Modal */}
+      {salesOverviewUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold">Sales Overview - {salesOverviewUser.name}</h3>
+              <button
+                onClick={closeSalesOverviewModal}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            
+            {/* Date Range Filter */}
+            <div className="mb-4 flex gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Start Date</label>
+                <input
+                  type="date"
+                  value={salesDateRange.startDate}
+                  onChange={(e) => setSalesDateRange({ ...salesDateRange, startDate: e.target.value })}
+                  className="border rounded px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">End Date</label>
+                <input
+                  type="date"
+                  value={salesDateRange.endDate}
+                  onChange={(e) => setSalesDateRange({ ...salesDateRange, endDate: e.target.value })}
+                  className="border rounded px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={() => handleSalesOverview(salesOverviewUser)}
+                  className="bg-primary text-white px-4 py-2 rounded text-sm hover:bg-primary/90"
+                  disabled={loadingSalesOverview}
+                >
+                  {loadingSalesOverview ? 'Loading...' : 'Apply Filter'}
+                </button>
+              </div>
+            </div>
+            
+            {loadingSalesOverview ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+              </div>
+            ) : salesOverview ? (
+              <div className="space-y-6">
+                {/* Personal Sales */}
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="text-md font-semibold text-blue-800 mb-3">Personal Sales</h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-blue-600">{formatCurrency(salesOverview.targetUser.personalSales.totalAmount)}</p>
+                      <p className="text-sm text-gray-600">Total Sales</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-blue-600">{salesOverview.targetUser.personalSales.totalOrders}</p>
+                      <p className="text-sm text-gray-600">Orders</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-blue-600">{formatCurrency(salesOverview.targetUser.personalSales.avgOrderValue)}</p>
+                      <p className="text-sm text-gray-600">Avg Order Value</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Network Sales */}
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h4 className="text-md font-semibold text-green-800 mb-3">Network Sales</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-600">{formatCurrency(salesOverview.networkSummary.totalNetworkSales.totalAmount)}</p>
+                      <p className="text-sm text-gray-600">Total Sales</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-600">{salesOverview.networkSummary.totalNetworkSales.totalOrders}</p>
+                      <p className="text-sm text-gray-600">Orders</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-600">{salesOverview.networkSummary.totalNetworkSize}</p>
+                      <p className="text-sm text-gray-600">Network Size</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Sales by Level */}
+                {Object.keys(salesOverview.levelSummary).length > 0 && (
+                  <div>
+                    <h4 className="text-md font-semibold mb-3">Sales by Level</h4>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Level</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sales</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Members</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {Object.entries(salesOverview.levelSummary).map(([level, data]) => (
+                            <tr key={level}>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm font-medium">Level {level}</td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm">{formatCurrency(data.totalAmount)}</td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm">{data.totalOrders}</td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm">{data.userCount}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Top Performers */}
+                {salesOverview.topPerformers.length > 0 && (
+                  <div>
+                    <h4 className="text-md font-semibold mb-3">Top 3 Performers</h4>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sales</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Level</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {salesOverview.topPerformers.map((performer, index) => (
+                            <tr key={performer._id}>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm font-medium">{performer.name}</td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm">{performer.email}</td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm">{formatCurrency(performer.sales.totalAmount)}</td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm">{performer.sales.totalOrders}</td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm">Level {performer.level}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Recent Orders */}
+                {salesOverview.recentOrders.length > 0 && (
+                  <div>
+                    <h4 className="text-md font-semibold mb-3">Recent Orders (Last 10)</h4>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Buyer</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Level</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {salesOverview.recentOrders.map((order) => (
+                            <tr key={order._id}>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm font-mono">{order._id}</td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm">{formatCurrency(order.totalAmount)}</td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm">{new Date(order.createdAt).toLocaleDateString()}</td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm">{order.user.name} ({order.user.email})</td>
+                              <td className="px-4 py-2 whitespace-nowrap text-sm">{order.status}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                No sales data available for this user.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
-} 
+}

@@ -103,7 +103,7 @@ export const ProductDetailPage: React.FC = () => {
   const handleAddToCart = async () => {
     if (!product) return;
     
-    if (!franchiseId) {
+    if (!user) {
       toast.error('Please login to add items to cart');
       return;
     }
@@ -114,8 +114,19 @@ export const ProductDetailPage: React.FC = () => {
         quantity,
         franchiseId
       });
+      
+      // Show success toast
+      toast.success(`${product.name} added to cart!`, {
+        duration: 2000,
+        position: 'top-right',
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add to cart');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add to cart';
+      console.error('Add to cart error:', err);
+      toast.error(errorMessage, {
+        duration: 3000,
+        position: 'top-right',
+      });
     }
   };
 

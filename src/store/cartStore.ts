@@ -17,8 +17,11 @@ interface CartStore {
   items: CartItem[];
   isLoading: boolean;
   fetchCart: () => Promise<void>;
-  addToCart: (item: { productId: string; quantity: number; franchiseId?: string }) => Promise<void>; // Make franchiseId optional
-  // Other existing cart store methods
+  addToCart: (item: { productId: string; quantity: number; franchiseId?: string }) => Promise<void>;
+  removeFromCart: (productId: string) => Promise<void>;
+  updateQuantity: (productId: string, quantity: number) => Promise<void>;
+  getTotalAmount: () => number;
+  clearCart: () => Promise<void>;
 }
 
 export const useCartStore = create<CartStore>()(
@@ -60,7 +63,49 @@ export const useCartStore = create<CartStore>()(
           throw error;
         }
       },
-      // Other existing cart store methods
+      removeFromCart: async (productId: string) => {
+        try {
+          await axios.delete(`/cart/remove/${productId}`);
+          // Update local state by removing the item
+          const currentItems = get().items;
+          const updatedItems = currentItems.filter(item => item.product !== productId);
+          set({ items: updatedItems });
+        } catch (error) {
+          console.error('Failed to remove from cart', error);
+          throw error;
+        }
+      },
+      updateQuantity: async (productId: string, quantity: number) => {
+        if (quantity <= 0) {
+          await get().removeFromCart(productId);
+          return;
+        }
+        try {
+          await axios.put('/cart/update', { productId, quantity });
+          // Update local state
+          const currentItems = get().items;
+          const updatedItems = currentItems.map(item => 
+            item.product === productId ? { ...item, quantity } : item
+          );
+          set({ items: updatedItems });
+        } catch (error) {
+          console.error('Failed to update quantity', error);
+          throw error;
+        }
+      },
+      getTotalAmount: () => {
+        const items = get().items;
+        return items.reduce((total, item) => total + (item.productPrice * item.quantity), 0);
+      },
+      clearCart: async () => {
+        try {
+          await axios.delete('/cart/clear');
+          set({ items: [] });
+        } catch (error) {
+          console.error('Failed to clear cart', error);
+          throw error;
+        }
+      }
     }),
     {
       name: 'cart-storage',
