@@ -68,7 +68,7 @@ export function ProductCard({ product, franchiseId }: ProductCardProps) {
       await addToCart({
         productId: product._id,
         quantity: 1,
-        ...(currentFranchiseId ? { franchiseId: currentFranchiseId } : {})
+        franchiseId: currentFranchiseId || null
       });
       toast.success(`${product.name} added to cart!`);
     } catch (error: any) {
@@ -99,7 +99,7 @@ export function ProductCard({ product, franchiseId }: ProductCardProps) {
       await addToCart({
         productId: product._id,
         quantity: 1,
-        ...(currentFranchiseId ? { franchiseId: currentFranchiseId } : {})
+        franchiseId: currentFranchiseId || null
       });
       toast.success(`${product.name} added to cart. Redirecting to checkout...`);
       navigate('/checkout');
