@@ -1,18 +1,27 @@
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 import toast from 'react-hot-toast';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../components/ui/Button';
 import DirectRazorpayCheckout from '../components/payment/DirectRazorpayCheckout';
 import { useAuth } from '../contexts/AuthContext';
 
 export const CartPage = () => {
   const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
   const { items, removeFromCart, updateQuantity, getTotalAmount, fetchCart, isLoading } = useCartStore();
   const { user } = useAuth();
 
   useEffect(() => {
-    fetchCart();
+    const loadCart = async () => {
+      try {
+        await fetchCart();
+      } catch (err) {
+        console.error('Error loading cart:', err);
+        setError('Failed to load cart');
+      }
+    };
+    loadCart();
   }, [fetchCart]);
 
   const handleRemoveFromCart = async (productId: string, productName: string) => {
@@ -23,12 +32,25 @@ export const CartPage = () => {
         position: 'top-right',
       });   
     } catch (error) {
+      console.error('Remove from cart error:', error);
       toast.error('Failed to remove item from cart', {
         duration: 1000,
         position: 'top-right',
       });
     }
   };
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4 text-red-600">Error</h1>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -74,9 +96,9 @@ export const CartPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <div
-              key={item._id}
+              key={item._id || `cart-item-${index}`}
               className="flex items-center gap-4 border-b py-4"
             >
               <img

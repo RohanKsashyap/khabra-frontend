@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
 import { useCartStore } from '../store/cartStore';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthContext } from '../contexts/AuthContext';
 import { Product } from '../types';
 import toast from 'react-hot-toast';
 import { ProductCard } from '../components/ecommerce/ProductCard';
@@ -12,7 +12,7 @@ export const ProductsPage = () => {
   const navigate = useNavigate();
   const { products, isLoading, error, fetchProducts } = useProductStore();
   const { addToCart } = useCartStore();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -117,7 +117,11 @@ export const ProductsPage = () => {
         {products
           .filter(product => !selectedCategory || product.category === selectedCategory)
           .map((product) => (
-            <ProductCard key={product._id} product={product} />
+                <ProductCard 
+                  key={product._id} 
+                  product={product}
+                  franchiseId={franchiseId || undefined}
+                />
           ))}
       </div>
 
