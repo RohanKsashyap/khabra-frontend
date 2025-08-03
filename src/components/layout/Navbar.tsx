@@ -6,7 +6,7 @@ import { useCartStore } from '../../store/cartStore';
 import { Button } from '../ui/Button';
 
 export function Navbar() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const cartStore = useCartStore();
   const totalItems = cartStore.items.length;
   const navigate = useNavigate();
@@ -20,8 +20,7 @@ export function Navbar() {
   // Logout function with safe fallback
   const handleLogout = () => {
     try {
-      const auth = useAuth();
-      auth.logout();
+      logout();
     } catch (error) {
       // Fallback logout behavior
       localStorage.removeItem('token');
@@ -199,7 +198,6 @@ export function Navbar() {
           {/* Overlay */}
           <div
             className="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity"
-            onClick={toggleMenu}
           />
           {/* Drawer */}
           <div className="fixed right-0 top-0 h-screen w-4/5 max-w-xs bg-white shadow-lg flex flex-col p-6 animate-slide-in overflow-y-auto">
@@ -310,39 +308,39 @@ export function Navbar() {
             {!loading && user && user.role === 'admin' && (
               <nav className="flex flex-col gap-5 text-lg font-medium mb-6 border-t pt-6">
                 <h3 className="text-sm font-bold text-gray-500 uppercase mb-2">Admin Panel</h3>
-                <Link to="/admin/dashboard" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
+                <button onClick={(e) => { e.stopPropagation(); navigate("/dashboard"); setTimeout(toggleMenu, 100); }} className="hover:underline underline-offset-4 flex items-center gap-3 text-left w-full">
                   <LayoutGrid className="h-5 w-5" /> Dashboard
-                </Link>
-                <Link to="/admin/users" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); navigate("/dashboard/users"); setTimeout(toggleMenu, 100); }} className="hover:underline underline-offset-4 flex items-center gap-3 text-left w-full">
                   <Users className="h-5 w-5" /> Manage Users
-                </Link>
-                <Link to="/admin/products" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); navigate("/dashboard/products"); setTimeout(toggleMenu, 100); }} className="hover:underline underline-offset-4 flex items-center gap-3 text-left w-full">
                   <Package className="h-5 w-5" /> Manage Products
-                </Link>
-                <Link to="/admin/franchises" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); navigate("/dashboard/franchises"); setTimeout(toggleMenu, 100); }} className="hover:underline underline-offset-4 flex items-center gap-3 text-left w-full">
                   <Store className="h-5 w-5" /> Manage Franchises
-                </Link>
-                <Link to="/admin/client-management" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); navigate("/dashboard/clients"); setTimeout(toggleMenu, 100); }} className="hover:underline underline-offset-4 flex items-center gap-3 text-left w-full">
                   <Users className="h-5 w-5" /> Client Management
-                </Link>
-                <Link to="/admin/ranks" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); navigate("/dashboard/ranks"); setTimeout(toggleMenu, 100); }} className="hover:underline underline-offset-4 flex items-center gap-3 text-left w-full">
                   <Award className="h-5 w-5" /> Manage Ranks
-                </Link>
-                <Link to="/admin/return-requests" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); navigate("/dashboard/returns"); setTimeout(toggleMenu, 100); }} className="hover:underline underline-offset-4 flex items-center gap-3 text-left w-full">
                   <RefreshCw className="h-5 w-5" /> Return Requests
-                </Link>
-                <Link to="/admin/withdrawals" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); navigate("/dashboard/withdrawals-admin"); setTimeout(toggleMenu, 100); }} className="hover:underline underline-offset-4 flex items-center gap-3 text-left w-full">
                   <Wallet className="h-5 w-5" /> Manage Withdrawals
-                </Link>
-                <Link to="/admin/sales" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); navigate("/dashboard/sales"); setTimeout(toggleMenu, 100); }} className="hover:underline underline-offset-4 flex items-center gap-3 text-left w-full">
                   <DollarSign className="h-5 w-5" /> Manage Sales
-                </Link>
-                <Link to="/admin/offline-orders" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); navigate("/dashboard/offline-orders"); setTimeout(toggleMenu, 100); }} className="hover:underline underline-offset-4 flex items-center gap-3 text-left w-full">
                   <ShoppingCart className="h-5 w-5" /> Manage Offline Orders
-                </Link>
-                <Link to="/admin/notifications" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); navigate("/dashboard/notifications-admin"); setTimeout(toggleMenu, 100); }} className="hover:underline underline-offset-4 flex items-center gap-3 text-left w-full">
                   <Bell className="h-5 w-5" /> Manage Notifications
-                </Link>
+                </button>
               </nav>
             )}
 

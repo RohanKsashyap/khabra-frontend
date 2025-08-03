@@ -33,7 +33,7 @@ export const ContactPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <motion.h1 
+      <motion.h1
         className="text-3xl font-bold text-center mb-8"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -41,23 +41,23 @@ export const ContactPage: React.FC = () => {
       >
         Contact Us
       </motion.h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Contact Information */}
-        <motion.div 
+        <motion.div
           className="bg-white rounded-lg shadow-md p-6"
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
         >
           <h2 className="text-2xl font-semibold mb-6">Get in Touch</h2>
-          
+
           <div className="space-y-4">
             <div className="flex items-start space-x-4">
               <FaEnvelope className="text-primary mt-1" />
               <div>
                 <h3 className="font-medium">Email</h3>
-                <p className="text-gray-600">support@khabramlm.com</p>
+                <p className="text-gray-600">khabragc@gmail.com</p>
               </div>
             </div>
 
@@ -65,7 +65,7 @@ export const ContactPage: React.FC = () => {
               <FaPhone className="text-primary mt-1" />
               <div>
                 <h3 className="font-medium">Phone</h3>
-                <p className="text-gray-600">+1 (555) 123-4567</p>
+                <p className="text-gray-600">+91 99154 56220</p>
               </div>
             </div>
 
@@ -74,9 +74,8 @@ export const ContactPage: React.FC = () => {
               <div>
                 <h3 className="font-medium">Address</h3>
                 <p className="text-gray-600">
-                  123 Business Street<br />
-                  Suite 100<br />
-                  New York, NY 10001
+                  Garhshnakar<br />
+                  Hoshiarpur, Punjab 144527
                 </p>
               </div>
             </div>
@@ -91,14 +90,14 @@ export const ContactPage: React.FC = () => {
         </motion.div>
 
         {/* Contact Form */}
-        <motion.div 
+        <motion.div
           className="bg-white rounded-lg shadow-md p-6"
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
         >
           <h2 className="text-2xl font-semibold mb-6">Send us a Message</h2>
-          
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
