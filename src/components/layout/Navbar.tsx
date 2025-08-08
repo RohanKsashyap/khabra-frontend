@@ -183,7 +183,7 @@ export function Navbar() {
           ) : (
             <div className="hidden md:block">
               <Link to="/login">
-                <Button size="sm" className="px-4">Login / Register</Button>
+                <Button size="sm" className="px-4 whitespace-nowrap rounded-full">Login / Register</Button>
               </Link>
             </div>
           )}
