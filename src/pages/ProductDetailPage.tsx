@@ -7,6 +7,7 @@ import axios from '../utils/axios';
 import { useCartStore } from '../store/cartStore';
 import QuickBuyButton from '../components/payment/QuickBuyButton';
 import toast from 'react-hot-toast';
+import { formatCurrency } from '../lib/utils';
 
 interface ProductStock {
   currentQuantity: number;
@@ -20,8 +21,13 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  images: string[];
-  stock?: ProductStock;
+  // Backend provides `image` (single). Some datasets may have `images`.
+  image?: string;
+  images?: string[];
+  // Backend primary field is numeric `stock`. Optionally we may have richer info in `stockInfo`.
+  stock?: number;
+  stockInfo?: ProductStock;
+  category?: string;
 }
 
 export const ProductDetailPage: React.FC = () => {
@@ -33,9 +39,10 @@ export const ProductDetailPage: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // Get the active franchise ID from context or local storage
-  const franchiseId = (user as any)?.franchise?._id || localStorage.getItem('activeFranchiseId');
+  const franchiseId = (user as any)?.franchise?._id || (user as any)?.franchise || localStorage.getItem('activeFranchiseId');
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -71,33 +78,42 @@ export const ProductDetailPage: React.FC = () => {
   }, [id, franchiseId]);
 
   // Determine stock status display
-  const getStockStatusDisplay = () => {
-    if (!product?.stock) return null;
+  const getComputedStockInfo = () => {
+    if (!product) return null;
 
-    switch (product.stock.status) {
-      case 'OUT_OF_STOCK':
-        return {
-          text: 'Out of Stock',
-          color: 'text-red-600',
-          available: false
-        };
-      case 'LOW_STOCK':
-        return {
-          text: `Only ${product.stock.currentQuantity} left`,
-          color: 'text-yellow-600',
-          available: true
-        };
-      case 'IN_STOCK':
-      default:
-        return {
-          text: 'In Stock',
-          color: 'text-green-600',
-          available: true
-        };
+    // Prefer detailed stockInfo if present
+    if (product.stockInfo) {
+      return product.stockInfo;
     }
+
+    // Fallback to numeric stock from backend
+    if (typeof product.stock === 'number') {
+      const qty = product.stock;
+      return {
+        currentQuantity: qty,
+        minimumThreshold: 0,
+        maximumCapacity: Math.max(qty * 2, 0),
+        status: qty > 0 ? (qty <= 10 ? 'LOW_STOCK' : 'IN_STOCK') : 'OUT_OF_STOCK'
+      } satisfies ProductStock;
+    }
+
+    return null;
   };
 
-  const stockStatus = getStockStatusDisplay();
+  const computedStock = getComputedStockInfo();
+
+  const stockStatus = (() => {
+    if (!computedStock) return null;
+    switch (computedStock.status) {
+      case 'OUT_OF_STOCK':
+        return { text: 'Out of Stock', color: 'text-red-600', available: false } as const;
+      case 'LOW_STOCK':
+        return { text: `Only ${computedStock.currentQuantity} left`, color: 'text-yellow-600', available: true } as const;
+      case 'IN_STOCK':
+      default:
+        return { text: 'In Stock', color: 'text-green-600', available: true } as const;
+    }
+  })();
 
   // Handle add to cart
   const handleAddToCart = async () => {
@@ -132,9 +148,8 @@ export const ProductDetailPage: React.FC = () => {
 
   // Quantity adjustment handlers
   const incrementQuantity = () => {
-    if (product?.stock && quantity < product.stock.currentQuantity) {
-      setQuantity(prev => prev + 1);
-    }
+    const maxQty = computedStock?.currentQuantity ?? 0;
+    if (maxQty > 0 && quantity < maxQty) setQuantity(prev => prev + 1);
   };
 
   const decrementQuantity = () => {
@@ -143,116 +158,121 @@ export const ProductDetailPage: React.FC = () => {
     }
   };
 
+  // Reset gallery index when product changes
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [product?._id]);
+
   if (loading) return <LoadingState />;
   if (error) return <div className="text-red-600">{error}</div>;
   if (!product) return <div>Product not found</div>;
+
+  // Build gallery images
+  const galleryImages = (product.images && product.images.length > 0)
+    ? product.images
+    : (product.image ? [product.image] : []);
 
   return (
     <div className="container mx-auto px-4 py-8 grid md:grid-cols-2 gap-8">
       {/* Image Gallery */}
       <div>
-        <img 
-          src={product.images && product.images.length > 0 ? product.images[0] : '/placeholder-image.jpg'} 
-          alt={product.name} 
-          className="w-full h-96 object-cover rounded-lg mb-4"
-        />
+        <div className="relative w-full h-96 bg-white border rounded-2xl overflow-hidden shadow-sm">
+          <img
+            src={galleryImages[activeImageIndex] || '/placeholder-image.jpg'}
+            alt={product.name}
+            className="w-full h-full object-cover object-center"
+          />
+        </div>
+        {galleryImages.length > 1 && (
+          <div className="mt-4 grid grid-cols-5 sm:grid-cols-6 md:grid-cols-5 gap-3">
+            {galleryImages.map((img, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveImageIndex(idx)}
+                className={`relative h-20 rounded-xl overflow-hidden border ${idx === activeImageIndex ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-200'}`}
+              >
+                <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Product Details */}
-      <div>
-        <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-        
-        {/* Rating */}
-        <div className="flex items-center mb-4">
-          <div className="flex text-yellow-400">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <svg key={star} className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-            ))}
-          </div>
-          <span className="ml-2 text-gray-600">(0 reviews)</span>
-        </div>
-        
-        <p className="text-gray-600 mb-6">{product.description}</p>
-        
-        {/* Price and Stock Status */}
-        <div className="flex items-center mb-6">
-          <div className="text-2xl font-bold text-primary mr-4">
-            ₹{product.price.toFixed(2)}
-          </div>
-          
+      <div className="flex flex-col">
+        {/* Title and badges */}
+        <div className="mb-2 flex items-center gap-3">
+          {product.category && (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white">
+              {product.category}
+            </span>
+          )}
           {stockStatus && (
-            <div className={`font-semibold ${stockStatus.color}`}>
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+              stockStatus.available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            }`}>
               {stockStatus.text}
+            </span>
+          )}
+        </div>
+
+        <h1 className="text-3xl font-bold mb-3 leading-tight">{product.name}</h1>
+        <p className="text-gray-600 mb-6 leading-relaxed">{product.description}</p>
+
+        {/* Price */}
+        <div className="flex items-center gap-4 flex-wrap mb-6">
+          <div className="text-3xl font-extrabold text-gray-900">
+            {formatCurrency(product.price)}
+          </div>
+          {computedStock && (
+            <div className="text-xs sm:text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+              Available: <span className="font-semibold text-gray-700">{computedStock.currentQuantity}</span>
             </div>
           )}
         </div>
 
         {/* Quantity Selector */}
-        <div className="flex items-center mb-6">
-          <button 
-            onClick={decrementQuantity} 
-            className="bg-gray-200 px-4 py-2 rounded-l"
-            disabled={quantity <= 1}
-          >
-            -
-          </button>
-          <input 
-            type="number" 
-            value={quantity} 
-            readOnly
-            className="w-16 text-center border-t border-b py-2"
-          />
-          <button 
-            onClick={incrementQuantity} 
-            className="bg-gray-200 px-4 py-2 rounded-r"
-            disabled={
-              !stockStatus?.available || 
-              (product.stock && quantity >= product.stock.currentQuantity)
-            }
-          >
-            +
-          </button>
+        <div className="mb-6">
+          <div className="inline-flex items-stretch rounded-xl overflow-hidden border border-gray-200">
+            <button
+              onClick={decrementQuantity}
+              className="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 disabled:opacity-50"
+              disabled={quantity <= 1}
+              aria-label="Decrease quantity"
+            >
+              −
+            </button>
+            <div className="px-5 py-2 min-w-[64px] text-center font-semibold text-gray-900 bg-white select-none">
+              {quantity}
+            </div>
+            <button
+              onClick={incrementQuantity}
+              className="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 disabled:opacity-50"
+              disabled={
+                !stockStatus?.available ||
+                (computedStock?.currentQuantity !== undefined && quantity >= computedStock.currentQuantity)
+              }
+              aria-label="Increase quantity"
+            >
+              +
+            </button>
+          </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex space-x-4">
-          <Button 
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button
             onClick={handleAddToCart}
             disabled={!stockStatus?.available}
           >
             Add to Cart
           </Button>
-          <QuickBuyButton 
+          <QuickBuyButton
             product={product}
             quantity={quantity}
             disabled={!stockStatus?.available}
             buttonText="Buy Now with Razorpay"
           />
-        </div>
-
-        {/* Write a Review Link */}
-        <div className="mt-4">
-          <a href="#reviews" className="text-blue-500 hover:underline">
-            Write a Review
-          </a>
-        </div>
-
-        {/* Reviews Section */}
-        <div id="reviews" className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">Customer Reviews</h2>
-          <div className="flex items-center mb-4">
-            <div className="flex text-yellow-400">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <svg key={star} className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
-            </div>
-            <span className="ml-2 text-gray-600">4.5 (0 reviews)</span>
-          </div>
-          <p className="text-gray-500">No reviews yet. Be the first to review this product!</p>
         </div>
       </div>
     </div>

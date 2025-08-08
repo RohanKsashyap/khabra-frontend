@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, LogOut, Search, Bell, Home, ShoppingBag, Briefcase, Store, MessageCircle, LayoutGrid, GitBranch, DollarSign, Wallet, Award, Settings, Users, Package, RefreshCw, Layers } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, LogOut, Search, Bell, Home, ShoppingBag, Briefcase, Store, MessageCircle, LayoutGrid, GitBranch, DollarSign, Wallet, Award, Settings, Users, Package, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCartStore } from '../../store/cartStore';
 import { Button } from '../ui/Button';
@@ -69,44 +69,48 @@ export function Navbar() {
   return (
     <nav
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/90 shadow-lg backdrop-blur border-b border-gray-200' : 'bg-white/80'
+        scrolled ? 'bg-white/90 shadow-md backdrop-blur border-b border-gray-100' : 'bg-white/70 backdrop-blur'
       }`}
     >
-      <div className="container flex items-center justify-between py-4">
+      <div className="container mx-auto px-4 md:px-6 flex items-center justify-between py-4">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <img src="/logo-navbar.png" alt="Khabra Generations Care Logo" className="h-14 w-auto object-contain" />
+        <Link to="/" className="flex items-center gap-2 mr-6 md:mr-10">
+          <img
+            src="/logo-navbar.png"
+            alt="Khabra Generations Care Logo"
+            className="h-20 md:h-24 w-auto object-contain transform origin-left scale-150 md:scale-[1.8]"
+          />
         </Link>
         {/* Links */}
-        <div className="hidden md:flex gap-5 text-base font-medium">
-          <Link to="/" className="hover:underline underline-offset-4">Home</Link>
-          <Link to="/products" className="hover:underline underline-offset-4">Products</Link>
-          <Link to="/business" className="hover:underline underline-offset-4">Business</Link>
-          <Link to="/franchises" className="hover:underline underline-offset-4">Franchises</Link>
-          <Link to="/contact" className="hover:underline underline-offset-4">Contact</Link>
+        <div className="hidden md:flex gap-1 text-sm lg:text-base font-medium whitespace-nowrap pl-6">
+          <Link to="/" className="px-3 py-2 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition">Home</Link>
+          <Link to="/products" className="px-3 py-2 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition">Products</Link>
+          <Link to="/business" className="px-3 py-2 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition">Business</Link>
+          <Link to="/franchises" className="px-3 py-2 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition">Franchises</Link>
+          <Link to="/contact" className="px-3 py-2 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition">Contact</Link>
           {!loading && user && (
-            <Link to="/dashboard" className="hover:underline underline-offset-4">Dashboard</Link>
+            <Link to="/dashboard" className="px-3 py-2 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition">Dashboard</Link>
           )}
         </div>
         {/* Search Bar */}
-        <form onSubmit={handleSearch} className="hidden md:flex items-center max-w-md w-full mx-2 relative">
+        <form onSubmit={handleSearch} className="hidden md:flex items-center max-w-md w-full mx-4 relative">
           <div className="relative w-full">
             <input
               type="text"
               placeholder="Search products..."
-              className="w-full py-1.5 pl-8 pr-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full h-10 pl-9 pr-3 border border-gray-200 rounded-full text-sm bg-white/90 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => searchQuery.length > 2 && suggestions.length > 0 && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
             />
-            <Search className="absolute left-2 top-2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-md shadow-lg z-10 mt-1">
+              <div className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-xl shadow-lg z-10 mt-1 overflow-hidden">
                 {suggestions.map((suggestion, index) => (
                   <div
                     key={index}
-                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                    className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm"
                     onClick={() => handleSuggestionClick(suggestion)}
                   >
                     {suggestion}
@@ -115,7 +119,7 @@ export function Navbar() {
               </div>
             )}
           </div>
-          <Button type="submit" className="ml-1 px-3 py-1 text-sm">
+          <Button type="submit" size="sm" className="ml-2 rounded-full">
             Search
           </Button>
         </form>
@@ -127,9 +131,9 @@ export function Navbar() {
             onMouseLeave={() => setIsCartPreviewOpen(false)}
           >
             <Link to="/cart" className="relative">
-              <ShoppingCart className="h-5 w-5" />
+              <ShoppingCart className="h-5 w-5 text-gray-700 hover:text-blue-600 transition" />
               {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center bg-black">
+                <span className="absolute -top-2 -right-2 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center bg-blue-600">
                   {totalItems}
                 </span>
               )}
@@ -165,21 +169,21 @@ export function Navbar() {
           </div>
           {/* Notification Icon */}
           <Link to="/notifications" className="relative group">
-            <Bell className="h-5 w-5 text-gray-700 group-hover:text-primary transition" />
+            <Bell className="h-5 w-5 text-gray-700 group-hover:text-blue-600 transition" />
           </Link>
           {!loading && user ? (
             <div className="hidden md:flex items-center gap-3">
               <Link to="/dashboard">
-                <User className="h-5 w-5" />
+                <User className="h-5 w-5 text-gray-700 hover:text-blue-600 transition" />
               </Link>
               <button onClick={handleLogout}>
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-5 w-5 text-gray-700 hover:text-red-600 transition" />
               </button>
             </div>
           ) : (
             <div className="hidden md:block">
               <Link to="/login">
-                <Button className="px-4 py-1 text-sm">Login / Register</Button>
+                <Button size="sm" className="px-4">Login / Register</Button>
               </Link>
             </div>
           )}

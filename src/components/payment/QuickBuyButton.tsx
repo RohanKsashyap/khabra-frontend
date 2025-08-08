@@ -86,7 +86,7 @@ const QuickBuyButton: React.FC<QuickBuyButtonProps> = ({
     <Button
       onClick={handleQuickBuy}
       disabled={disabled || isProcessing}
-      className={`bg-green-600 hover:bg-green-700 text-white ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+      className={className}
     >
       {isProcessing ? 'Processing...' : buttonText}
     </Button>
