@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import axios from '../utils/axios';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 
 interface User {
@@ -133,6 +133,7 @@ function exportToCSV(users: User[]) {
 
 export default function AdminUsersPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -401,6 +402,10 @@ export default function AdminUsersPage() {
                     className="text-green-600 hover:underline text-xs"
                     onClick={() => handleSalesOverview(u)}
                   >Sales</button>
+                  <button
+                    className="text-purple-600 hover:underline text-xs"
+                    onClick={() => navigate(`/dashboard/user-commission/${u._id}`)}
+                  >Commission</button>
                   <button
                     className="text-red-600 hover:underline text-xs"
                     onClick={() => handleDelete(u._id)}

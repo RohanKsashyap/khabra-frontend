@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import axios, { AxiosError } from 'axios';
 import { Edit, Trash2, Loader2, Info } from 'lucide-react';
+import ImageUpload from '../components/admin/ImageUpload';
 
 interface Product {
   _id: string;
@@ -38,6 +39,7 @@ const AdminProductsPage: React.FC = () => {
     description: '',
     price: '',
     image: '',
+    imageFileId: '',
     category: '',
     stock: '',
     selfCommission: '',
@@ -107,6 +109,7 @@ const AdminProductsPage: React.FC = () => {
         description: product.description,
         price: product.price.toString(),
         image: product.image,
+        imageFileId: '',
         category: typeof product.category === 'object' ? product.category.name : product.category,
         stock: product.stock.toString(),
         selfCommission: product.selfCommission.toString(),
@@ -119,6 +122,7 @@ const AdminProductsPage: React.FC = () => {
         description: '',
         price: '',
         image: '',
+        imageFileId: '',
         category: '',
         stock: '',
         selfCommission: '',
@@ -373,15 +377,15 @@ const AdminProductsPage: React.FC = () => {
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="image" className="block text-sm font-medium text-gray-700">Image URL</label>
-                <input
-                  type="text"
-                  id="image"
-                  name="image"
-                  value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary"
-                  required
+                <ImageUpload
+                  currentImage={formData.image}
+                  onImageUploaded={(imageUrl: string, fileId: string) => {
+                    setFormData({ 
+                      ...formData, 
+                      image: imageUrl, 
+                      imageFileId: fileId 
+                    });
+                  }}
                 />
               </div>
               <div className="mb-4">
@@ -478,7 +482,7 @@ const AdminProductsPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-gray-600 font-medium">Price:</p>
-                  <p className="text-lg font-bold text-green-600">${selectedProductForDetail.price.toFixed(2)}</p>
+                  <p className="text-lg font-bold text-green-600">₹{selectedProductForDetail.price.toFixed(2)}</p>
                 </div>
                 <div>
                   <p className="text-gray-600 font-medium">Category:</p>
