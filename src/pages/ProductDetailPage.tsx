@@ -8,6 +8,8 @@ import { useCartStore } from '../store/cartStore';
 import QuickBuyButton from '../components/payment/QuickBuyButton';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '../lib/utils';
+import { ReviewForm } from '../components/review/ReviewForm';
+import { ReviewList } from '../components/review/ReviewList';
 
 interface ProductStock {
   currentQuantity: number;
@@ -40,6 +42,7 @@ export const ProductDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   // Get the active franchise ID from context or local storage
   const franchiseId = (user as any)?.franchise?._id || (user as any)?.franchise || localStorage.getItem('activeFranchiseId');
@@ -273,6 +276,32 @@ export const ProductDetailPage: React.FC = () => {
             disabled={!stockStatus?.available}
             buttonText="Buy Now with Razorpay"
           />
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mt-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Ratings & Reviews</h2>
+            <button
+              onClick={() => setShowReviewForm(true)}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+              disabled={!user}
+            >
+              Write a review
+            </button>
+          </div>
+          {showReviewForm && (
+            <div className="mb-8 border rounded-lg p-4">
+              <ReviewForm
+                productId={product._id}
+                onReviewSubmitted={() => {
+                  setShowReviewForm(false);
+                }}
+                onCancel={() => setShowReviewForm(false)}
+              />
+            </div>
+          )}
+          <ReviewList productId={product._id} />
         </div>
       </div>
     </div>

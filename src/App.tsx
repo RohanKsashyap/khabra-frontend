@@ -32,7 +32,6 @@ const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const FranchisesPage = lazy(() => import('./pages/FranchisesPage'));
 const FranchiseDashboard = lazy(() => import('./pages/FranchiseDashboard'));
 const FranchiseCreateOrderPage = lazy(() => import('./pages/FranchiseCreateOrderPage'));
-const InventoryManagementPage = lazy(() => import('./pages/InventoryManagementPage').then(module => ({ default: module.InventoryManagementPage })));
 const FranchiseProductsPage = lazy(() => import('./pages/FranchiseProductsPage'));
 
 // Dashboard pages

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { reviewAPI } from '../../services/api';
+import { reviewAPI, orderAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 
 interface ReviewFormProps {
@@ -16,6 +16,39 @@ export const ReviewForm = ({ productId, orderId, onReviewSubmitted, onCancel }: 
   const [review, setReview] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [eligibleOrders, setEligibleOrders] = useState<Array<{ _id: string }>>([]);
+  const [selectedOrderId, setSelectedOrderId] = useState<string>('');
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+
+  const needsOrderSelection = !orderId && user?.role !== 'admin';
+
+  useEffect(() => {
+    const fetchEligibleOrders = async () => {
+      if (!needsOrderSelection || !user) return;
+      try {
+        setIsLoadingOrders(true);
+        const data = await orderAPI.fetchOrders(false);
+        const orders = Array.isArray(data?.data) ? data.data : data;
+        const filtered = (orders || []).filter((o: any) => {
+          if (!o || o.status !== 'delivered' || !Array.isArray(o.items)) return false;
+          return o.items.some((it: any) => {
+            const prod = it?.product;
+            const prodId = typeof prod === 'string' ? prod : prod?._id;
+            return prodId === productId;
+          });
+        });
+        setEligibleOrders(filtered.map((o: any) => ({ _id: o._id })));
+        if (filtered.length === 1) setSelectedOrderId(filtered[0]._id);
+      } catch (err) {
+        setEligibleOrders([]);
+      } finally {
+        setIsLoadingOrders(false);
+      }
+    };
+
+    fetchEligibleOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [needsOrderSelection, user?.id, productId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,9 +62,10 @@ export const ReviewForm = ({ productId, orderId, onReviewSubmitted, onCancel }: 
       return;
     }
 
-    // For regular users, require orderId
-    if (user.role !== 'admin' && !orderId) {
-      toast.error('Order ID is required for customer reviews');
+    // For regular users, require orderId (provided or selected)
+    const finalOrderId = orderId || selectedOrderId;
+    if (user.role !== 'admin' && !finalOrderId) {
+      toast.error('Select an eligible order to review this product');
       return;
     }
 
@@ -39,7 +73,7 @@ export const ReviewForm = ({ productId, orderId, onReviewSubmitted, onCancel }: 
     try {
       await reviewAPI.addReview({
         productId,
-        orderId: orderId || 'admin-review', // Use a placeholder for admin reviews
+        orderId: finalOrderId || 'admin-review', // placeholder for admin reviews
         rating,
         review,
         images
@@ -65,6 +99,30 @@ export const ReviewForm = ({ productId, orderId, onReviewSubmitted, onCancel }: 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {needsOrderSelection && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Select Order</label>
+          {isLoadingOrders ? (
+            <div className="text-sm text-gray-500 mt-1">Loading your delivered orders…</div>
+          ) : eligibleOrders.length > 0 ? (
+            <select
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              value={selectedOrderId}
+              onChange={(e) => setSelectedOrderId(e.target.value)}
+              required
+            >
+              <option value="">Choose an order</option>
+              {eligibleOrders.map((o) => (
+                <option key={o._id} value={o._id}>{o._id}</option>
+              ))}
+            </select>
+          ) : (
+            <div className="text-sm text-red-600 mt-1">
+              No delivered orders found for this product. You can submit a review from the order details page once delivered.
+            </div>
+          )}
+        </div>
+      )}
       <div>
         <label className="block text-sm font-medium text-gray-700">Rating</label>
         <div className="flex items-center mt-1">
