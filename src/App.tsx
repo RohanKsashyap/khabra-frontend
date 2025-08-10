@@ -188,7 +188,7 @@ function App() {
       <AuthProvider>
         <div className="flex flex-col min-h-screen">
           <Navbar />
-          <main className="flex-grow pt-24">
+          <main className="flex-grow pt-4">
             <Suspense fallback={<LoadingSpinner />}>
               <AppRoutes />
             </Suspense>

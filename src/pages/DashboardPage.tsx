@@ -106,7 +106,6 @@ export const DashboardPage = () => {
                   <li><NavLink to="/dashboard/withdrawals-admin" className={getNavLinkClass}> <Wallet className="mr-3 h-5 w-5" /> Manage Withdrawals </NavLink></li>
                   <li><NavLink to="/dashboard/sales" className={getNavLinkClass}> <DollarSign className="mr-3 h-5 w-5" /> Manage Sales </NavLink></li>
                   <li><NavLink to="/dashboard/offline-orders" className={getNavLinkClass}> <Package className="mr-3 h-5 w-5" /> Manage Offline Orders </NavLink></li>
-                  <li><NavLink to="/dashboard/inventory" className={getNavLinkClass}> <Boxes className="mr-3 h-5 w-5" /> Inventory Management </NavLink></li>
                   <li><NavLink to="/dashboard/notifications-admin" className={getNavLinkClass}> <Bell className="mr-3 h-5 w-5" /> Manage Notifications </NavLink></li>
                 </ul>
               </li>
@@ -117,7 +116,7 @@ export const DashboardPage = () => {
           </ul>
         </nav>
         <div className="p-4 border-t">
-          <button onClick={logout} className="w-full flex items-center justify-center px-4 py-2 rounded-lg text-gray-600 hover:bg-red-100 hover:text-red-600">
+          <button onClick={logout} className="w-full flex items-center justify-center px-auto py-2 rounded-lg text-gray-600 hover:bg-red-100 hover:text-red-600">
             <LogOut className="mr-3 h-5 w-5" /> Logout
           </button>
         </div>

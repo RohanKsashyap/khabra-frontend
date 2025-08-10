@@ -83,13 +83,49 @@ export function Navbar() {
         </Link>
         {/* Links */}
         <div className="hidden md:flex gap-1 text-sm lg:text-base font-medium whitespace-nowrap pl-6">
-          <Link to="/" className="px-3 py-2 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition">Home</Link>
-          <Link to="/products" className="px-3 py-2 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition">Products</Link>
-          <Link to="/business" className="px-3 py-2 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition">Business</Link>
-          <Link to="/franchises" className="px-3 py-2 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition">Franchises</Link>
-          <Link to="/contact" className="px-3 py-2 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition">Contact</Link>
+          <Link
+            to="/"
+            className="px-3 py-2 rounded-lg relative transition text-gray-700 hover:text-blue-600 group"
+          >
+            Home
+            <span className="absolute left-3 right-3 bottom-1 h-[2px] bg-blue-600 opacity-0 group-hover:opacity-60 transition-opacity duration-200 rounded-full pointer-events-none"></span>
+          </Link>
+          <Link
+            to="/products"
+            className="px-3 py-2 rounded-lg relative transition text-gray-700 hover:text-blue-600 group"
+          >
+            Products
+            <span className="absolute left-3 right-3 bottom-1 h-[2px] bg-blue-600 opacity-0 group-hover:opacity-60 transition-opacity duration-200 rounded-full pointer-events-none"></span>
+          </Link>
+          <Link
+            to="/business"
+            className="px-3 py-2 rounded-lg relative transition text-gray-700 hover:text-blue-600 group"
+          >
+            Business
+            <span className="absolute left-3 right-3 bottom-1 h-[2px] bg-blue-600 opacity-0 group-hover:opacity-60 transition-opacity duration-200 rounded-full pointer-events-none"></span>
+          </Link>
+          <Link
+            to="/franchises"
+            className="px-3 py-2 rounded-lg relative transition text-gray-700 hover:text-blue-600 group"
+          >
+            Franchises
+            <span className="absolute left-3 right-3 bottom-1 h-[2px] bg-blue-600 opacity-0 group-hover:opacity-60 transition-opacity duration-200 rounded-full pointer-events-none"></span>
+          </Link>
+          <Link
+            to="/contact"
+            className="px-3 py-2 rounded-lg relative transition text-gray-700 hover:text-blue-600 group"
+          >
+            Contact
+            <span className="absolute left-3 right-3 bottom-1 h-[2px] bg-blue-600 opacity-0 group-hover:opacity-60 transition-opacity duration-200 rounded-full pointer-events-none"></span>
+          </Link>
           {!loading && user && (
-            <Link to="/dashboard" className="px-3 py-2 rounded-lg hover:bg-gray-100 hover:text-blue-600 transition">Dashboard</Link>
+            <Link
+              to="/dashboard"
+              className="px-3 py-2 rounded-lg relative transition text-gray-700 hover:text-blue-600 group"
+            >
+              Dashboard
+              <span className="absolute left-3 right-3 bottom-1 h-[2px] bg-blue-600 opacity-0 group-hover:opacity-60 transition-opacity duration-200 rounded-full pointer-events-none"></span>
+            </Link>
           )}
         </div>
         {/* Search Bar */}
@@ -230,7 +266,7 @@ export function Navbar() {
                     {suggestions.map((suggestion, index) => (
                       <div
                         key={index}
-                        className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                        className="px-3 py-2 hover:underline cursor-pointer text-sm"
                         onClick={() => {
                           handleSuggestionClick(suggestion);
                           toggleMenu();

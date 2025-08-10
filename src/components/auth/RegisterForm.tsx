@@ -231,7 +231,7 @@ export function RegisterForm() {
               className="w-full" 
               isLoading={isLoading}
             >
-              Create Account
+              {isLoading ? 'Creating account...' : 'Create Account'}
             </Button>
           </form>
         </CardContent>
