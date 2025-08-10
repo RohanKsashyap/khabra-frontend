@@ -6,12 +6,10 @@ import { Address, SavedAddress } from '../types';
 import { SavedAddresses } from '../components/address/SavedAddresses';
 import { orderAPI } from '../services/api';
 import toast from 'react-hot-toast';
-import { colors } from '../styles/theme'; // Import colors for styling progress indicator
 import { Button } from '../components/ui/Button';
-import RazorpayCheckout from '../components/payment/RazorpayCheckout';
 import { processRazorpayPayment } from '../utils/razorpay';
 
-type PaymentMethod = 'card' | 'upi' | 'netbanking' | 'cod' | 'razorpay';
+type PaymentMethod = 'cod' | 'razorpay';
 
 enum CheckoutStep {
   Shipping = 'Shipping',
@@ -30,7 +28,7 @@ export const CheckoutPage = () => {
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState<CheckoutStep>(CheckoutStep.Shipping); // New state for current step
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('razorpay');
   const [selectedAddress, setSelectedAddress] = useState<SavedAddress | null>(null);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [directPurchaseOrder, setDirectPurchaseOrder] = useState<any>(null);
@@ -62,14 +60,7 @@ export const CheckoutPage = () => {
     phone: user?.phone || '',
   });
 
-  const [cardDetails, setCardDetails] = useState({
-    cardNumber: '',
-    cardName: '',
-    expiryDate: '',
-    cvv: '',
-  });
-
-  const [upiId, setUpiId] = useState('');
+  // No extra fields needed for Razorpay or COD
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -79,13 +70,7 @@ export const CheckoutPage = () => {
     }));
   };
 
-  const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setCardDetails((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  // No-op handlers required for removed methods
 
   const handleAddressSelect = (savedAddress: SavedAddress) => {
     setSelectedAddress(savedAddress);
@@ -151,43 +136,8 @@ export const CheckoutPage = () => {
   };
 
   const validatePaymentStep = () => {
-    const errors: Record<string, string[]> = {};
-    
-    if (paymentMethod === 'card') {
-      if (!cardDetails.cardNumber) {
-        if (!errors.cardNumber) errors.cardNumber = [];
-        errors.cardNumber.push('Card number is required');
-      } else if (!/^[0-9]{16}$/.test(cardDetails.cardNumber.replace(/\s/g, ''))) {
-        if (!errors.cardNumber) errors.cardNumber = [];
-        errors.cardNumber.push('Please enter a valid 16-digit card number');
-      }
-
-      if (!cardDetails.cardName) {
-        if (!errors.cardName) errors.cardName = [];
-        errors.cardName.push('Card holder name is required');
-      }
-
-      if (!cardDetails.expiryDate) {
-        if (!errors.expiryDate) errors.expiryDate = [];
-        errors.expiryDate.push('Expiry date is required');
-      } else if (!/^(0[1-9]|1[0-2])\/([0-9]{2})$/.test(cardDetails.expiryDate)) {
-        if (!errors.expiryDate) errors.expiryDate = [];
-        errors.expiryDate.push('Please enter a valid expiry date (MM/YY)');
-      }
-
-      if (!cardDetails.cvv) {
-        if (!errors.cvv) errors.cvv = [];
-        errors.cvv.push('CVV is required');
-      } else if (!/^[0-9]{3,4}$/.test(cardDetails.cvv)) {
-        if (!errors.cvv) errors.cvv = [];
-        errors.cvv.push('Please enter a valid CVV');
-      }
-    } else if (paymentMethod === 'upi' && !upiId) {
-      if (!errors.upiId) errors.upiId = [];
-      errors.upiId.push('UPI ID is required');
-    }
-
-    return errors;
+    // No extra validation needed for Razorpay or COD
+    return {} as Record<string, string[]>;
   };
 
   const handleNextStep = () => {
@@ -248,23 +198,11 @@ export const CheckoutPage = () => {
     setIsProcessing(true);
 
     try {
-      let paymentDetails = {};
-      if (paymentMethod === 'card') {
-        paymentDetails = {
-          cardNumber: cardDetails.cardNumber,
-          cardName: cardDetails.cardName,
-          expiryDate: cardDetails.expiryDate,
-          cvv: cardDetails.cvv,
-        };
-      } else if (paymentMethod === 'upi') {
-        paymentDetails = { upiId };
-      }
-
       const order = await orderAPI.createOrder({
         shippingAddress: address,
         billingAddress: address,
         paymentMethod,
-        paymentDetails,
+        paymentDetails: {},
         items: directPurchaseOrder ? directPurchaseOrder.items : items.map(item => ({
           product: item.product,
           productName: item.productName,
@@ -337,7 +275,7 @@ export const CheckoutPage = () => {
     CheckoutStep.Review,
   ];
 
-  const getStepNumber = (step: CheckoutStep) => steps.indexOf(step) + 1;
+  // Helper kept previously is no longer used; remove to satisfy linter
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -460,150 +398,37 @@ export const CheckoutPage = () => {
             {currentStep === CheckoutStep.Payment && (
               <div className="bg-white p-6 rounded-lg shadow transition-all duration-300">
                 <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="inline-flex items-center">
-                      <input
-                        type="radio"
-                        className="form-radio text-blue-600 h-5 w-5 transition-colors duration-200"
-                        name="paymentMethod"
-                        value="card"
-                        checked={paymentMethod === 'card'}
-                        onChange={() => setPaymentMethod('card')}
-                      />
-                      <span className="ml-2 text-gray-700">Credit/Debit Card</span>
-                    </label>
-                    {paymentMethod === 'card' && (
-                      <div className="mt-4 space-y-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
-                          <input
-                            type="text"
-                            name="cardNumber"
-                            value={cardDetails.cardNumber}
-                            onChange={handleCardChange}
-                            className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                              validationErrors.cardNumber ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                            placeholder="XXXX XXXX XXXX XXXX"
-                          />
-                          {validationErrors.cardNumber && (
-                            <p className="mt-1 text-sm text-red-600">{validationErrors.cardNumber[0]}</p>
-                          )}
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Card Holder Name</label>
-                          <input
-                            type="text"
-                            name="cardName"
-                            value={cardDetails.cardName}
-                            onChange={handleCardChange}
-                            className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                              validationErrors.cardName ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                          />
-                          {validationErrors.cardName && (
-                            <p className="mt-1 text-sm text-red-600">{validationErrors.cardName[0]}</p>
-                          )}
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
-                            <input
-                              type="text"
-                              name="expiryDate"
-                              value={cardDetails.expiryDate}
-                              onChange={handleCardChange}
-                              className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                validationErrors.expiryDate ? 'border-red-500' : 'border-gray-300'
-                              }`}
-                              placeholder="MM/YY"
-                            />
-                            {validationErrors.expiryDate && (
-                              <p className="mt-1 text-sm text-red-600">{validationErrors.expiryDate[0]}</p>
-                            )}
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
-                            <input
-                              type="text"
-                              name="cvv"
-                              value={cardDetails.cvv}
-                              onChange={handleCardChange}
-                              className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                validationErrors.cvv ? 'border-red-500' : 'border-gray-300'
-                              }`}
-                              placeholder="XXX"
-                            />
-                            {validationErrors.cvv && (
-                              <p className="mt-1 text-sm text-red-600">{validationErrors.cvv[0]}</p>
-                            )}
-                          </div>
-                        </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('razorpay')}
+                    className={`text-left border rounded-lg p-4 transition focus:outline-none ${
+                      paymentMethod === 'razorpay' ? 'border-blue-600 ring-2 ring-blue-200' : 'border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <input type="radio" checked={paymentMethod === 'razorpay'} readOnly className="mr-2" />
+                        <span className="font-semibold">Razorpay (Recommended)</span>
                       </div>
-                    )}
-                  </div>
+                      <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" className="h-6" />
+                    </div>
+                    <p className="mt-2 text-sm text-gray-600">Pay securely via Razorpay. Supports cards, UPI, and netbanking within the Razorpay flow.</p>
+                  </button>
 
-                  <div>
-                    <label className="inline-flex items-center">
-                      <input
-                        type="radio"
-                        className="form-radio text-blue-600 h-5 w-5 transition-colors duration-200"
-                        name="paymentMethod"
-                        value="upi"
-                        checked={paymentMethod === 'upi'}
-                        onChange={() => setPaymentMethod('upi')}
-                      />
-                      <span className="ml-2 text-gray-700">UPI</span>
-                    </label>
-                    {paymentMethod === 'upi' && (
-                      <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">UPI ID</label>
-                        <input
-                          type="text"
-                          name="upiId"
-                          value={upiId}
-                          onChange={(e) => setUpiId(e.target.value)}
-                          className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                            validationErrors.upiId ? 'border-red-500' : 'border-gray-300'
-                          }`}
-                          placeholder="example@upi"
-                        />
-                        {validationErrors.upiId && (
-                          <p className="mt-1 text-sm text-red-600">{validationErrors.upiId[0]}</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="inline-flex items-center">
-                      <input
-                        type="radio"
-                        className="form-radio text-blue-600 h-5 w-5 transition-colors duration-200"
-                        name="paymentMethod"
-                        value="cod"
-                        checked={paymentMethod === 'cod'}
-                        onChange={() => setPaymentMethod('cod')}
-                      />
-                      <span className="ml-2 text-gray-700">Cash on Delivery (COD)</span>
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="inline-flex items-center">
-                      <input
-                        type="radio"
-                        className="form-radio text-blue-600 h-5 w-5 transition-colors duration-200"
-                        name="paymentMethod"
-                        value="razorpay"
-                        checked={paymentMethod === 'razorpay'}
-                        onChange={() => setPaymentMethod('razorpay')}
-                      />
-                      <span className="ml-2 text-gray-700">Razorpay</span>
-                      <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" className="h-6 ml-2 inline" />
-                    </label>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('cod')}
+                    className={`text-left border rounded-lg p-4 transition focus:outline-none ${
+                      paymentMethod === 'cod' ? 'border-blue-600 ring-2 ring-blue-200' : 'border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <input type="radio" checked={paymentMethod === 'cod'} readOnly className="mr-2" />
+                      <span className="font-semibold">Cash on Delivery</span>
+                    </div>
+                    <p className="mt-2 text-sm text-gray-600">Pay with cash when your order is delivered.</p>
+                  </button>
                 </div>
 
                 <div className="flex justify-between mt-6">
@@ -636,13 +461,7 @@ export const CheckoutPage = () => {
                   <div>
                     <h3 className="text-lg font-medium mb-2">Payment Method</h3>
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="font-medium capitalize">{paymentMethod}</p>
-                      {paymentMethod === 'card' && (
-                        <p>Card ending in {cardDetails.cardNumber.slice(-4)}</p>
-                      )}
-                      {paymentMethod === 'upi' && (
-                        <p>UPI ID: {upiId}</p>
-                      )}
+                      <p className="font-medium">{paymentMethod === 'razorpay' ? 'Razorpay' : 'Cash on Delivery'}</p>
                     </div>
                   </div>
 

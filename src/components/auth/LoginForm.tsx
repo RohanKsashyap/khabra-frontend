@@ -7,7 +7,8 @@ import { Mail, Lock, LogIn } from 'lucide-react';
 
 export function LoginForm() {
   const navigate = useNavigate();
-  const { login, loading: isLoading } = useAuth();
+  const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,11 +25,14 @@ export function LoginForm() {
     }
     
     try {
+      setIsSubmitting(true);
       await login(email, password);
       navigate('/dashboard', { replace: true });
     } catch (err) {
       console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'Invalid email or password. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -62,7 +66,7 @@ export function LoginForm() {
                   placeholder="you@example.com"
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                   required
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -83,7 +87,7 @@ export function LoginForm() {
                   placeholder="••••••••"
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                   required
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                 />
               </div>
               <div className="mt-1 text-right">
@@ -97,11 +101,11 @@ export function LoginForm() {
               <Button 
                 type="submit" 
                 className="w-full max-w-xs" 
-                isLoading={isLoading}
-                disabled={isLoading}
+                isLoading={isSubmitting}
+                disabled={isSubmitting}
                 leftIcon={<LogIn className="h-4 w-4" />}
               >
-                {isLoading ? 'Logging in...' : 'Login'}
+                {isSubmitting ? 'Logging in...' : 'Login'}
               </Button>
             </div>
           </form>
@@ -115,13 +119,6 @@ export function LoginForm() {
           </p>
         </CardFooter>
       </Card>
-      
-      {/* Demo login info */}
-      <div className="mt-4 p-4 bg-blue-50 rounded-md">
-        <p className="text-sm text-blue-800 text-center">
-          <strong>Demo Account:</strong> user@example.com / password
-        </p>
-      </div>
     </div>
   );
 }
