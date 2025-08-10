@@ -169,24 +169,6 @@ export const CartPage = () => {
               {isLoading ? 'Loading...' : 'Proceed to Checkout'}
             </Button>
             
-            <div className="mt-3 text-center text-sm text-gray-500 mb-2">- OR -</div>
-            
-            <DirectRazorpayCheckout 
-              className="w-full"
-              buttonText="Pay Now with Razorpay"
-              onSuccess={() => {
-                toast.success('Payment successful!', {
-                  duration: 3000,
-                  position: 'top-center'
-                });
-              }}
-              onError={(error) => {
-                toast.error(`Payment failed: ${error.message}`, {
-                  duration: 3000,
-                  position: 'top-center'
-                });
-              }}
-            />
           </div>
         </div>
       </div>
