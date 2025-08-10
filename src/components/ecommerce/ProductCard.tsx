@@ -141,18 +141,20 @@ export function ProductCard({ product, franchiseId }: ProductCardProps) {
         <div className="cursor-pointer">
           {/* Category badge */}
           <span className="absolute top-3 left-3 z-20 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
-            {product.category}
+            {product.category?.displayName || 'Uncategorized'}
           </span>
           {/* Rating badge */}
           <span className="absolute top-3 right-3 z-20 flex items-center bg-white text-yellow-500 text-xs font-bold px-2 py-1 rounded-full shadow">
             <Star className="w-4 h-4 mr-1 fill-yellow-400 stroke-yellow-400" />
             {product.averageRating?.toFixed(1) || '4.8'}
           </span>
-          {/* Points badge */}
-          <span className="absolute bottom-3 right-3 z-20 bg-orange-500 text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center">
-            <Gift className="w-4 h-4 mr-1" />
-            {product.commission} pts
-          </span>
+          {/* Cashback badge */}
+          {product.selfCommission > 0 && (
+            <span className="absolute bottom-3 right-3 z-20 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center">
+              <Gift className="w-4 h-4 mr-1" />
+              {product.selfCommission}% Cashback
+            </span>
+          )}
           {/* Product Image */}
           <div className="relative h-56 overflow-hidden bg-gray-100">
             <img

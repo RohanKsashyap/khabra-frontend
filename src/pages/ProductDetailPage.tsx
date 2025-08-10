@@ -27,7 +27,11 @@ interface Product {
   // Backend primary field is numeric `stock`. Optionally we may have richer info in `stockInfo`.
   stock?: number;
   stockInfo?: ProductStock;
-  category?: string;
+  category?: {
+    _id: string;
+    name: string;
+    displayName: string;
+  } | string;
 }
 
 export const ProductDetailPage: React.FC = () => {
@@ -204,7 +208,7 @@ export const ProductDetailPage: React.FC = () => {
         <div className="mb-2 flex items-center gap-3">
           {product.category && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white">
-              {product.category}
+              {typeof product.category === 'object' ? product.category.displayName : product.category}
             </span>
           )}
           {stockStatus && (

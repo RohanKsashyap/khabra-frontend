@@ -9,17 +9,21 @@ interface Product {
   description: string;
   price: number;
   image: string;
-  category: string;
+  category: {
+    _id: string;
+    name: string;
+    displayName: string;
+  } | string;
   stock: number;
-  commission: number;
+  selfCommission: number;
   isActive: boolean;
 }
 
-const categories = ['health', 'beauty', 'wellness', 'other'];
 
 const AdminProductsPage: React.FC = () => {
   const { user, loading } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<{name: string, displayName: string}[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,7 +40,7 @@ const AdminProductsPage: React.FC = () => {
     image: '',
     category: '',
     stock: '',
-    commission: '',
+    selfCommission: '',
     isActive: true,
   });
 
@@ -76,9 +80,22 @@ const AdminProductsPage: React.FC = () => {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/categories`);
+      if (response.data && response.data.success) {
+        setCategories(response.data.data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+      // Keep empty array as fallback
+    }
+  };
+
   useEffect(() => {
     if (user && !loading) {
       fetchProducts();
+      fetchCategories();
     }
   }, [user, loading]);
 
@@ -90,9 +107,9 @@ const AdminProductsPage: React.FC = () => {
         description: product.description,
         price: product.price.toString(),
         image: product.image,
-        category: product.category,
+        category: typeof product.category === 'object' ? product.category.name : product.category,
         stock: product.stock.toString(),
-        commission: product.commission.toString(),
+        selfCommission: product.selfCommission.toString(),
         isActive: product.isActive,
       });
     } else {
@@ -104,7 +121,7 @@ const AdminProductsPage: React.FC = () => {
         image: '',
         category: '',
         stock: '',
-        commission: '',
+        selfCommission: '',
         isActive: true,
       });
     }
@@ -148,7 +165,7 @@ const AdminProductsPage: React.FC = () => {
         ...formData,
         price: Number(formData.price),
         stock: Number(formData.stock),
-        commission: Number(formData.commission),
+        selfCommission: Number(formData.selfCommission),
       };
 
       console.log('Sending product data:', productData);
@@ -257,7 +274,7 @@ const AdminProductsPage: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commission</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cashback</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -269,10 +286,12 @@ const AdminProductsPage: React.FC = () => {
                     <img src={product.image} alt={product.name} className="h-10 w-10 object-cover rounded-md" />
                   </td>
                   <td className="px-6 py-4">{product.name}</td>
-                  <td className="px-6 py-4">{product.category}</td>
-                  <td className="px-6 py-4">${product.price}</td>
+                  <td className="px-6 py-4">
+                    {typeof product.category === 'object' ? product.category.displayName : product.category}
+                  </td>
+                  <td className="px-6 py-4">₹{product.price}</td>
                   <td className="px-6 py-4">{product.stock}</td>
-                  <td className="px-6 py-4">{product.commission}%</td>
+                  <td className="px-6 py-4">{product.selfCommission}% Cashback</td>
                   <td className="px-6 py-4">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -377,7 +396,7 @@ const AdminProductsPage: React.FC = () => {
                 >
                   <option value="">Select a category</option>
                   {categories.map((cat) => (
-                    <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                    <option key={cat.name} value={cat.name}>{cat.displayName}</option>
                   ))}
                 </select>
               </div>
@@ -394,14 +413,17 @@ const AdminProductsPage: React.FC = () => {
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="commission" className="block text-sm font-medium text-gray-700">Commission (%)</label>
+                <label htmlFor="selfCommission" className="block text-sm font-medium text-gray-700">Self Commission Cashback (%)</label>
                 <input
                   type="number"
-                  id="commission"
-                  name="commission"
-                  value={formData.commission}
-                  onChange={(e) => setFormData({ ...formData, commission: e.target.value })}
+                  id="selfCommission"
+                  name="selfCommission"
+                  value={formData.selfCommission}
+                  onChange={(e) => setFormData({ ...formData, selfCommission: e.target.value })}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary"
+                  min="0"
+                  max="100"
+                  step="0.1"
                   required
                 />
               </div>
@@ -460,15 +482,19 @@ const AdminProductsPage: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-gray-600 font-medium">Category:</p>
-                  <p className="text-gray-800 capitalize">{selectedProductForDetail.category}</p>
+                  <p className="text-gray-800 capitalize">
+                    {typeof selectedProductForDetail.category === 'object' 
+                      ? selectedProductForDetail.category.displayName 
+                      : selectedProductForDetail.category}
+                  </p>
                 </div>
                 <div>
                   <p className="text-gray-600 font-medium">Stock:</p>
                   <p className="text-gray-800">{selectedProductForDetail.stock}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600 font-medium">Commission:</p>
-                  <p className="text-gray-800">{selectedProductForDetail.commission}%</p>
+                  <p className="text-gray-600 font-medium">Self Commission Cashback:</p>
+                  <p className="text-gray-800">{selectedProductForDetail.selfCommission}% Cashback</p>
                 </div>
                 <div>
                   <p className="text-gray-600 font-medium">Status:</p>

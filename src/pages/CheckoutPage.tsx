@@ -102,6 +102,14 @@ export const CheckoutPage = () => {
     setShowNewAddressForm(false);
   };
 
+  const handleAddressesLoaded = (addresses: SavedAddress[]) => {
+    // Auto-select the default address if available
+    const defaultAddress = addresses.find(addr => addr.isDefault);
+    if (defaultAddress && !selectedAddress) {
+      handleAddressSelect(defaultAddress);
+    }
+  };
+
   const updateStepStatus = (step: CheckoutStep, isComplete: boolean) => {
     setStepStatus(prev => ({
       ...prev,
@@ -395,6 +403,7 @@ export const CheckoutPage = () => {
                 <SavedAddresses
                   onSelectAddress={handleAddressSelect}
                   selectedAddressId={selectedAddress?._id}
+                  onAddressesLoaded={handleAddressesLoaded}
                 />
 
                 {showNewAddressForm && (

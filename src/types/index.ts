@@ -29,15 +29,24 @@ export interface ProductStock {
   status: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK';
 }
 
+export interface Category {
+  _id: string;
+  name: string;
+  displayName: string;
+  description?: string;
+  isActive: boolean;
+  sortOrder: number;
+}
+
 export interface Product {
   _id: string;
   name: string;
   description: string;
   price: number;
-  category: string;
+  category: Category | string; // Can be either populated Category object or string ID
   image: string;
   stock: number;
-  commission: number;
+  selfCommission: number;
   averageRating?: number;
   
   // Enhanced stock management

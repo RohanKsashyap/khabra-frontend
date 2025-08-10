@@ -12,7 +12,7 @@ interface Product {
   image: string;
   category: string;
   stock: number;
-  commission: number;
+  selfCommission: number;
   isActive: boolean;
   franchiseId: string;
 }
@@ -36,7 +36,7 @@ export default function FranchiseProductsPage() {
     image: '',
     category: '',
     stock: '',
-    commission: '',
+    selfCommission: '',
     isActive: true,
   });
 
@@ -79,7 +79,7 @@ export default function FranchiseProductsPage() {
         image: product.image,
         category: product.category,
         stock: product.stock.toString(),
-        commission: product.commission.toString(),
+        selfCommission: product.selfCommission.toString(),
         isActive: product.isActive,
       });
     } else {
@@ -91,7 +91,7 @@ export default function FranchiseProductsPage() {
         image: '',
         category: '',
         stock: '',
-        commission: '',
+        selfCommission: '',
         isActive: true,
       });
     }
@@ -122,7 +122,7 @@ export default function FranchiseProductsPage() {
         ...formData,
         price: Number(formData.price),
         stock: Number(formData.stock),
-        commission: Number(formData.commission),
+        selfCommission: Number(formData.selfCommission),
       };
       if (editingProduct) {
         await axios.put(`/products/${editingProduct._id}`, productData, {
@@ -214,7 +214,7 @@ export default function FranchiseProductsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commission</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cashback</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -229,7 +229,7 @@ export default function FranchiseProductsPage() {
                   <td className="px-6 py-4">{product.category}</td>
                   <td className="px-6 py-4">${product.price}</td>
                   <td className="px-6 py-4">{product.stock}</td>
-                  <td className="px-6 py-4">{product.commission}%</td>
+                  <td className="px-6 py-4">{product.selfCommission}% Cashback</td>
                   <td className="px-6 py-4">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -344,14 +344,17 @@ export default function FranchiseProductsPage() {
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="commission" className="block text-sm font-medium text-gray-700">Commission (%)</label>
+                <label htmlFor="selfCommission" className="block text-sm font-medium text-gray-700">Self Commission Cashback (%)</label>
                 <input
                   type="number"
-                  id="commission"
-                  name="commission"
-                  value={formData.commission}
-                  onChange={(e) => setFormData({ ...formData, commission: e.target.value })}
+                  id="selfCommission"
+                  name="selfCommission"
+                  value={formData.selfCommission}
+                  onChange={(e) => setFormData({ ...formData, selfCommission: e.target.value })}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary"
+                  min="0"
+                  max="100"
+                  step="0.1"
                   required
                 />
               </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useCallback } from 'react';
+import  { useEffect, useMemo, useCallback } from 'react';
 import { useMLMStore } from '../../store/mlmStore';
 import { formatCurrency } from '../../lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';

@@ -58,6 +58,7 @@ const AdminTotalSalesPage = lazy(() => import('./pages/AdminTotalSalesPage'));
 const AdminOfflineOrdersPage = lazy(() => import('./pages/AdminOfflineOrdersPage'));
 const AdminNotificationsPage = lazy(() => import('./pages/AdminNotificationsPage'));
 const AdminInventoryPage = lazy(() => import('./pages/AdminInventoryPage').then(module => ({ default: module.AdminInventoryPage })));
+const AdminCategoriesPage = lazy(() => import('./pages/AdminCategoriesPage'));
 
 function LoadingSpinner() {
   return (
@@ -144,6 +145,7 @@ function AppRoutes() {
             <Route path="offline-orders" element={<ProtectedRoute adminOnly><AdminOfflineOrdersPage /></ProtectedRoute>} />
             <Route path="notifications-admin" element={<ProtectedRoute adminOnly><AdminNotificationsPage /></ProtectedRoute>} />
             <Route path="inventory" element={<ProtectedRoute><AdminInventoryPage /></ProtectedRoute>} />
+            <Route path="categories" element={<ProtectedRoute adminOnly><AdminCategoriesPage /></ProtectedRoute>} />
           </Route>
 
           {/* Franchise Owner Only Route: Franchise Create Order */}

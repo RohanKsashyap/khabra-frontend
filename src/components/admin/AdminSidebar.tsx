@@ -6,12 +6,11 @@ import {
   Package, 
   Store, 
   Award, 
-  DollarSign, 
+  IndianRupee, 
   Wallet, 
   ShoppingCart, 
   RefreshCw, 
-  Bell, 
-  Layers 
+  Bell  
 } from 'lucide-react';
 
 const adminRoutes = [
@@ -23,7 +22,7 @@ const adminRoutes = [
   { path: '/admin/ranks', label: 'Manage Ranks', icon: Award },
   { path: '/admin/return-requests', label: 'Return Requests', icon: RefreshCw },
   { path: '/admin/withdrawals', label: 'Manage Withdrawals', icon: Wallet },
-  { path: '/admin/sales', label: 'Manage Sales', icon: DollarSign },
+  { path: '/admin/sales', label: 'Manage Sales', icon: IndianRupee },
   { path: '/admin/offline-orders', label: 'Manage Offline Orders', icon: ShoppingCart },
   { path: '/admin/notifications', label: 'Manage Notifications', icon: Bell }
 ];

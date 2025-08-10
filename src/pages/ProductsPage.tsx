@@ -81,7 +81,15 @@ export const ProductsPage = () => {
     );
   }
 
-  const categories = [...new Set(products.map(product => product.category))];
+  // Extract unique categories from products (now they're objects)
+  const categories = products
+    .map(product => product.category)
+    .filter(category => category && typeof category === 'object')
+    .reduce((unique, category) => {
+      const exists = unique.find(c => c._id === category._id);
+      if (!exists) unique.push(category);
+      return unique;
+    }, [] as any[]);
 
   return (
     <div className="container mx-auto px-4 py-8 pt-16">
@@ -104,8 +112,8 @@ export const ProductsPage = () => {
           >
             <option value="">All Categories</option>
             {categories.map((category) => (
-              <option key={category} value={category}>
-                {category.charAt(0).toUpperCase() + category.slice(1)}
+              <option key={category._id} value={category._id}>
+                {category.displayName}
               </option>
             ))}
           </select>
@@ -115,7 +123,7 @@ export const ProductsPage = () => {
       {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {products
-          .filter(product => !selectedCategory || product.category === selectedCategory)
+          .filter(product => !selectedCategory || (product.category && product.category._id === selectedCategory))
           .map((product) => (
                 <ProductCard 
                   key={product._id} 

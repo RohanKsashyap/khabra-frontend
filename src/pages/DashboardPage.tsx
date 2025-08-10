@@ -5,7 +5,7 @@ import {
   Users,
   GitBranch,
   ShoppingBag,
-  DollarSign,
+  IndianRupee,
   Award,
   Settings,
   LogOut,
@@ -15,9 +15,9 @@ import {
   Wallet,
   Network,
   Store,
-  CreditCard,
   Package,
-  Boxes
+  Boxes,
+  Tags
 } from 'lucide-react';
 
 import { useAuth } from '../contexts/AuthContext';
@@ -82,7 +82,7 @@ export const DashboardPage = () => {
             <li><NavLink to="/dashboard/network" className={getNavLinkClass}> <GitBranch className="mr-3 h-5 w-5" /> My Network </NavLink></li>
             <li><NavLink to="/dashboard/downline" className={getNavLinkClass}> <Network className="mr-3 h-5 w-5" /> Downline Visualizer </NavLink></li>
             <li><NavLink to="/dashboard/orders" className={getNavLinkClass}> <ShoppingBag className="mr-3 h-5 w-5" /> My Orders </NavLink></li>
-            <li><NavLink to="/dashboard/earnings" className={getNavLinkClass}> <DollarSign className="mr-3 h-5 w-5" /> Earnings </NavLink></li>
+            <li><NavLink to="/dashboard/earnings" className={getNavLinkClass}> <IndianRupee className="mr-3 h-5 w-5" /> Earnings </NavLink></li>
             <li><NavLink to="/dashboard/withdrawals" className={getNavLinkClass}> <Wallet className="mr-3 h-5 w-5" /> Withdrawals </NavLink></li>
             <li><NavLink to="/dashboard/rank-rewards" className={getNavLinkClass}> <Award className="mr-3 h-5 w-5" /> Rank & Rewards </NavLink></li>
             <li><NavLink to="/dashboard/settings" className={getNavLinkClass}> <Settings className="mr-3 h-5 w-5" /> Settings </NavLink></li>
@@ -99,15 +99,19 @@ export const DashboardPage = () => {
                 <ul className="space-y-2">
                   <li><NavLink to="/dashboard/users" className={getNavLinkClass}> <Users className="mr-3 h-5 w-5" /> Manage Users </NavLink></li>
                   <li><NavLink to="/dashboard/products" className={getNavLinkClass}> <Building className="mr-3 h-5 w-5" /> Manage Products </NavLink></li>
+                  <li><NavLink to="/dashboard/categories" className={getNavLinkClass}> <Tags className="mr-3 h-5 w-5" /
+                  > Manage Categories </NavLink></li>
+
                   <li><NavLink to="/dashboard/franchises" className={getNavLinkClass}> <Store className="mr-3 h-5 w-5" /> Manage Franchises </NavLink></li>
                   <li><NavLink to="/dashboard/clients" className={getNavLinkClass}> <Users className="mr-3 h-5 w-5" /> Client Management </NavLink></li>
                   <li><NavLink to="/dashboard/ranks" className={getNavLinkClass}> <Award className="mr-3 h-5 w-5" /> Manage Ranks </NavLink></li>
                   <li><NavLink to="/dashboard/returns" className={getNavLinkClass}> <ShoppingBag className="mr-3 h-5 w-5" /> Return Requests </NavLink></li>
                   <li><NavLink to="/dashboard/withdrawals-admin" className={getNavLinkClass}> <Wallet className="mr-3 h-5 w-5" /> Manage Withdrawals </NavLink></li>
-                  <li><NavLink to="/dashboard/sales" className={getNavLinkClass}> <DollarSign className="mr-3 h-5 w-5" /> Manage Sales </NavLink></li>
+                  <li><NavLink to="/dashboard/sales" className={getNavLinkClass}> <IndianRupee className="mr-3 h-5 w-5" /> Manage Sales </NavLink></li>
                   <li><NavLink to="/dashboard/offline-orders" className={getNavLinkClass}> <Package className="mr-3 h-5 w-5" /> Manage Offline Orders </NavLink></li>
                   <li><NavLink to="/dashboard/inventory" className={getNavLinkClass}> <Boxes className="mr-3 h-5 w-5" /> Inventory Management </NavLink></li>
                   <li><NavLink to="/dashboard/notifications-admin" className={getNavLinkClass}> <Bell className="mr-3 h-5 w-5" /> Manage Notifications </NavLink></li>
+                  
                 </ul>
               </li>
             )}

@@ -6,9 +6,10 @@ import toast from 'react-hot-toast';
 interface SavedAddressesProps {
   onSelectAddress: (address: SavedAddress) => void;
   selectedAddressId?: string;
+  onAddressesLoaded?: (addresses: SavedAddress[]) => void;
 }
 
-export const SavedAddresses = ({ onSelectAddress, selectedAddressId }: SavedAddressesProps) => {
+export const SavedAddresses = ({ onSelectAddress, selectedAddressId, onAddressesLoaded }: SavedAddressesProps) => {
   const [addresses, setAddresses] = useState<SavedAddress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -28,6 +29,13 @@ export const SavedAddresses = ({ onSelectAddress, selectedAddressId }: SavedAddr
   useEffect(() => {
     fetchAddresses();
   }, []);
+
+  useEffect(() => {
+    // Call the callback when addresses are loaded and we're not loading
+    if (!isLoading && addresses.length > 0 && onAddressesLoaded) {
+      onAddressesLoaded(addresses);
+    }
+  }, [addresses, isLoading, onAddressesLoaded]);
 
   const fetchAddresses = async () => {
     try {
