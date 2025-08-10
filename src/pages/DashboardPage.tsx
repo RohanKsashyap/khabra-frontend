@@ -1,4 +1,4 @@
-import { useState, Suspense, useEffect, lazy } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import {
   LayoutGrid,
@@ -15,7 +15,6 @@ import {
   Wallet,
   Network,
   Store,
-  CreditCard,
   Package,
   Boxes
 } from 'lucide-react';
