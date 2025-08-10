@@ -3,7 +3,6 @@ import { useCartStore } from '../store/cartStore';
 import toast from 'react-hot-toast';
 import { useEffect, useState } from 'react';
 import { Button } from '../components/ui/Button';
-import DirectRazorpayCheckout from '../components/payment/DirectRazorpayCheckout';
 import { useAuth } from '../contexts/AuthContext';
 
 export const CartPage = () => {
