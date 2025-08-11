@@ -91,8 +91,8 @@ export const StockLevelTable: React.FC<StockLevelTableProps> = ({
           <tbody>
             {stocks.map((stock) => (
               <tr key={stock._id} className="border-b hover:bg-gray-50">
-                <td className="p-3">{stock.product.name}</td>
-                <td className="p-3">{stock.product.category}</td>
+                <td className="p-3">{stock.product?.name || 'Unknown product'}</td>
+                <td className="p-3">{stock.product?.category || 'Uncategorized'}</td>
                 <td className="p-3">{stock.currentQuantity}</td>
                 <td className="p-3">{stock.minimumThreshold}</td>
                 <td className="p-3">{stock.maximumCapacity}</td>

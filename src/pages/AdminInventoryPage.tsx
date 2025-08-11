@@ -38,6 +38,7 @@ interface StockMovement {
   changeAmount: number;
   newQuantity: number;
   createdAt: string;
+  notes?: string;
 }
 
 export const AdminInventoryPage: React.FC = () => {
@@ -62,11 +63,17 @@ export const AdminInventoryPage: React.FC = () => {
   useEffect(() => {
     const fetchFranchises = async () => {
       try {
-        if (user.role === 'franchise') {
+        if (!user) {
+          setFranchisesLoaded(true);
+          return;
+        }
+
+        if (user?.role === 'franchise') {
           // Franchise user: only allow their own franchise
-          if (user.franchiseId) {
-            setFranchises([{ _id: user.franchiseId, name: user.name, location: '' }]);
-            setSelectedFranchise(user.franchiseId);
+          const userFranchiseId = (user as any)?.franchise?._id || (user as any)?.franchise || '';
+          if (userFranchiseId) {
+            setFranchises([{ _id: userFranchiseId, name: user.name, location: '' }]);
+            setSelectedFranchise(userFranchiseId);
           } else {
             toast.error('No franchise associated with your account');
             setFranchises([]);
@@ -222,8 +229,8 @@ export const AdminInventoryPage: React.FC = () => {
                   <tbody>
                     {stocks.map((stock) => (
                       <tr key={stock._id} className="border-b hover:bg-gray-50">
-                        <td className="p-3">{stock.product.name}</td>
-                        <td className="p-3">{stock.product.category}</td>
+                        <td className="p-3">{stock.product?.name || 'Unknown product'}</td>
+                        <td className="p-3">{stock.product?.category || 'Uncategorized'}</td>
                         <td className="p-3">{stock.currentQuantity}</td>
                         <td className="p-3">{stock.minimumThreshold}</td>
                         <td className="p-3">{stock.maximumCapacity}</td>
@@ -314,8 +321,8 @@ export const AdminInventoryPage: React.FC = () => {
                   <tbody>
                     {stocks.map((stock) => (
                       <tr key={stock._id} className="border-b hover:bg-gray-50">
-                        <td className="p-3">{stock.product.name}</td>
-                        <td className="p-3">{stock.product.category}</td>
+                        <td className="p-3">{stock.product?.name || 'Unknown product'}</td>
+                        <td className="p-3">{stock.product?.category || 'Uncategorized'}</td>
                         <td className="p-3">{stock.currentQuantity}</td>
                         <td className="p-3">{stock.minimumThreshold}</td>
                         <td className="p-3">{stock.maximumCapacity}</td>
@@ -370,7 +377,7 @@ export const AdminInventoryPage: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Inventory Management</h1>
         <div className="flex items-center space-x-4">
-          {user.role === 'franchise' ? (
+          {user?.role === 'franchise' ? (
             <span className="p-2 border rounded bg-gray-100">
               {franchises[0]?.name || 'My Franchise'}
             </span>
@@ -452,7 +459,7 @@ export const AdminInventoryPage: React.FC = () => {
           <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">
-                Stock Movement History: {selectedStock.product.name}
+                Stock Movement History: {selectedStock.product?.name || 'Unknown product'}
               </h2>
               <Button 
                 variant="secondary" 
@@ -513,7 +520,7 @@ export const AdminInventoryPage: React.FC = () => {
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">
-                Adjust Stock: {selectedStock.product.name}
+                Adjust Stock: {selectedStock.product?.name || 'Unknown product'}
               </h2>
               <Button 
                 variant="secondary" 
