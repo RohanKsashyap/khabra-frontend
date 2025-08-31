@@ -54,7 +54,7 @@ export const InventoryAuditForm: React.FC<InventoryAuditFormProps> = ({
         
         // Extract unique categories
         const uniqueCategories = Array.from(
-          new Set(stockData.map((stock: Stock) => stock.product.category))
+          new Set(stockData.map((stock: Stock) => stock.product?.category ?? 'Uncategorized'))
         );
         setCategories(uniqueCategories as string[]);
         
@@ -64,8 +64,8 @@ export const InventoryAuditForm: React.FC<InventoryAuditFormProps> = ({
           systemQuantity: stock.currentQuantity,
           actualQuantity: stock.currentQuantity,
           notes: '',
-          productName: stock.product.name,
-          productCategory: stock.product.category,
+          productName: stock.product?.name || 'Unknown product',
+          productCategory: stock.product?.category || 'Uncategorized',
           discrepancy: 0
         }));
 
@@ -98,8 +98,8 @@ export const InventoryAuditForm: React.FC<InventoryAuditFormProps> = ({
               systemQuantity: item.systemQuantity,
               actualQuantity: item.actualQuantity,
               notes: item.notes || '',
-              productName: item.stock.product.name,
-              productCategory: item.stock.product.category,
+              productName: item.stock.product?.name || 'Unknown product',
+              productCategory: item.stock.product?.category || 'Uncategorized',
               discrepancy: item.discrepancy
             })));
           } else {
@@ -313,8 +313,8 @@ export const InventoryAuditForm: React.FC<InventoryAuditFormProps> = ({
                   systemQuantity: stock.currentQuantity,
                   actualQuantity: stock.currentQuantity,
                   notes: '',
-                  productName: stock.product.name,
-                  productCategory: stock.product.category,
+                  productName: stock.product?.name || 'Unknown product',
+                  productCategory: stock.product?.category || 'Uncategorized',
                   discrepancy: 0
                 }));
                 setAuditItems(initialAuditItems);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X, LogOut, Search, Bell, Home, ShoppingBag, Briefcase, Store, MessageCircle, LayoutGrid, GitBranch, DollarSign, Wallet, Award, Settings, Users, Package, RefreshCw } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, LogOut, Search, Bell, Home, ShoppingBag, Briefcase, Store, MessageCircle, LayoutGrid, GitBranch, DollarSign, Wallet, Award, Settings, Users, Package, RefreshCw, Network } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCartStore } from '../../store/cartStore';
 import { Button } from '../ui/Button';
@@ -72,17 +72,18 @@ export function Navbar() {
         scrolled ? 'bg-white/90 shadow-md backdrop-blur border-b border-gray-100' : 'bg-white/70 backdrop-blur'
       }`}
     >
-      <div className="container mx-auto px-4 md:px-6 flex items-center justify-between py-4">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 flex items-center justify-between py-3 md:py-4">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 mr-6 md:mr-10">
+        <Link to="/" className="flex items-center gap-2 flex-shrink-0">
           <img
             src="/logo-navbar.png"
             alt="Khabra Generations Care Logo"
-            className="h-20 md:h-24 w-auto object-contain transform origin-left scale-150 md:scale-[1.8]"
+            className="h-10 w-auto object-contain sm:h-12 md:h-16 lg:h-20"
           />
         </Link>
-        {/* Links */}
-        <div className="hidden md:flex gap-1 text-sm lg:text-base font-medium whitespace-nowrap pl-6">
+        
+        {/* Links - Hidden on mobile */}
+        <div className="hidden lg:flex gap-1 text-sm lg:text-base font-medium whitespace-nowrap pl-6">
           <Link
             to="/"
             className="px-3 py-2 rounded-lg relative transition text-gray-700 hover:text-blue-600 group"
@@ -129,7 +130,7 @@ export function Navbar() {
           )}
         </div>
         {/* Search Bar */}
-        <form onSubmit={handleSearch} className="hidden md:flex items-center max-w-md w-full mx-4 relative">
+        <form onSubmit={handleSearch} className="hidden lg:flex items-center max-w-md w-full mx-4 relative">
           <div className="relative w-full">
             <input
               type="text"
@@ -160,7 +161,7 @@ export function Navbar() {
           </Button>
         </form>
         {/* Action Icons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div
             className="relative"
             onMouseEnter={() => setIsCartPreviewOpen(true)}
@@ -208,7 +209,7 @@ export function Navbar() {
             <Bell className="h-5 w-5 text-gray-700 group-hover:text-blue-600 transition" />
           </Link>
           {!loading && user ? (
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-3">
               <Link to="/dashboard">
                 <User className="h-5 w-5 text-gray-700 hover:text-blue-600 transition" />
               </Link>
@@ -217,7 +218,7 @@ export function Navbar() {
               </button>
             </div>
           ) : (
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
               <Link to="/login">
                 <Button size="sm" className="px-4 whitespace-nowrap rounded-full">Login / Register</Button>
               </Link>
@@ -226,7 +227,7 @@ export function Navbar() {
           {/* Mobile menu button */}
           <button
             onClick={toggleMenu}
-            className="md:hidden"
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
             {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -234,7 +235,7 @@ export function Navbar() {
       </div>
       {/* Mobile Drawer */}
       {isMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50 lg:hidden h-fit">
           {/* Overlay */}
           <div
             className="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity"
@@ -278,7 +279,7 @@ export function Navbar() {
                   </div>
                 )}
               </div>
-              <Button type="submit" className="mt-2 w-full">Search</Button>
+              <Button type="submit" className="my-2 w-full max-w-[85%] ">Search</Button>
             </form>
 
             {/* User Profile and Actions Section */}
@@ -322,6 +323,9 @@ export function Navbar() {
                 <h3 className="text-sm font-bold text-gray-500 uppercase mb-2">My Dashboard</h3>
                 <Link to="/dashboard" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
                   <LayoutGrid className="h-5 w-5" /> Dashboard
+                </Link>
+                <Link to='/dashboard/downline' onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
+                  <Network className="h-5 w-5" /> Downline Visualizer
                 </Link>
                 <Link to="/dashboard/network" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
                   <GitBranch className="h-5 w-5" /> My Network

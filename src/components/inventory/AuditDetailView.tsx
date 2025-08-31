@@ -130,8 +130,8 @@ export const AuditDetailView: React.FC<AuditDetailViewProps> = ({ auditId, onBac
       // Filter by search term
       const matchesSearch = 
         !searchTerm || 
-        item.stock.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.stock.product.category.toLowerCase().includes(searchTerm.toLowerCase());
+        (item.stock.product?.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (item.stock.product?.category?.toLowerCase() || '').includes(searchTerm.toLowerCase());
       
       return matchesType && matchesSearch;
     });
@@ -275,8 +275,8 @@ export const AuditDetailView: React.FC<AuditDetailViewProps> = ({ auditId, onBac
             <tbody>
               {filteredItems.map((item) => (
                 <tr key={item._id} className="border-b hover:bg-gray-50">
-                  <td className="p-3">{item.stock.product.name}</td>
-                  <td className="p-3 capitalize">{item.stock.product.category}</td>
+                  <td className="p-3">{item.stock.product?.name || 'Unknown product'}</td>
+                  <td className="p-3 capitalize">{item.stock.product?.category || 'Uncategorized'}</td>
                   <td className="p-3">{item.systemQuantity}</td>
                   <td className="p-3">{item.actualQuantity}</td>
                   <td className={`p-3 ${getDiscrepancyClass(item.discrepancy)}`}>

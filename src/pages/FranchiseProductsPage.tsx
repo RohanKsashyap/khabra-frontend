@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import axios from '../utils/axios';
 import { Navigate } from 'react-router-dom';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 
 interface Product {
   _id: string;
@@ -60,7 +60,8 @@ export default function FranchiseProductsPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Only show products for this franchise
-      setProducts(response.data.data.filter((p: Product) => p.franchiseId === user.franchiseId));
+      const franchiseId = (user as any)?.franchiseId || (user as any)?.franchise?._id || (user as any)?.franchise;
+      setProducts(response.data.data.filter((p: Product) => p.franchiseId === franchiseId));
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to fetch products');
       setProducts([]);

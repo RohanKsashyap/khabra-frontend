@@ -161,6 +161,12 @@ export function ProductCard({ product, franchiseId }: ProductCardProps) {
               src={product.image}
               alt={product.name}
               className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+              onError={e => {
+                const target = e.currentTarget;
+                if (!target.src.includes('/demo-product.jpg')) {
+                  target.src = '/demo-product.jpg';
+                }
+              }}
             />
           </div>
           {/* Product Info */}
