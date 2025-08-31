@@ -4,10 +4,16 @@ import { Button } from '../ui/Button';
 import { api } from '../../services/api';
 import { toast } from 'react-hot-toast';
 
+interface Category {
+  _id: string;
+  name: string;
+  displayName?: string;
+}
+
 interface Product {
   _id: string;
   name: string;
-  category: string;
+  category: string | Category;
 }
 
 interface Franchise {
@@ -133,11 +139,16 @@ export const StockCreationForm: React.FC<StockCreationFormProps> = ({
             required
           >
             <option value="">Select a product</option>
-            {products.map(product => (
-              <option key={product._id} value={product._id}>
-                {product.name} - {product.category}
-              </option>
-            ))}
+            {products.map(product => {
+              const categoryLabel = typeof product.category === 'object' && product.category !== null
+                ? (product.category.displayName || product.category.name)
+                : product.category;
+              return (
+                <option key={product._id} value={product._id}>
+                  {product.name} - {categoryLabel}
+                </option>
+              );
+            })}
           </select>
         </div>
 
