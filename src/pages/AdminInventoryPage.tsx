@@ -102,7 +102,12 @@ export const AdminInventoryPage: React.FC = () => {
     try {
       setLoading(true);
       const response = await api.get(`/api/v1/inventory/stock-levels/${selectedFranchise}`);
-      setStocks(response.data.data);
+      // Normalize to avoid null product references crashing the UI
+      const normalized = (response.data.data || []).map((s: any) => ({
+        ...s,
+        product: s?.product ?? { _id: '', name: '(deleted product)', category: '-' }
+      }));
+      setStocks(normalized);
     } catch (error) {
       console.error('Error fetching stocks:', error);
       toast.error('Failed to fetch inventory data');

@@ -81,6 +81,7 @@ export const DashboardPage = () => {
             <li><NavLink to="/dashboard" end className={getNavLinkClass}> <LayoutGrid className="mr-3 h-5 w-5" /> Overview </NavLink></li>
             <li><NavLink to="/dashboard/network" className={getNavLinkClass}> <GitBranch className="mr-3 h-5 w-5" /> My Network </NavLink></li>
             <li><NavLink to="/dashboard/downline" className={getNavLinkClass}> <Network className="mr-3 h-5 w-5" /> Downline Visualizer </NavLink></li>
+            <li><NavLink to="/dashboard/network-management" className={getNavLinkClass}> <Users className="mr-3 h-5 w-5" /> User Management </NavLink></li>
             <li><NavLink to="/dashboard/orders" className={getNavLinkClass}> <ShoppingBag className="mr-3 h-5 w-5" /> My Orders </NavLink></li>
             <li><NavLink to="/dashboard/earnings" className={getNavLinkClass}> <IndianRupee className="mr-3 h-5 w-5" /> Earnings </NavLink></li>
             <li><NavLink to="/dashboard/withdrawals" className={getNavLinkClass}> <Wallet className="mr-3 h-5 w-5" /> Withdrawals </NavLink></li>

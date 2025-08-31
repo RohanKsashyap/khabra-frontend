@@ -5,6 +5,7 @@ import { mlmAPI } from '../services/api';
 import { Button } from '../components/ui/Button';
 import toast from 'react-hot-toast';
 import { useMLMStore } from '../store/mlmStore';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface Earning {
   _id: string;
@@ -18,6 +19,18 @@ interface Earning {
 const EarningsPage: React.FC = () => {
   const { user } = useAuth();
   const { earnings, stats, fetchEarnings, isLoading, error } = useMLMStore();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const userId = params.get('userId');
+    setViewingUserId(userId);
+    
+    // Fetch earnings for the specified user or current user
+    fetchEarnings(userId || undefined);
+  }, [location.search, fetchEarnings]);
 
   const handleClearHistory = async () => {
     if (user?.role === 'admin') {

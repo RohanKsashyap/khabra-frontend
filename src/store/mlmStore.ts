@@ -9,7 +9,7 @@ interface MLMState {
   isLoading: boolean;
   error: string | null;
   fetchNetworkTree: () => Promise<void>;
-  fetchEarnings: () => Promise<void>;
+  fetchEarnings: (userId?: string) => Promise<void>;
   fetchWithdrawals: () => Promise<void>;
   requestWithdrawal: (amount: number) => Promise<boolean>;
 }
@@ -32,10 +32,10 @@ export const useMLMStore = create<MLMState>((set) => ({
     }
   },
 
-  fetchEarnings: async () => {
+  fetchEarnings: async (userId?: string) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await mlmAPI.getUserEarnings();
+      const data = await mlmAPI.getUserEarnings(userId);
       set({ earnings: data.earnings, stats: data.stats, isLoading: false });
     } catch (error: any) {
       set({ error: error.message || 'Failed to fetch earnings', isLoading: false });

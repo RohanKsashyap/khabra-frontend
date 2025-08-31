@@ -59,6 +59,7 @@ const AdminNotificationsPage = lazy(() => import('./pages/AdminNotificationsPage
 const AdminInventoryPage = lazy(() => import('./pages/AdminInventoryPage').then(module => ({ default: module.AdminInventoryPage })));
 const AdminCategoriesPage = lazy(() => import('./pages/AdminCategoriesPage'));
 const AdminUserCommissionPage = lazy(() => import('./pages/AdminUserCommissionPage'));
+const UserNetworkManagementPage = lazy(() => import('./pages/UserNetworkManagementPage'));
 
 function LoadingSpinner() {
   return (
@@ -122,6 +123,7 @@ function AppRoutes() {
             <Route index element={<DashboardOverview />} />
             <Route path="network" element={<MyNetworkPage />} />
             <Route path="downline" element={<DownlineVisualizer />} />
+            <Route path="network-management" element={<UserNetworkManagementPage />} />
             <Route path="orders" element={<MyOrdersPage />} />
             <Route path="earnings" element={<EarningsPage />} />
             <Route path="withdrawals" element={<WithdrawalPanel />} />

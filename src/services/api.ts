@@ -327,9 +327,10 @@ export const dashboardAPI = {
 
 export const mlmAPI = {
   // Earnings
-  getUserEarnings: async () => {
+  getUserEarnings: async (userId?: string) => {
     try {
-      const response = await api.get('/api/earnings');
+      const url = userId ? `/api/earnings?userId=${userId}` : '/api/earnings';
+      const response = await api.get(url);
       return response.data;
     } catch (error: any) {
       throw error.response.data;
