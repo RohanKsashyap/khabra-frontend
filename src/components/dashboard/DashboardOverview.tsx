@@ -1,6 +1,6 @@
 import  { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
-import { Users, ShoppingBag, CreditCard, TrendingUp, Award, Target, Zap, Crown, Star, TrendingDown, Calendar, Gift, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Card, CardContent } from '../ui/Card';
+import { Users, ShoppingBag, CreditCard, Award, Target, Crown, Star, Gift, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { formatCurrency } from '../../lib/utils';
 import { CommissionCard } from './CommissionCard';
 import api from '../../services/api';

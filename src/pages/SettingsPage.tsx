@@ -279,11 +279,11 @@ const SettingsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-12">
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           {/* Enhanced Tabs */}
           <div className="border-b border-gray-200 bg-gray-50">
-            <nav className="flex overflow-x-auto">
+            <nav className="flex overflow-x-auto scrollbar-hide">
               {[
                 { id: 'profile', label: 'Profile', icon: User },
                 { id: 'security', label: 'Security', icon: Shield },
@@ -293,107 +293,95 @@ const SettingsPage: React.FC = () => {
               ].map((tab) => {
                 const IconComponent = tab.icon;
                 return (
-            <button
+                  <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center space-x-2 py-4 px-6 font-medium text-sm whitespace-nowrap transition-all duration-200 ${
+                    className={`flex items-center space-x-2 py-3 sm:py-4 px-4 sm:px-6 font-medium text-sm whitespace-nowrap transition-all duration-200 min-w-fit ${
                       activeTab === tab.id
                         ? 'border-b-2 border-accent text-accent bg-white'
                         : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                     }`}
                   >
-                    <IconComponent className="h-5 w-5" />
-                    <span>{tab.label}</span>
-            </button>
+                    <IconComponent className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    <span className="sm:hidden">{tab.label.charAt(0)}</span>
+                  </button>
                 );
               })}
-          </nav>
-        </div>
+            </nav>
+          </div>
 
-        {/* Content */}
-          <div className="p-8">
-          {activeTab === 'profile' && userData && (
+          {/* Content */}
+          <div className="p-4 sm:p-6 lg:p-8">
+            {activeTab === 'profile' && userData && (
               <div className="space-y-8">
                 {/* Profile Header */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                  className="bg-gradient-to-r from-primary to-accent text-white rounded-2xl p-8"
-                >
-                  <div className="flex items-center space-x-6">
-                    <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
-                      <User className="h-10 w-10" />
-                    </div>
-                    <div>
-                      <h2 className="text-3xl font-bold mb-2">{userData.name}</h2>
-                      <p className="text-gray-100 text-lg">{userData.email}</p>
-                      <p className="text-gray-200">Member since {new Date().getFullYear()}</p>
-                    </div>
-                    <div className="ml-auto">
-                      <button
-                        onClick={() => setIsEditingProfile(!isEditingProfile)}
-                        className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-xl transition-colors flex items-center space-x-2"
-                      >
-                        {isEditingProfile ? <X className="h-5 w-5" /> : <Edit3 className="h-5 w-5" />}
-                        <span>{isEditingProfile ? 'Cancel' : 'Edit Profile'}</span>
-                      </button>
-                    </div>
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6 pb-6 border-b border-gray-100">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 text-accent rounded-full flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0">
+                    <User className="h-8 w-8 sm:h-10 sm:w-10" />
                   </div>
-                </motion.div>
+                  <div className="flex-1 text-center sm:text-left">
+                    <h2 className="text-2xl sm:text-3xl font-bold mb-2">{userData.name}</h2>
+                    <p className="text-gray-500 text-base sm:text-lg">{userData.email}</p>
+                    <p className="text-gray-400 text-sm sm:text-base">Member since {new Date().getFullYear()}</p>
+                  </div>
+                  <div className="sm:ml-auto">
+                    <button
+                      onClick={() => setIsEditingProfile(!isEditingProfile)}
+                      className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-accent text-white rounded-xl transition-colors flex items-center justify-center space-x-2"
+                    >
+                      {isEditingProfile ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Edit3 className="h-4 w-4 sm:h-5 sm:w-5" />}
+                      <span className="text-sm sm:text-base">{isEditingProfile ? 'Cancel' : 'Edit Profile'}</span>
+                    </button>
+                  </div>
+                </div>
 
                 {/* Personal Information */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                  className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8"
-                >
+                <div className="py-6 border-b border-gray-100">
                   <div className="flex items-center space-x-3 mb-6">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                       <User className="h-5 w-5 text-blue-600" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900">Personal Information</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
                   </div>
-
                   {isEditingProfile ? (
                     <form onSubmit={handleProfileSubmit} className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
+                        <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
-                  <input
-                    type="text"
+                          <input
+                            type="text"
                             name="name"
                             value={profileData.name || ''}
                             onChange={handleProfileChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
-                  />
-                </div>
-                <div>
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+                          />
+                        </div>
+                        <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                  <input
+                          <input
                             type="tel"
                             name="phone"
                             value={profileData.phone || ''}
                             onChange={handleProfileChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
                           />
                         </div>
-                </div>
-                <div>
+                      </div>
+                      <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                  <input
-                    type="email"
+                        <input
+                          type="email"
                           name="email"
                           value={profileData.email || ''}
                           onChange={handleProfileChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
-                  />
-                </div>
-                      <div className="flex space-x-4">
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+                        />
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                         <button
                           type="submit"
-                          className="px-6 py-3 bg-accent text-white rounded-xl hover:bg-accent/90 transition-colors flex items-center space-x-2"
+                          className="px-6 py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors flex items-center space-x-2"
                         >
                           <Save className="h-5 w-5" />
                           <span>Save Changes</span>
@@ -401,7 +389,7 @@ const SettingsPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setIsEditingProfile(false)}
-                          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+                          className="px-6 py-3 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                         >
                           Cancel
                         </button>
@@ -424,42 +412,37 @@ const SettingsPage: React.FC = () => {
                         </div>
                       </div>
                       <div className="space-y-4">
-                <div>
+                        <div>
                           <label className="block text-sm font-medium text-gray-500 mb-1">Phone</label>
                           <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">{userData.phone}</p>
-                </div>
-                <div>
+                        </div>
+                        <div>
                           <label className="block text-sm font-medium text-gray-500 mb-1">Your Referral Code</label>
                           <p className="text-sm font-medium text-accent bg-accent/10 px-4 py-3 rounded-lg">{userData.referralCode || 'N/A'}</p>
-                </div>
-                {userData.referrerName && (
-                  <div>
+                        </div>
+                        {userData.referrerName && (
+                          <div>
                             <label className="block text-sm font-medium text-gray-500 mb-1">Referred By</label>
                             <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">{userData.referrerName}</p>
-                  </div>
-                )}
-              </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
-                </motion.div>
+                </div>
 
-              {/* Address Section */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8"
-                >
+                {/* Address Section */}
+                <div className="py-6">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                         <MapPin className="h-5 w-5 text-green-600" />
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900">Shipping Address</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">Shipping Address</h3>
                     </div>
-                  <button
-                    onClick={() => setIsEditing(!isEditing)}
-                      className={`px-6 py-3 rounded-xl transition-colors flex items-center space-x-2 ${
+                    <button
+                      onClick={() => setIsEditing(!isEditing)}
+                      className={`px-6 py-3 rounded-lg transition-colors flex items-center space-x-2 ${
                         isEditing 
                           ? 'bg-red-500 hover:bg-red-600 text-white' 
                           : 'bg-accent hover:bg-accent/90 text-white'
@@ -467,40 +450,38 @@ const SettingsPage: React.FC = () => {
                     >
                       {isEditing ? <X className="h-5 w-5" /> : <Edit3 className="h-5 w-5" />}
                       <span>{isEditing ? 'Cancel' : addressData ? 'Edit Address' : 'Add Address'}</span>
-                  </button>
-                </div>
-
-                {!addressData && !isEditing && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+                    </button>
+                  </div>
+                  {!addressData && !isEditing && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
                       <div className="flex items-start space-x-3">
                         <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                           <AlertCircle className="h-4 w-4 text-yellow-600" />
-                      </div>
+                        </div>
                         <div>
                           <h4 className="text-sm font-medium text-yellow-800 mb-1">No Address Saved</h4>
-                        <p className="text-sm text-yellow-700">
+                          <p className="text-sm text-yellow-700">
                             Please add a default shipping address to continue with your orders.
-                        </p>
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-
-                {isEditing ? (
+                  )}
+                  {isEditing ? (
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                        <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
-                      <input
-                        type="text"
-                        name="fullName"
-                        value={formData.fullName || ''}
-                        onChange={handleInputChange}
-                        required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
-                      />
-                    </div>
-                    <div>
+                          <input
+                            type="text"
+                            name="fullName"
+                            value={formData.fullName || ''}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+                          />
+                        </div>
+                        <div>
                           <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
                           <input
                             type="tel"
@@ -508,141 +489,121 @@ const SettingsPage: React.FC = () => {
                             value={formData.phone || ''}
                             onChange={handleInputChange}
                             required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
                           />
                         </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Address Line 1</label>
-                      <input
-                        type="text"
-                        name="addressLine1"
-                        value={formData.addressLine1 || ''}
-                        onChange={handleInputChange}
-                        required
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
-                      />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Address Line 2 (Optional)</label>
-                      <input
-                        type="text"
-                        name="addressLine2"
-                        value={formData.addressLine2 || ''}
-                        onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
-                      />
-                    </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">City</label>
-                        <input
-                          type="text"
-                          name="city"
-                          value={formData.city || ''}
-                          onChange={handleInputChange}
-                          required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
-                        />
-                      </div>
-                      <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">State</label>
-                        <input
-                          type="text"
-                          name="state"
-                          value={formData.state || ''}
-                          onChange={handleInputChange}
-                          required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
-                        />
-                      </div>
-                    </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Postal Code</label>
-                        <input
-                          type="text"
-                          name="postalCode"
-                          value={formData.postalCode || ''}
-                          onChange={handleInputChange}
-                          required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
-                        />
-                      </div>
-                      <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Country</label>
-                        <input
-                          type="text"
-                          name="country"
-                          value={formData.country || ''}
-                          onChange={handleInputChange}
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">Address Line 1</label>
+                          <input
+                            type="text"
+                            name="addressLine1"
+                            value={formData.addressLine1 || ''}
+                            onChange={handleInputChange}
                             required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">Address Line 2</label>
+                          <input
+                            type="text"
+                            name="addressLine2"
+                            value={formData.addressLine2 || ''}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">City</label>
+                          <input
+                            type="text"
+                            name="city"
+                            value={formData.city || ''}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">State</label>
+                          <input
+                            type="text"
+                            name="state"
+                            value={formData.state || ''}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">Postal Code</label>
+                          <input
+                            type="text"
+                            name="postalCode"
+                            value={formData.postalCode || ''}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">Country</label>
+                          <input
+                            type="text"
+                            name="country"
+                            value={formData.country || ''}
+                            onChange={handleInputChange}
+                            required
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-200"
                           />
                         </div>
                       </div>
-                      <div className="flex space-x-4">
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                         <button
                           type="submit"
-                          className="px-6 py-3 bg-accent text-white rounded-xl hover:bg-accent/90 transition-colors flex items-center space-x-2"
+                          className="px-6 py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors flex items-center space-x-2"
                         >
                           <Save className="h-5 w-5" />
-                          <span>{addressData ? 'Update Address' : 'Save Address'}</span>
+                          <span>Save Address</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setIsEditing(false)}
-                          className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors"
+                          className="px-6 py-3 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                         >
                           Cancel
                         </button>
                       </div>
                     </form>
-                  ) : addressData && (
+                  ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-500 mb-1">Full Name</label>
-                          <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">{addressData.fullName}</p>
+                          <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">{addressData?.fullName}</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-500 mb-1">Phone</label>
-                          <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">{addressData.phone}</p>
+                          <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">{addressData?.phone}</p>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-500 mb-1">Address Line 1</label>
-                          <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">{addressData.addressLine1}</p>
+                          <label className="block text-sm font-medium text-gray-500 mb-1">Country</label>
+                          <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">{addressData?.country}</p>
                         </div>
                       </div>
                       <div className="space-y-4">
-                        {addressData.addressLine2 && (
-                          <div>
-                            <label className="block text-sm font-medium text-gray-500 mb-1">Address Line 2</label>
-                            <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">{addressData.addressLine2}</p>
-                          </div>
-                        )}
                         <div>
-                          <label className="block text-sm font-medium text-gray-500 mb-1">City</label>
-                          <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">{addressData.city}</p>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-500 mb-1">State</label>
-                          <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">{addressData.state}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-500 mb-1">Postal Code</label>
-                            <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">{addressData.postalCode}</p>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-500 mb-1">Country</label>
-                            <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">{addressData.country}</p>
-                          </div>
+                          <label className="block text-sm font-medium text-gray-500 mb-1">Address</label>
+                          <p className="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg">
+                            {addressData?.addressLine1}<br />
+                            {addressData?.addressLine2 && <>{addressData.addressLine2}<br /></>}
+                            {addressData?.city}, {addressData?.state} {addressData?.postalCode}
+                          </p>
                         </div>
                       </div>
                     </div>
                   )}
-                </motion.div>
+                </div>
               </div>
             )}
 

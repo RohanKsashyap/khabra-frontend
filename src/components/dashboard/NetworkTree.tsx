@@ -7,31 +7,32 @@ import { formatDate } from '../../lib/utils';
 
 const UserNode = ({ user, level, upline }: { user: any; level: number; upline?: any }) => (
   <motion.div 
-    className="node bg-white rounded-xl border border-gray-200 p-4 mb-3 hover:shadow-md transition-all duration-200"
+    className="node bg-white rounded-xl border border-gray-200 p-3 sm:p-4 mb-3 hover:shadow-md transition-all duration-200"
     initial={{ opacity: 0, x: -20 }}
     animate={{ opacity: 1, x: 0 }}
     transition={{ duration: 0.3 }}
   >
-    <div className="flex items-center space-x-3 mb-3">
-      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+    <div className="flex items-center space-x-2 sm:space-x-3 mb-3">
+      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">
         {user.name?.charAt(0)?.toUpperCase() || '?'}
       </div>
-      <div className="flex-1">
-        <div className="font-semibold text-gray-900">{user.name}</div>
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold text-gray-900 text-sm sm:text-base truncate">{user.name}</div>
         <div className="text-xs text-gray-500">Level {level} • ID: {user.referralCode}</div>
       </div>
     </div>
     
-    <div className="text-sm text-gray-600 mb-3">{user.email}</div>
+    <div className="text-xs sm:text-sm text-gray-600 mb-3 truncate">{user.email}</div>
     
-    <div className="flex items-center space-x-2 mb-3">
-      <div className="px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-medium">
+    <div className="flex flex-wrap items-center gap-2 mb-3">
+      <div className="px-2 sm:px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-medium">
         {user.role}
       </div>
       {user.createdAt && (
         <div className="text-xs text-gray-500 flex items-center space-x-1">
           <Calendar className="h-3 w-3" />
-          <span>{formatDate(user.createdAt)}</span>
+          <span className="hidden sm:inline">{formatDate(user.createdAt)}</span>
+          <span className="sm:hidden">{new Date(user.createdAt).toLocaleDateString()}</span>
         </div>
       )}
     </div>
@@ -42,14 +43,14 @@ const UserNode = ({ user, level, upline }: { user: any; level: number; upline?: 
       </div>
     )}
     
-    <div className="grid grid-cols-2 gap-3 text-xs">
+    <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs">
       <div className="text-center p-2 bg-blue-50 rounded-lg">
-        <div className="font-bold text-blue-700">{user.directReferrals || 0}</div>
-        <div className="text-blue-600">Direct Ref</div>
+        <div className="font-bold text-blue-700 text-sm sm:text-base">{user.directReferrals || 0}</div>
+        <div className="text-blue-600 text-xs">Direct Ref</div>
       </div>
       <div className="text-center p-2 bg-green-50 rounded-lg">
-        <div className="font-bold text-green-700">{user.teamSize || 0}</div>
-        <div className="text-green-600">Team Size</div>
+        <div className="font-bold text-green-700 text-sm sm:text-base">{user.teamSize || 0}</div>
+        <div className="text-green-600 text-xs">Team Size</div>
       </div>
     </div>
   </motion.div>
@@ -58,7 +59,7 @@ const UserNode = ({ user, level, upline }: { user: any; level: number; upline?: 
 function renderTree(nodes: any[], level = 1): React.ReactElement | null {
   if (!nodes || nodes.length === 0) return null;
   return (
-    <ul className="ml-6 border-l-2 border-gray-200 pl-4">
+    <ul className="ml-3 sm:ml-6 border-l-2 border-gray-200 pl-2 sm:pl-4">
       {nodes.map((child: any) => (
         <li key={child._id}>
           <UserNode user={child} level={level} />
@@ -81,10 +82,10 @@ const NetworkTree: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center p-12"
+        className="text-center p-6 sm:p-12"
       >
-        <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gray-600 text-lg">Loading your network tree...</p>
+        <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-gray-600 text-base sm:text-lg">Loading your network tree...</p>
       </motion.div>
     );
   }
@@ -94,16 +95,16 @@ const NetworkTree: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center p-12"
+        className="text-center p-6 sm:p-12"
       >
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <TrendingUp className="h-8 w-8 text-red-600" />
+        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
         </div>
-        <h3 className="text-lg font-medium text-red-600 mb-2">Error Loading Network</h3>
-        <p className="text-red-500 mb-4">{error}</p>
+        <h3 className="text-base sm:text-lg font-medium text-red-600 mb-2">Error Loading Network</h3>
+        <p className="text-red-500 mb-4 text-sm sm:text-base">{error}</p>
         <button
           onClick={fetchNetworkTree}
-          className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors"
+          className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors text-sm sm:text-base"
         >
           Try Again
         </button>
@@ -116,19 +117,14 @@ const NetworkTree: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center p-12"
+        className="text-center p-6 sm:p-12 text-gray-500 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300"
       >
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Users className="h-8 w-8 text-gray-400" />
+        <Users className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-base sm:text-lg font-medium text-gray-600 mb-2">No referrals in your network yet</h3>
+        <p className="text-gray-500 mb-4 text-sm sm:text-base">Share your referral ID to start building your team!</p>
+        <div className="bg-accent/10 text-accent px-3 sm:px-4 py-2 rounded-lg font-mono text-xs sm:text-sm">
+          {'REFERRAL_CODE'}
         </div>
-        <h3 className="text-lg font-medium text-gray-600 mb-2">No Network Data</h3>
-        <p className="text-gray-500 mb-4">We couldn't find any network information</p>
-        <button
-          onClick={fetchNetworkTree}
-          className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors"
-        >
-          Refresh
-        </button>
       </motion.div>
     );
   }

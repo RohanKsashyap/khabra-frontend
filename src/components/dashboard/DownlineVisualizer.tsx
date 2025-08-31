@@ -57,31 +57,32 @@ const UserNode = ({ user, level, upline, isExpanded, onToggle }: {
   
   return (
     <motion.div 
-      className="node bg-white rounded-xl border border-gray-200 p-4 mb-3 hover:shadow-md transition-all duration-200"
+      className="node bg-white rounded-xl border border-gray-200 p-3 sm:p-4 mb-3 hover:shadow-md transition-all duration-200"
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3 }}
     >
       <div className="flex items-center justify-between mb-3">
-        <div className="flex-1">
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-xs sm:text-sm font-bold flex-shrink-0">
               {user.name?.charAt(0)?.toUpperCase() || '?'}
             </div>
-            <div>
-              <div className="font-semibold text-gray-900">{user.name}</div>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-gray-900 text-sm sm:text-base truncate">{user.name}</div>
               <div className="text-xs text-gray-500">Level {level} • ID: {user.referralCode}</div>
             </div>
           </div>
-          <div className="text-sm text-gray-600 mb-2">{user.email}</div>
-          <div className="flex items-center space-x-2 mb-2">
-            <div className="px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-medium">
+          <div className="text-xs sm:text-sm text-gray-600 mb-2 truncate">{user.email}</div>
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <div className="px-2 sm:px-3 py-1 bg-accent/10 text-accent rounded-full text-xs font-medium">
               {user.role}
             </div>
             {user.createdAt && (
               <div className="text-xs text-gray-500 flex items-center space-x-1">
                 <Calendar className="h-3 w-3" />
-                <span>{formatDate(user.createdAt)}</span>
+                <span className="hidden sm:inline">{formatDate(user.createdAt)}</span>
+                <span className="sm:hidden">{new Date(user.createdAt).toLocaleDateString()}</span>
               </div>
             )}
           </div>
@@ -89,9 +90,9 @@ const UserNode = ({ user, level, upline, isExpanded, onToggle }: {
         {hasChildren && (
           <Button 
             onClick={onToggle}
-            className="ml-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+            className="ml-2 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors flex-shrink-0"
           >
-            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            {isExpanded ? <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" /> : <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />}
           </Button>
         )}
       </div>
@@ -102,19 +103,19 @@ const UserNode = ({ user, level, upline, isExpanded, onToggle }: {
         </div>
       )}
       
-      <div className="grid grid-cols-3 gap-3 text-xs">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 text-xs">
         <div className="text-center p-2 bg-blue-50 rounded-lg">
-          <div className="font-bold text-blue-700">{user.directReferrals || 0}</div>
-          <div className="text-blue-600">Direct Ref</div>
+          <div className="font-bold text-blue-700 text-sm sm:text-base">{user.directReferrals || 0}</div>
+          <div className="text-blue-600 text-xs">Direct Ref</div>
         </div>
         <div className="text-center p-2 bg-green-50 rounded-lg">
-          <div className="font-bold text-green-700">{user.teamSize || 0}</div>
-          <div className="text-green-600">Team Size</div>
+          <div className="font-bold text-green-700 text-sm sm:text-base">{user.teamSize || 0}</div>
+          <div className="text-green-600 text-xs">Team Size</div>
         </div>
         {user.totalSales && (
           <div className="text-center p-2 bg-orange-50 rounded-lg">
-            <div className="font-bold text-orange-700">{formatCurrency(user.totalSales)}</div>
-            <div className="text-orange-600">Sales</div>
+            <div className="font-bold text-orange-700 text-sm sm:text-base">{formatCurrency(user.totalSales)}</div>
+            <div className="text-orange-600 text-xs">Sales</div>
           </div>
         )}
       </div>
@@ -393,34 +394,34 @@ const DownlineVisualizer: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-2xl p-8"
+        className="bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-2xl p-4 sm:p-6 lg:p-8"
       >
-        <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-            <Network className="h-8 w-8" />
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0">
+              <Network className="h-6 w-6 sm:h-8 sm:w-8" />
+            </div>
+            <div className="text-center sm:text-left">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Downline Network</h1>
+              <p className="text-green-100 text-base sm:text-lg">Visualize and analyze your team structure and performance</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Downline Network</h1>
-            <p className="text-green-100 text-lg">Visualize and analyze your team structure and performance</p>
-          </div>
-        </div>
       </motion.div>
 
       {/* Stats Cards - Modern Design */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-200">
+          <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100 hover:shadow-xl transition-all duration-200">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="h-6 w-6 text-blue-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Total Members</p>
-                <p className="text-2xl font-bold text-gray-900">{analytics?.totalMembers || downlineStats?.totalMembers || 0}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-500">Total Members</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{analytics?.totalMembers || downlineStats?.totalMembers || 0}</p>
               </div>
             </div>
           </div>
@@ -431,14 +432,14 @@ const DownlineVisualizer: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-200">
+          <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100 hover:shadow-xl transition-all duration-200">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <Activity className="h-6 w-6 text-green-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Active Members</p>
-                <p className="text-2xl font-bold text-gray-900">{analytics?.activeMembers || downlineStats?.activeMembers || 0}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-500">Active Members</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{analytics?.activeMembers || downlineStats?.activeMembers || 0}</p>
               </div>
             </div>
           </div>
@@ -449,14 +450,14 @@ const DownlineVisualizer: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-200">
+          <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100 hover:shadow-xl transition-all duration-200">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-orange-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Total Sales</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(analytics?.totalSales || downlineStats?.totalSales || 0)}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-500">Total Sales</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{formatCurrency(analytics?.totalSales || downlineStats?.totalSales || 0)}</p>
               </div>
             </div>
           </div>
@@ -467,14 +468,14 @@ const DownlineVisualizer: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-200">
+          <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100 hover:shadow-xl transition-all duration-200">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <UserPlus className="h-6 w-6 text-purple-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <UserPlus className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Direct Referrals</p>
-                <p className="text-2xl font-bold text-gray-900">{networkTree.stats?.direct || 0}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-500">Direct Referrals</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{networkTree.stats?.direct || 0}</p>
               </div>
             </div>
           </div>
@@ -482,70 +483,75 @@ const DownlineVisualizer: React.FC = () => {
       </div>
 
       <Card>
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 border-b border-gray-200">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
-                <GitBranch className="h-5 w-5 text-accent" />
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 sm:p-6 border-b border-gray-200">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <GitBranch className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+                </div>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Network Visualization</h2>
+                  <p className="text-sm sm:text-base text-gray-600">Choose your preferred view mode</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Network Visualization</h2>
-                <p className="text-gray-600">Choose your preferred view mode</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex border border-gray-300 rounded-lg overflow-hidden">
-                <Button
-                  className={`px-4 py-2 text-sm transition-all duration-200 ${
-                    viewMode === 'tree' 
-                      ? 'bg-accent text-white shadow-md' 
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setViewMode('tree')}
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Tree View
-                </Button>
-                <Button
-                  className={`px-4 py-2 text-sm transition-all duration-200 ${
-                    viewMode === 'list' 
-                      ? 'bg-accent text-white shadow-md' 
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="h-4 w-4 mr-2" />
-                  List View
-                </Button>
-                <Button
-                  className={`px-4 py-2 text-sm transition-all duration-200 ${
-                    viewMode === 'stats' 
-                      ? 'bg-accent text-white shadow-md' 
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setViewMode('stats')}
-                >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Stats View
-                </Button>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={expandAll}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  Expand All
-                </Button>
-                <Button 
-                  onClick={collapseAll}
-                  className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  Collapse All
-                </Button>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+                  <Button
+                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm transition-all duration-200 ${
+                      viewMode === 'tree' 
+                        ? 'bg-accent text-white shadow-md' 
+                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setViewMode('tree')}
+                  >
+                    <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Tree View</span>
+                    <span className="sm:hidden">Tree</span>
+                  </Button>
+                  <Button
+                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm transition-all duration-200 ${
+                      viewMode === 'list' 
+                        ? 'bg-accent text-white shadow-md' 
+                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setViewMode('list')}
+                  >
+                    <List className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">List View</span>
+                    <span className="sm:hidden">List</span>
+                  </Button>
+                  <Button
+                    className={`px-3 sm:px-4 py-2 text-xs sm:text-sm transition-all duration-200 ${
+                      viewMode === 'stats' 
+                        ? 'bg-accent text-white shadow-md' 
+                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setViewMode('stats')}
+                  >
+                    <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Stats View</span>
+                    <span className="sm:hidden">Stats</span>
+                  </Button>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={expandAll}
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg transition-colors"
+                  >
+                    <span className="hidden sm:inline">Expand All</span>
+                    <span className="sm:hidden">Expand</span>
+                  </Button>
+                  <Button 
+                    onClick={collapseAll}
+                    className="bg-gray-600 hover:bg-gray-700 text-white px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-lg transition-colors"
+                  >
+                    <span className="hidden sm:inline">Collapse All</span>
+                    <span className="sm:hidden">Collapse</span>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
         <CardContent className="p-6">
           {viewMode === 'tree' && (
             <div className="overflow-x-auto">
