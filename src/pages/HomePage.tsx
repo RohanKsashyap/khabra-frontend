@@ -176,7 +176,7 @@ export function HomePage() {
               </Button>
             </Link>
             <Link to="/business">
-              <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10">
+              <Button size="lg" variant="outline" className="border-white text-white bg-white/10 hover:bg-white/20">
                 <TrendingUp className="h-5 w-5 mr-2" />
                 Learn More
               </Button>
