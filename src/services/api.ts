@@ -79,7 +79,12 @@ export const authAPI = {
 export const productAPI = {
   getProducts: async (params?: { category?: string; search?: string; sort?: string; page?: number; limit?: number; franchiseId?: string }) => {
     const response = await api.get('/api/products', { params });
-    return response.data;
+    // Normalize to a consistent shape
+    const res = response.data;
+    if (Array.isArray(res)) return { data: res, page: 1, pages: 1, total: res.length };
+    if (Array.isArray(res.data)) return res; // { success, data, total, page, pages }
+    if (Array.isArray(res.products)) return { data: res.products, page: res.page || 1, pages: res.pages || 1, total: res.total || res.products.length };
+    return { data: [], page: 1, pages: 1, total: 0 };
   },
 
   getProduct: async (id: string, franchiseId?: string) => {

@@ -37,14 +37,14 @@ const AdminAddOrderPage: React.FC = () => {
 
   const handleProductSearch = async () => {
     if (!productQuery) return;
-    const products = await productAPI.getProducts({ search: productQuery });
-    if (Array.isArray(products)) {
-      setFoundProducts(products);
-    } else if (Array.isArray(products.products)) {
-      setFoundProducts(products.products);
-    } else {
-      setFoundProducts([]);
-    }
+    const { data } = await productAPI.getProducts({ search: productQuery, limit: 10 });
+    setFoundProducts(data);
+  };
+
+  const handleProductFocus = async () => {
+    // Fetch all products without limit to show all on focus
+    const { data } = await productAPI.getProducts();
+    setFoundProducts(data);
   };
 
   const selectUser = (user: any) => {
@@ -66,6 +66,9 @@ const AdminAddOrderPage: React.FC = () => {
         productImage: image || product.image || '',
       });
     }
+    // Clear suggestions and input
+    setFoundProducts([]);
+    setProductQuery('');
   };
 
   const onSubmit = async (data: any) => {
@@ -114,7 +117,7 @@ const AdminAddOrderPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-6 rounded-lg shadow-md max-h-[90vh] overflow-y-auto">
       <h2 className="text-2xl font-bold mb-6">Add Offline Order</h2>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Order Type Selector */}
@@ -163,17 +166,25 @@ const AdminAddOrderPage: React.FC = () => {
               placeholder="Search products"
               value={productQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProductQuery(e.target.value)}
+              onFocus={handleProductFocus}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
             />
             <button type="button" onClick={handleProductSearch} className="px-4 py-2 bg-primary text-white rounded-md">Search</button>
           </div>
           {foundProducts.length > 0 && (
-            <ul className="border rounded p-2 mt-2">
-              {foundProducts.map(product => (
-                <li key={product._id} onClick={() => addProductToOrder(product)} className="cursor-pointer p-2 hover:bg-gray-100">
-                  {product.name}
-                </li>
-              ))}
+            <ul className="border rounded p-2 mt-2 max-h-96 overflow-y-auto">
+              {foundProducts.map(product => {
+                const isMatch = productQuery && product.name.toLowerCase().includes(productQuery.toLowerCase());
+                return (
+                  <li
+                    key={product._id}
+                    onClick={() => addProductToOrder(product)}
+                    className={`cursor-pointer p-2 hover:bg-gray-100 ${isMatch ? 'bg-yellow-100 font-semibold' : ''}`}
+                  >
+                    {product.name}
+                  </li>
+                );
+              })}
             </ul>
           )}
           {/* Manual Product Entry */}
@@ -259,7 +270,7 @@ const AdminAddOrderPage: React.FC = () => {
             <div key={field.id} className="flex flex-wrap items-center gap-2 p-2 border-b">
               <input {...register(`items.${index}.product`)} type="hidden" />
               <span className="text-xs text-gray-500">Product ID:</span>
-              <span className="w-20">{watch(`items.${index}.product`)}</span>
+              <span className="w-30">{watch(`items.${index}.product`)}</span>
               <input
                 {...register(`items.${index}.productName`)}
                 type="text"

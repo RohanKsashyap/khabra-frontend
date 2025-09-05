@@ -114,15 +114,9 @@ const FranchiseCreateOrderPage: React.FC = () => {
     setProductSearchLoading(true);
     setProductSearchError(null);
     try {
-      const products = await productAPI.getProducts({ search: productQuery });
-      let result: any[] = [];
-      if (Array.isArray(products)) {
-        result = products;
-      } else if (Array.isArray(products.products)) {
-        result = products.products;
-      }
-      setFoundProducts(result);
-      if (!result.length) setProductSearchError('No products found.');
+      const { data } = await productAPI.getProducts({ search: productQuery, limit: 10 });
+      setFoundProducts(data);
+      if (!data.length) setProductSearchError('No products found.');
     } catch (err: any) {
       setProductSearchError('Error searching products.');
       setFoundProducts([]);
