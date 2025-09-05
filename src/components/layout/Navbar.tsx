@@ -330,6 +330,9 @@ export function Navbar() {
                 <Link to="/dashboard/network" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
                   <GitBranch className="h-5 w-5" /> My Network
                 </Link>
+                <Link to="/dashboard/network-management" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
+                  <Users className="h-5 w-5" /> User Management
+                </Link>
                 <Link to="/dashboard/orders" onClick={toggleMenu} className="hover:underline underline-offset-4 flex items-center gap-3">
                   <ShoppingBag className="h-5 w-5" /> My Orders
                 </Link>
@@ -348,6 +351,8 @@ export function Navbar() {
               </nav>
             )}
 
+
+
             {/* Admin Dashboard Links */}
             {!loading && user && user.role === 'admin' && (
               <nav className="flex flex-col gap-5 text-lg font-medium mb-6 border-t pt-6">
@@ -358,6 +363,7 @@ export function Navbar() {
                 <button onClick={(e) => { e.stopPropagation(); navigate("/dashboard/users"); setTimeout(toggleMenu, 100); }} className="hover:underline underline-offset-4 flex items-center gap-3 text-left w-full">
                   <Users className="h-5 w-5" /> Manage Users
                 </button>
+
                 <button onClick={(e) => { e.stopPropagation(); navigate("/dashboard/products"); setTimeout(toggleMenu, 100); }} className="hover:underline underline-offset-4 flex items-center gap-3 text-left w-full">
                   <Package className="h-5 w-5" /> Manage Products
                 </button>
